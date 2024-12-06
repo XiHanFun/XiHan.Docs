@@ -1,6 +1,6 @@
 {
   "name": "xihan-docs",
-  "version": "0.5.3",
+  "version": "0.8.1",
   "type": "module",
   "description": "XiHan document repository. Fast, lightweight, efficient, and dedicated development framework and component library.Built on DotNet and Vue.",
   "author": {
@@ -18,19 +18,26 @@
   },
   "scripts": {
     "bootstrap": "pnpm install",
-    "dev": "vitepress dev --host",
+    "dev": "vitepress dev",
     "build": "vitepress build",
     "serve": "vitepress serve",
     "preview": "vitepress preview",
     "update-pkg": "ncu --deep -u",
-    "clean": "rimraf .vitepress/cache && rimraf pnpm-lock.yaml && rimraf package.lock.json && rimraf node_modules"
+    "cache-verify": "npm cache verify",
+    "clean-lock": "node ./scripts/clean-lock.js",
+    "clean-modules": "node ./scripts/clean-modules.js",
+    "clean-dist": "node ./scripts/clean-dist.js",
+    "clean-node": "pnpm run clean-lock && pnpm run clean-modules",
+    "reinstall": "pnpm run clean-node && pnpm run bootstrap",
+    "rebuild": "pnpm run clean-dist && pnpm run build"
   },
   "dependencies": {
     "vue": "^3.5.13",
     "vitepress": "^1.5.0"
   },
-  "devDependencies": {
-    "rimraf": "^6.0.1"
+  "engines": {
+    "node": "^23.1.0",
+    "pnpm": "^9.13.2"
   },
   "packageManager": "pnpm@8.1.0"
 }
