@@ -1,5 +1,4 @@
-import { defineConfig } from "vitepress";
-import type { DefaultTheme } from "vitepress/types";
+import { DefaultTheme, defineConfig } from "vitepress";
 
 const title: string = "曦寒官方文档";
 const description: string = "开发框架和组件库";

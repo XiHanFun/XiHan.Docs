@@ -22,7 +22,7 @@ hero:
 features:
   - title: 高效快速跨平台
     icon: 🛠️
-    details: 后端由 .NET8 驱动，执行速度快于任何其他常用框架，可以在多个平台运行。精心设计之功能、不断研磨之算法，在程序的高性能、高可用和高扩展性上夯实基础。
+    details: 后端由 DotNet9 驱动，执行速度快于任何其他常用框架，可以在多个平台运行。精心设计之功能、不断研磨之算法，在程序的高性能、高可用和高扩展性上夯实基础。
     link: https://dotnet.microsoft.com/zh-cn/
     linkText: "了解 DotNet"
 
