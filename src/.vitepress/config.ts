@@ -24,15 +24,15 @@ const nav: DefaultTheme.NavItem[] = [
     text: "在线体验",
     items: [
       {
-        text: "后端-开发框架",
+        text: "后端 | 开发框架",
         link: "https://framework.xihanfun.com",
       },
       {
-        text: "前端-视图组件",
+        text: "前端 | 视图组件",
         link: "https://ui.xihanfun.com",
       },
       {
-        text: "用例-基础应用",
+        text: "用例 | 基础应用",
         link: "https://basicapp.xihanfun.com",
       },
     ],
@@ -41,7 +41,7 @@ const nav: DefaultTheme.NavItem[] = [
     text: "代码仓库",
     items: [
       {
-        text: "Github | 国际",
+        text: "Github(国际)",
         items: [
           {
             text: "后端 | 开发框架",
@@ -58,7 +58,7 @@ const nav: DefaultTheme.NavItem[] = [
         ],
       },
       {
-        text: "Gitee | 国内",
+        text: "Gitee(国内)",
         items: [
           {
             text: "后端 | 开发框架",
