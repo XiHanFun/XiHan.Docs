@@ -1,10 +1,12 @@
 import { DefaultTheme, defineConfig } from "vitepress";
+import pkg from "../package.json";
 
 const title: string = "曦寒官方文档";
 const description: string = "开发框架和组件库";
 const keywords: string = "曦寒,曦寒懿,开发框架,组件库,官方文档,开源,摘繁华";
-
-const Nav: DefaultTheme.NavItem[] = [
+const version: string = pkg.version;
+const logo: string = "/images/logo.png";
+const nav: DefaultTheme.NavItem[] = [
   {
     text: "探索未知",
     items: [
@@ -30,8 +32,8 @@ const Nav: DefaultTheme.NavItem[] = [
         link: "https://ui.xihanfun.com",
       },
       {
-        text: "用例-管理系统",
-        link: "https://admin.xihanfun.com",
+        text: "用例-基础应用",
+        link: "https://basicapp.xihanfun.com",
       },
     ],
   },
@@ -58,8 +60,8 @@ const Nav: DefaultTheme.NavItem[] = [
             link: "https://github.com/XiHanFun/XiHan.UI",
           },
           {
-            text: "用例-管理系统",
-            link: "https://github.com/XiHanFun/XiHan.Admin",
+            text: "用例-基础应用",
+            link: "https://github.com/XiHanFun/XiHan.BasicApp",
           },
         ],
       },
@@ -83,10 +85,19 @@ const Nav: DefaultTheme.NavItem[] = [
             link: "https://gitee.com/XiHanFun/XiHan.UI",
           },
           {
-            text: "用例-管理系统",
-            link: "https://gitee.com/XiHanFun/XiHan.Admin",
+            text: "用例-基础应用",
+            link: "https://gitee.com/XiHanFun/XiHan.BasicApp",
           },
         ],
+      },
+    ],
+  },
+  {
+    text: version,
+    items: [
+      {
+        text: "更新日志",
+        link: "https://github.com/XiHanFun/XiHan.Docs/blob/main/CHANGELOG.md",
       },
     ],
   },
@@ -112,12 +123,15 @@ export default defineConfig({
   lastUpdated: true,
   cleanUrls: true,
   themeConfig: {
-    logo: "/images/logo.png",
-    socialLinks: [{ icon: "github", link: "https://github.com/XiHanFun" }],
+    logo: logo,
+    socialLinks: [
+      { icon: "github", link: "https://github.com/XiHanFun" },
+      { icon: "gitee", link: "https://gitee.com/XiHanFun" },
+    ],
     search: {
       provider: "local",
     },
-    nav: Nav,
+    nav: nav,
     editLink: {
       text: "在 GitHub 上编辑此页",
       pattern: "https://github.com/XiHanFun/XiHan.Docs/tree/main/src/:path",
@@ -126,7 +140,7 @@ export default defineConfig({
       message:
         "Released under The <a href='https://opensource.org/license/MIT' target='_blank'>MIT</a> License.",
       copyright:
-        "Copyright ©2021-2024 <a href='https://www.zhaifanhua.com' target='_blank'>ZhaiFanhua</a> All Rights Reserved.",
+        "Copyright ©2021-Present <a href='https://www.xihanfun.com' target='_blank'>XiHanFun</a> and <a href='https://www.zhaifanhua.com' target='_blank'>ZhaiFanhua</a> All Rights Reserved.",
     },
   },
 });
