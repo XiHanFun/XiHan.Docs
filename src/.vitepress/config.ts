@@ -41,51 +41,35 @@ const nav: DefaultTheme.NavItem[] = [
     text: "代码仓库",
     items: [
       {
-        text: "Github(国际)",
+        text: "Github | 国际",
         items: [
           {
-            text: "组织",
-            link: "https://github.com/XiHanFun",
-          },
-          {
-            text: "文档",
-            link: "https://github.com/XiHanFun/XiHan.Docs",
-          },
-          {
-            text: "后端-开发框架",
+            text: "后端 | 开发框架",
             link: "https://github.com/XiHanFun/XiHan.Framework",
           },
           {
-            text: "前端-视图组件",
+            text: "前端 | 视图组件",
             link: "https://github.com/XiHanFun/XiHan.UI",
           },
           {
-            text: "用例-基础应用",
+            text: "用例 | 基础应用",
             link: "https://github.com/XiHanFun/XiHan.BasicApp",
           },
         ],
       },
       {
-        text: "Gitee(国内)",
+        text: "Gitee | 国内",
         items: [
           {
-            text: "组织",
-            link: "https://gitee.com/XiHanFun",
-          },
-          {
-            text: "文档",
-            link: "https://gitee.com/XiHanFun/XiHan.Docs",
-          },
-          {
-            text: "后端-开发框架",
+            text: "后端 | 开发框架",
             link: "https://gitee.com/XiHanFun/XiHan.Framework",
           },
           {
-            text: "前端-视图组件",
+            text: "前端 | 视图组件",
             link: "https://gitee.com/XiHanFun/XiHan.UI",
           },
           {
-            text: "用例-基础应用",
+            text: "用例 | 基础应用",
             link: "https://gitee.com/XiHanFun/XiHan.BasicApp",
           },
         ],
