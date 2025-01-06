@@ -13,8 +13,6 @@ icon: creative
 
 我相信，本框架和组件库项目将为你带来更多便利和效率。
 
-——ChatGPT
-
 ## 名称由来
 
 > 碧落降恩承淑颜，共挚崎缘挽曦寒。
@@ -94,5 +92,3 @@ Github 和 Gitee 访问域相同。
 感谢`Visual Studio`、`Visual Studio Code`、`JetBrains Rider`、`Xshell`、`Xftp`、`Typora`作为本项目的开发、测试和编辑的基础设施。
 
 感谢`VitePress`作为搭建本文档的基础设施。
-
-感谢`ChatGPT`作为某些文档论述的基础设施。

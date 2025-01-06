@@ -22,8 +22,8 @@ export default {
   },
 };
 
+// 检测浏览器，添加到类中进行条件样式设置
 if (typeof window !== "undefined") {
-  // detect browser, add to class for conditional styling
   const browser = navigator.userAgent.toLowerCase();
   if (browser.includes("chrome"))
     document.documentElement.classList.add("browser-chrome");
@@ -33,7 +33,7 @@ if (typeof window !== "undefined") {
     document.documentElement.classList.add("browser-safari");
 }
 
-// Speed up the rainbow animation on home page
+// 加快主页上的彩虹动画
 function updateHomePageStyle(value: boolean) {
   if (value) {
     if (homePageStyle) return;
