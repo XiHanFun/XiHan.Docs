@@ -21,6 +21,19 @@ const nav: DefaultTheme.NavItem[] = [
     ],
   },
   {
+    text: "引用下载",
+    items: [
+      {
+        text: "后端 | nuget",
+        link: "https://www.nuget.org/packages?q=XiHan.Framework",
+      },
+      {
+        text: "前端 | npm",
+        link: "https://www.npmjs.com/search?q=xihan-ui",
+      },
+    ],
+  },
+  {
     text: "在线体验",
     items: [
       {
