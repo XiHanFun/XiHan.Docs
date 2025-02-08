@@ -25,11 +25,11 @@ const nav: DefaultTheme.NavItem[] = [
     items: [
       {
         text: "后端 | nuget",
-        link: "https://www.nuget.org/packages?q=XiHan.Framework",
+        link: "https://www.nuget.org/packages?q=XiHan",
       },
       {
         text: "前端 | npm",
-        link: "https://www.npmjs.com/search?q=xihan-ui",
+        link: "https://www.npmjs.com/search?q=xihan",
       },
     ],
   },
