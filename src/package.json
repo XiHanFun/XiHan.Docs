@@ -1,6 +1,6 @@
 {
   "name": "xihan-docs",
-  "version": "0.8.17",
+  "version": "0.8.20",
   "type": "module",
   "description": "XiHan document repository. Fast, lightweight, efficient, and dedicated development framework and component library.Built on DotNet and Vue.",
   "author": {
