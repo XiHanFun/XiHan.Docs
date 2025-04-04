@@ -11,13 +11,21 @@ hero:
     src: /images/logo.png
     alt: 曦寒
   actions:
+    - theme: brand
+      text: 快速上手
+      link: cosmos/getstart
+
     - theme: alt
       text: 项目简介
       link: cosmos/guide
 
-    - theme: brand
-      text: 快速上手
-      link: cosmos/getstart
+    - theme: alt
+      text: Github
+      link: https://github.com/XiHanFun
+
+    - theme: alt
+      text: Gitee
+      link: https://gitee.com/XiHanFun
 
 features:
   - title: 高效快速跨平台
@@ -35,11 +43,8 @@ features:
   - title: 拥抱开源
     icon: 🤩
     details: 所有代码均开源在 GitHub 和 Gitee 上且处于积极维护状态，在共享所得之时，也积极促进技术之进，社区之兴。
-    link: https://github.com/XiHanFun
-    linkText: "加入我们"
 
   - title: 探索未知
     icon: 🌌
     details: 探幽寻秘，行走于未尝之地，即便目不识丁，仍要问道于盲。仰望星空，心怀远大，才能揭示宇宙之奥秘，通晓世界之道理，开启探寻之征程。
-    link:
 ---
