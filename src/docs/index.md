@@ -38,11 +38,6 @@ features:
     link: https://github.com/XiHanFun
     linkText: "加入我们"
 
-  - title: 用心创作
-    icon: ✍️
-    details: 以最少的配置帮助你自定义站点，让你专注于发现、定格、创作和回忆美好一瞬，记录你所见所闻、所学所知、所思所想。
-    link:
-
   - title: 探索未知
     icon: 🌌
     details: 探幽寻秘，行走于未尝之地，即便目不识丁，仍要问道于盲。仰望星空，心怀远大，才能揭示宇宙之奥秘，通晓世界之道理，开启探寻之征程。
