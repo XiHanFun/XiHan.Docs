@@ -19,17 +19,17 @@ const head: HeadConfig[] = [
 ];
 const nav: DefaultTheme.NavItem[] = [
   {
-    text: "开发框架",
+    text: "🧩 开发框架",
     link: "cosmos/framework",
     activeMatch: "/cosmos/framework",
   },
   {
-    text: "视图组件",
+    text: "🎨 视图组件",
     link: "cosmos/ui",
     activeMatch: "/cosmos/ui",
   },
   {
-    text: "基础应用",
+    text: "🏠 基础应用",
     link: "cosmos/basicapp",
     activeMatch: "/cosmos/basicapp",
   },
@@ -117,6 +117,23 @@ const nav: DefaultTheme.NavItem[] = [
             link: "https://gitee.com/XiHanFun/XiHan.BasicApp",
           },
         ],
+      },
+    ],
+  },
+  {
+    text: "贡献代码",
+    items: [
+      {
+        text: "公约",
+        link: "cosmos/code-of-conduct",
+      },
+      {
+        text: "指南",
+        link: "cosmos/contributing",
+      },
+      {
+        text: "贡献者",
+        link: "cosmos/contributors",
       },
     ],
   },

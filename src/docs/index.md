@@ -28,6 +28,24 @@ hero:
       link: https://gitee.com/XiHanFun
 
 features:
+  - title: 开发框架
+    icon: 🧩
+    details: 采用灵活的模块化设计，让您可以按需引入所需功能，避免不必要的开销。每个模块均经过精心打磨，可独立使用也可无缝协作。
+    link: cosmos/framework/index
+    linkText: "浏览开发框架文档"
+
+  - title: 视图组件
+    icon: 🎨
+    details: 提供大量开箱即用的组件，覆盖了从基础控件到复杂业务场景的各种需求，节省您的开发时间，让您专注于业务逻辑的实现。
+    link: cosmos/ui/index
+    linkText: "浏览视图组件文档"
+
+  - title: 基础应用
+    icon: 🏠
+    details: 提供完整的企业级应用构建方案，包括权限管理、工作流、报表系统等常用功能，助力企业快速构建安全、稳定、高效的业务系统。
+    link: cosmos/basicapp/index
+    linkText: "浏览基础应用文档"
+
   - title: 高效快速跨平台
     icon: 🛠️
     details: 后端由 DotNet10 驱动，执行速度快于任何其他常用框架，可以在多个平台运行。精心设计之功能、不断研磨之算法，在程序的高性能、高可用和高扩展性上夯实基础。
@@ -43,8 +61,25 @@ features:
   - title: 拥抱开源
     icon: 🤩
     details: 所有代码均开源在 GitHub 和 Gitee 上且处于积极维护状态，在共享所得之时，也积极促进技术之进，社区之兴。
+    link: https://github.com/XiHanFun
+    linkText: "了解 XiHanFun"
 
-  - title: 探索未知
-    icon: 🌌
-    details: 探幽寻秘，行走于未尝之地，即便目不识丁，仍要问道于盲。仰望星空，心怀远大，才能揭示宇宙之奥秘，通晓世界之道理，开启探寻之征程。
+footer:
+  message: 基于 MIT 许可发布 | Copyright © 2021-至今 XiHanFun
+  links:
+    - text: 快速上手
+      link: cosmos/getstart
+    - text: Github
+      link: https://github.com/XiHanFun
+    - text: Gitee
+      link: https://gitee.com/XiHanFun
 ---
+
+## 最新动态
+
+- 🎉 **2025-05-20**: XiHan.Framework v0.8.33 发布，新增多项功能和性能优化
+- 🚀 **2025-05-15**: XiHan.UI v0.9.6 发布，全新设计系统，提供更丰富的组件和主题支持
+- 📚 **2025-05-10**: 文档全面更新，增加更多使用示例和最佳实践
+- 👨‍💻 **2025-05-01**: XiHanFun 开源组织成立三周年，感谢所有贡献者和用户的支持
+
+[查看更多动态](/news)
