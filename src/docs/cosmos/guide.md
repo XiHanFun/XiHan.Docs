@@ -1,7 +1,9 @@
 ---
 title: 项目简介
-icon: creative
+index: false
 ---
+
+# 项目简介
 
 ## 项目引言
 

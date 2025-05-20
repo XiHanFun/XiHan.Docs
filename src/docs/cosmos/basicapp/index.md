@@ -1,36 +1,45 @@
 ---
 title: 用例-管理系统
 index: false
+next:
+  text: "系统概述"
+  link: "./overview"
 ---
 
 # XiHan.BasicApp 基础应用
 
-曦寒基础应用采用了领域驱动设计(DDD)的架构，按照功能模块进行组织。主要分为三个主要部分：
+XiHan.BasicApp 是一个基于 XiHan.Framework 和 XiHan.UI 构建的完整管理系统应用，提供了丰富的业务功能和用例，可作为企业级应用的基础骨架直接使用或二次开发。
 
-1. `modules` - 通用功能模块
-2. `business` - 业务模块
-3. `main` - 核心应用和主机
+## 主要特性
 
-## 通用功能模块 (modules)
+- **完整方案**: 集成前后端完整解决方案
+- **通用功能**: 包含用户管理、权限控制、系统监控等通用功能
+- **业务模板**: 提供多种业务场景的解决方案模板
+- **开箱即用**: 支持快速部署和二次开发
 
-1.  角色权限控制模块 (Rbac)
+## 系统架构
 
-2.  代码生成模块 (CodeGeneration)
+- **前端**: 基于 XiHan.UI 组件库构建的现代化管理界面
+- **后端**: 基于 XiHan.Framework 开发框架实现的高性能服务
+- **数据库**: 支持多种数据库系统
 
-## 业务模块 (business)
+## 快速开始
 
-业务模块包含特定业务领域的实现：
+```bash
+# 克隆仓库
+git clone https://github.com/XiHanFun/XiHan.BasicApp.git
 
-1. 你的具体业务 1
+# 安装依赖并启动
+cd XiHan.BasicApp
+# 具体启动命令...
+```
 
-2. 你的具体业务 2
+## 应用文档
 
-3. ……
-
-## 核心应用 (main)
-
-1. 应用核心
-
-2. 主机
-
-XiHan.BasicApp 是一个模块化的.NET 应用，采用了 DDD 架构，包含了角色权限控制和代码生成等功能模块。
+- [系统概述](./overview)
+- [快速部署](./deployment)
+- [基础功能](./features)
+- [权限管理](./permissions)
+- [配置指南](./configuration)
+- [二次开发](./development)
+- [API 接口](./api)

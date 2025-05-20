@@ -8,57 +8,88 @@ next:
 
 # XiHan UI 视图组件
 
-曦寒视图组件包含以下模块：
+XiHan UI 是一个基于 Vue 3 构建的高效、轻量级组件库，采用 monorepo 结构组织，提供丰富、美观的 UI 组件，帮助开发者快速构建现代化的用户界面。
 
-## 核心包 (xihan-ui)
+## 主要特性
 
-- **功能**：整合所有子模块，提供完整的组件库解决方案
-- **依赖**：集成了所有其他子包，作为统一入口
+- **高效**: 基于 Vue 3 的 Composition API，提供更高的性能和更好的开发体验
+- **模块化**: 采用 monorepo 结构，提供多个专业化的子包，可按需引入
+- **类型安全**: 完全使用 TypeScript 开发，提供完善的类型定义
+- **主题定制**: 灵活的主题系统，支持深浅色模式切换
+- **国际化**: 内置多语言支持，轻松实现全球化应用
 
-## 组件 (components)
+## 包结构
 
-- **功能**：提供各种 UI 组件，如按钮、表单、导航等
-- **特点**：组件设计遵循原子设计系统，支持按需引入
-- **依赖**：使用 hooks、directives、themes 等支持组件功能
+XiHan UI 包含以下主要子包：
 
-## 工具库 (utils)
+- **xihan-ui**: 主包，整合所有子包
+- **@xihan-ui/components**: UI 组件核心
+- **@xihan-ui/utils**: 工具函数
+- **@xihan-ui/hooks**: Vue 组合式函数
+- **@xihan-ui/themes**: 主题系统
+- **@xihan-ui/icons**: 图标组件
+- **@xihan-ui/directives**: Vue 自定义指令
+- **@xihan-ui/locales**: 国际化资源
+- **@xihan-ui/constants**: 常量和类型定义
+- **@xihan-ui/plugins**: Vue 插件
 
-- **功能**：提供基础工具函数，分为核心、浏览器、格式化、Vue、安全、CSS 等模块
-- **特点**：轻量级、高效，支持 Tree Shaking
+## 快速开始
 
-## 主题系统 (themes)
+### 安装
 
-- **功能**：基于 CSS 变量的主题引擎，支持明暗模式切换
-- **特点**：可扩展的设计令牌系统，支持自定义主题
+```bash
+# 使用npm
+npm install xihan-ui
 
-## 钩子函数 (hooks)
+# 使用yarn
+yarn add xihan-ui
 
-- **功能**：提供可复用的组合式函数，如 useForm、useValidation 等
-- **特点**：基于 Vue Composition API，增强组件逻辑复用
+# 使用pnpm (推荐)
+pnpm add xihan-ui
+```
 
-## 指令 (directives)
+### 完整引入
 
-- **功能**：提供自定义指令，如 v-click-outside、v-resize 等
-- **特点**：增强 DOM 交互能力，简化常见操作
+```js
+import { createApp } from "vue";
+import App from "./App.vue";
+import XiHanUI from "xihan-ui";
+import "xihan-ui/dist/style.css";
 
-## 图标 (icons)
+const app = createApp(App);
+app.use(XiHanUI);
+app.mount("#app");
+```
 
-- **功能**：提供统一的图标系统
-- **特点**：支持按需加载和自定义颜色、大小
+### 按需引入
 
-## 本地化 (locales)
+```vue
+<template>
+  <xh-button type="primary">XiHan Button</xh-button>
+</template>
 
-- **功能**：提供国际化解决方案，支持多语言切换
-- **特点**：内置中英文等常用语言包，支持自定义扩展
+<script setup>
+import { XhButton } from "@xihan-ui/components";
+import "@xihan-ui/components/dist/button/style.css";
+</script>
+```
 
-## 插件 (plugins)
+## 技术栈
 
-- **功能**：提供全局功能扩展，如通知、消息等
-- **特点**：可独立使用的轻量级插件系统
+- **Vue 3**: 采用最新的 Vue 3 Composition API
+- **TypeScript**: 全面使用 TypeScript 提供类型安全
+- **TurboRepo**: 高效的 monorepo 管理工具
+- **Unbuild**: 现代化的构建工具，生成 ESM 和 CommonJS 格式
+- **Vite**: 用于本地开发和测试的构建工具
 
-## 常量 (constants)
+## 组件文档
 
-- **功能**：提供全局常量定义，如尺寸、状态等
-- **特点**：确保设计一致性和代码统一性
-
-每个模块都遵循相同的构建和发布标准，支持 ESM 和 UMD 双模式输出，确保了组件库的可扩展性和可维护性。整体架构采用了微内核设计，通过依赖注入和插件系统实现高度解耦。
+- [组件概述](./overview)
+- [安装指南](./installation)
+- [基础组件](./basic)
+- [表单组件](./form)
+- [数据展示](./data-display)
+- [导航组件](./navigation)
+- [反馈组件](./feedback)
+- [主题定制](./theming)
+- [包依赖关系](./npm-package-dependency)
