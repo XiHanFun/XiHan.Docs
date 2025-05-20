@@ -23,8 +23,6 @@ XiHan.BasicApp 是一个功能丰富的企业级应用框架，提供了丰富�
 - 状态过滤：可以按照用户状态进行过滤
 - 数据导出：支持将用户数据导出为 Excel 文件
 
-![用户列表](../images/user-list.png)
-
 ### 用户创建与编辑
 
 系统提供了完善的用户信息管理功能：
@@ -130,8 +128,6 @@ const permissions = [
 - 网络流量：监控网络带宽占用
 - 服务状态：监控关键服务的运行状态
 - 数据库监控：监控数据库连接数、执行时间等指标
-
-![系统监控](../images/system-monitor.png)
 
 ### 在线用户
 
@@ -340,8 +336,6 @@ public async Task<IActionResult> ExportUsers(UserSearchDto searchDto)
 - 任务管理：待办任务、已办任务、我发起的流程
 - 流程监控：实时查看流程执行状态
 - 流程报表：统计流程执行效率和分布
-
-![工作流设计器](../images/workflow-designer.png)
 
 ## 移动端支持
 
