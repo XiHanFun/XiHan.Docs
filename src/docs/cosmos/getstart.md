@@ -122,6 +122,6 @@ dotnet run
 
 ## 下一步
 
-- 探索 [Framework 框架文档](./framework/index.md) 了解后端开发框架
-- 探索 [UI 组件文档](./ui/index.md) 了解前端视图组件
-- 探索 [BasicApp 应用文档](./basicapp/index.md) 了解完整应用案例
+- 探索 [Framework](./framework/index.md) 了解后端开发框架
+- 探索 [UI](./ui/index.md) 了解前端视图组件
+- 探索 [BasicApp](./basic-app/index.md) 了解完整应用案例

@@ -1,11 +1,3 @@
----
-title: 用例-管理系统
-index: false
-next:
-  text: "系统概述"
-  link: "./overview"
----
-
 # XiHan.BasicApp 基础应用
 
 XiHan.BasicApp 是一个基于 XiHan.Framework 和 XiHan.UI 构建的完整管理系统应用，提供了丰富的业务功能和用例，可作为企业级应用的基础骨架直接使用或二次开发。

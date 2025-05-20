@@ -1,11 +1,3 @@
----
-title: 后端-开发框架
-index: false
-next:
-  text: "框架概述"
-  link: "./overview"
----
-
 # XiHan.Framework 开发框架
 
 XiHan.Framework 是一个快速、轻量、高效的后端开发框架，基于 .NET 构建。本框架旨在提供一套完整的解决方案，帮助开发者快速构建高性能、可扩展的应用程序。

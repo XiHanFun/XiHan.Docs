@@ -1,11 +1,3 @@
----
-title: 身份认证
-index: false
-next:
-  text: "缓存"
-  link: "./cache"
----
-
 # XiHan.Framework 身份认证
 
 XiHan.Framework.Identity 模块提供了完善的身份认证与授权功能，支持多种认证方式和灵活的权限控制，确保应用的安全性和可控性。

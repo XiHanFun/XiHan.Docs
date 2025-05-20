@@ -1,11 +1,3 @@
----
-title: 组件概述
-index: false
-next:
-  text: "安装指南"
-  link: "./installation"
----
-
 # XiHan UI 组件概述
 
 XiHan UI 是一个基于 Vue 3 开发的现代化 UI 组件库，专注于提供美观、易用且高性能的用户界面组件。组件库遵循一致的设计语言和交互模式，帮助开发者快速构建专业的应用界面。

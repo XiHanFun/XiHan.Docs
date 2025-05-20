@@ -1,11 +1,3 @@
----
-title: Web API
-index: false
-next:
-  text: "身份认证"
-  link: "./identity"
----
-
 # XiHan.Framework Web API
 
 XiHan.Framework.WebApi 模块提供了构建 RESTful API 的全套功能，包括路由、控制器、过滤器、中间件等组件，帮助开发者快速构建高性能、易维护的 Web API 应用。

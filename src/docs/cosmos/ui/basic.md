@@ -1,11 +1,3 @@
----
-title: 基础组件
-index: false
-next:
-  text: "表单组件"
-  link: "./form"
----
-
 # XiHan UI 基础组件
 
 XiHan UI 提供了一系列基础组件，这些组件是构建用户界面的基本元素。本文将详细介绍这些基础组件的用法和配置选项。

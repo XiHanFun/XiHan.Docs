@@ -1,14 +1,3 @@
----
-title: npm 包依赖关系
-index: false
-prev:
-  text: "目录"
-  link: "./index"
-next:
-  text: "npm 关系"
-  link: "./npm-package"
----
-
 # XiHan UI 包依赖关系
 
 XiHan UI 采用 monorepo 结构进行组织，包含多个子包，各子包之间有明确的依赖关系。下面详细说明各个包的功能和依赖关系。

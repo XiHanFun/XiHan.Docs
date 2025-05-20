@@ -1,11 +1,3 @@
----
-title: 数据访问
-index: false
-next:
-  text: "Web API"
-  link: "./web-api"
----
-
 # XiHan.Framework 数据访问
 
 XiHan.Framework.Data 是框架的数据访问模块，提供了统一、灵活且高效的数据操作接口。本模块基于 Entity Framework Core，并进行了扩展和优化，简化数据库操作并提高开发效率。

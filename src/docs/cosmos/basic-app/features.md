@@ -1,11 +1,3 @@
----
-title: 基础功能
-index: false
-next:
-  text: "权限管理"
-  link: "./permissions"
----
-
 # XiHan.BasicApp 基础功能
 
 XiHan.BasicApp 是一个功能丰富的企业级应用框架，提供了丰富的基础功能模块，让开发人员可以快速构建各类业务系统。本文将详细介绍 XiHan.BasicApp 的基础功能模块及其使用方法。

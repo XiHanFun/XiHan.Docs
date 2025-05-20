@@ -1,11 +1,3 @@
----
-title: 表单组件
-index: false
-next:
-  text: "数据展示组件"
-  link: "./data-display"
----
-
 # XiHan UI 表单组件
 
 XiHan UI 提供了丰富的表单组件，支持数据收集、校验和提交，本文将详细介绍这些表单组件的用法和配置选项。
