@@ -1,11 +1,3 @@
----
-title: 快速入门
-index: false
-next:
-  text: "核心模块"
-  link: "./core"
----
-
 # XiHan.Framework 快速入门
 
 本文将引导您快速上手 XiHan.Framework，包括环境准备、安装配置、创建项目及基本功能的使用。

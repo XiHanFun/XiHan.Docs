@@ -1,11 +1,3 @@
----
-title: 系统概述
-index: false
-next:
-  text: "快速部署"
-  link: "./deployment"
----
-
 # XiHan.BasicApp 系统概述
 
 XiHan.BasicApp 是一个基于 XiHan.Framework 和 XiHan.UI 构建的全功能企业级管理系统，提供了丰富的企业应用场景的基础功能和业务模板，可直接用于生产或作为二次开发的基础。

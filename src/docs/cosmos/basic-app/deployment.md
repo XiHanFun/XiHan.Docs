@@ -1,11 +1,3 @@
----
-title: 快速部署
-index: false
-next:
-  text: "基础功能"
-  link: "./features"
----
-
 # XiHan.BasicApp 快速部署
 
 本文档将指导您如何部署和运行 XiHan.BasicApp 应用系统，包括环境准备、系统安装、配置以及启动过程。

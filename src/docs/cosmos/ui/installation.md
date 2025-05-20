@@ -1,11 +1,3 @@
----
-title: 安装指南
-index: false
-next:
-  text: "基础组件"
-  link: "./basic"
----
-
 # XiHan UI 安装指南
 
 本文将引导您如何在项目中安装和配置 XiHan UI 组件库。

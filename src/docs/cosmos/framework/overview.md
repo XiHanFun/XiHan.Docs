@@ -1,11 +1,3 @@
----
-title: 框架概述
-index: false
-next:
-  text: "快速入门"
-  link: "./quickstart"
----
-
 # XiHan.Framework 框架概述
 
 XiHan.Framework 是一个基于 .NET 的现代化后端开发框架，设计理念是为开发者提供一个高效、灵活且易于使用的开发平台。框架采用模块化设计，每个模块都专注于解决特定的问题，同时保持高度的可扩展性和可定制性。

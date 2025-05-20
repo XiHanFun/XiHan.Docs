@@ -1,11 +1,3 @@
----
-title: 核心模块
-index: false
-next:
-  text: "数据访问"
-  link: "./data-access"
----
-
 # XiHan.Framework 核心模块
 
 XiHan.Framework.Core 是框架的核心模块，提供了基础设施和基本功能，是其他所有模块的基础。本文将详细介绍核心模块的主要功能和使用方法。
