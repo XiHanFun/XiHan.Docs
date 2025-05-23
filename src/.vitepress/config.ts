@@ -225,7 +225,7 @@ const nav: DefaultTheme.NavItem[] = [
     items: [
       {
         text: "更新日志",
-        link: "https://github.com/XiHanFun/XiHan.Docs/blob/main/CHANGELOG.md",
+        link: "/cosmos/change-log",
       },
     ],
   },
