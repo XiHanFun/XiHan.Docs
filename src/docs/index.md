@@ -6,7 +6,7 @@ titleTemplate: 快速 轻量 高效 用心的开发框架和组件库
 hero:
   name: 曦寒
   text: 快速 轻量 高效 用心的开发框架和组件库
-  tagline: 基于 DotNet 和 Vue 构建
+  tagline: 基于 DotNet 和 Vue 构建 原生支持 AI
   image:
     src: /images/logo.png
     alt: 曦寒
