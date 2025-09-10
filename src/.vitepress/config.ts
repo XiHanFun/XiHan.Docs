@@ -137,11 +137,11 @@ const nav: DefaultTheme.NavItem[] = [
         items: [
           {
             text: "后端 | nuget",
-            link: "https://www.nuget.org/packages?q=XiHan",
+            link: "https://www.nuget.org/profiles/XiHanFun",
           },
           {
             text: "前端 | npm",
-            link: "https://www.npmjs.com/search?q=xihan",
+            link: "https://www.npmjs.com/org/xihan-ui",
           },
         ],
       },
