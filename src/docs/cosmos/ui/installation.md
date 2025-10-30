@@ -1,10 +1,10 @@
-# XiHan UI 安装指南
+# XiHan.UI 安装指南
 
-本文将引导您如何在项目中安装和配置 XiHan UI 组件库。
+本文将引导您如何在项目中安装和配置 XiHan.UI 组件库。
 
 ## 环境要求
 
-使用 XiHan UI 需要满足以下环境要求：
+使用 XiHan.UI 需要满足以下环境要求：
 
 - **Node.js**: 版本 16.0.0 或更高
 - **Vue**: 版本 3.3 或更高
@@ -12,7 +12,7 @@
 
 ## 安装方式
 
-XiHan UI 采用 monorepo 结构，提供了多个子包，您可以根据需要安装完整包或特定子包。
+XiHan.UI 采用 monorepo 结构，提供了多个子包，您可以根据需要安装完整包或特定子包。
 
 ### 完整包安装
 
@@ -53,14 +53,14 @@ pnpm add @xihan-ui/icons
 import { createApp } from "vue";
 import App from "./App.vue";
 
-// 引入 XiHan UI
+// 引入 XiHan.UI
 import XiHanUI from "xihan-ui";
 // 引入组件库样式
 import "xihan-ui/dist/style.css";
 
 const app = createApp(App);
 
-// 全局注册 XiHan UI
+// 全局注册 XiHan.UI
 app.use(XiHanUI);
 
 app.mount("#app");
@@ -143,9 +143,9 @@ module.exports = {
 };
 ```
 
-3. 在组件中直接使用 XiHan UI 组件
+3. 在组件中直接使用 XiHan.UI 组件
 
-配置完插件后，可以在组件中直接使用 XiHan UI 的组件，无需 import 导入：
+配置完插件后，可以在组件中直接使用 XiHan.UI 的组件，无需 import 导入：
 
 ```vue
 <template>
@@ -160,14 +160,14 @@ const inputValue = ref("");
 
 ## CDN 引入
 
-通过 CDN 可以快速在页面中引入 XiHan UI：
+通过 CDN 可以快速在页面中引入 XiHan.UI：
 
 ```html
 <!-- 引入 Vue -->
 <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
-<!-- 引入 XiHan UI 组件库 -->
+<!-- 引入 XiHan.UI 组件库 -->
 <script src="https://cdn.jsdelivr.net/npm/xihan-ui@1.0.0/dist/index.full.js"></script>
-<!-- 引入 XiHan UI 样式 -->
+<!-- 引入 XiHan.UI 样式 -->
 <link
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/xihan-ui@1.0.0/dist/style.css"
@@ -182,7 +182,7 @@ const inputValue = ref("");
 
 ## 配置主题
 
-XiHan UI 提供了强大的主题系统，支持通过 CSS 变量自定义主题：
+XiHan.UI 提供了强大的主题系统，支持通过 CSS 变量自定义主题：
 
 ```css
 /* 创建自定义主题文件 theme.css */
@@ -208,7 +208,7 @@ import "./theme.css"; // 确保在组件库样式之后引入
 
 ## 使用 TypeScript
 
-XiHan UI 完全基于 TypeScript 开发，提供了完整的类型定义文件，可以与 TypeScript 项目无缝协作。
+XiHan.UI 完全基于 TypeScript 开发，提供了完整的类型定义文件，可以与 TypeScript 项目无缝协作。
 
 在 tsconfig.json 中，确保包含了 TypeScript 类型定义：
 
@@ -222,7 +222,7 @@ XiHan UI 完全基于 TypeScript 开发，提供了完整的类型定义文件�
 
 ## 使用图标
 
-XiHan UI 提供了专门的图标系统，可以单独使用：
+XiHan.UI 提供了专门的图标系统，可以单独使用：
 
 ```vue
 <template>
@@ -237,7 +237,7 @@ import { XhIcon } from "@xihan-ui/icons";
 
 ## 使用钩子函数
 
-XiHan UI 提供了多个实用的 Vue 组合式函数：
+XiHan.UI 提供了多个实用的 Vue 组合式函数：
 
 ```js
 import { useTheme } from "@xihan-ui/hooks";
@@ -268,7 +268,7 @@ import { XiHanUIResolver } from "xihan-ui/resolvers";
 
 ### 版本兼容问题
 
-确保您的 Vue 版本与 XiHan UI 兼容：
+确保您的 Vue 版本与 XiHan.UI 兼容：
 
 ```bash
 # 查看 Vue 版本

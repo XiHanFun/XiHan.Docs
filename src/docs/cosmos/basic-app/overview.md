@@ -76,7 +76,7 @@ XiHan.BasicApp 包含以下核心功能模块：
 ### 前端技术
 
 - **框架**：Vue 3 + TypeScript
-- **组件库**：XiHan UI
+- **组件库**：XiHan.UI
 - **状态管理**：Pinia
 - **路由**：Vue Router
 - **HTTP 客户端**：Axios
