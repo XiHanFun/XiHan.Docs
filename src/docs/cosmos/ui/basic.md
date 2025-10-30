@@ -1,6 +1,6 @@
-# XiHan UI 基础组件
+# XiHan.UI 基础组件
 
-XiHan UI 提供了一系列基础组件，这些组件是构建用户界面的基本元素。本文将详细介绍这些基础组件的用法和配置选项。
+XiHan.UI 提供了一系列基础组件，这些组件是构建用户界面的基本元素。本文将详细介绍这些基础组件的用法和配置选项。
 
 ## Button 按钮
 
@@ -132,11 +132,11 @@ XiHan UI 提供了一系列基础组件，这些组件是构建用户界面的�
 
 ```vue
 <template>
-  <xh-typography-title :level="1">h1. XiHan UI</xh-typography-title>
-  <xh-typography-title :level="2">h2. XiHan UI</xh-typography-title>
-  <xh-typography-title :level="3">h3. XiHan UI</xh-typography-title>
-  <xh-typography-title :level="4">h4. XiHan UI</xh-typography-title>
-  <xh-typography-title :level="5">h5. XiHan UI</xh-typography-title>
+  <xh-typography-title :level="1">h1. XiHan.UI</xh-typography-title>
+  <xh-typography-title :level="2">h2. XiHan.UI</xh-typography-title>
+  <xh-typography-title :level="3">h3. XiHan.UI</xh-typography-title>
+  <xh-typography-title :level="4">h4. XiHan.UI</xh-typography-title>
+  <xh-typography-title :level="5">h5. XiHan.UI</xh-typography-title>
 </template>
 ```
 
@@ -196,7 +196,7 @@ XiHan UI 提供了一系列基础组件，这些组件是构建用户界面的�
 
 ## Icon 图标
 
-XiHan UI 提供了一套丰富的图标集合。
+XiHan.UI 提供了一套丰富的图标集合。
 
 ### 基础用法
 
@@ -256,7 +256,7 @@ XiHan UI 提供了一套丰富的图标集合。
 
 ## Grid 栅格
 
-栅格系统是用于页面布局的基础组件，XiHan UI 的栅格系统基于 24 列布局。
+栅格系统是用于页面布局的基础组件，XiHan.UI 的栅格系统基于 24 列布局。
 
 ### 基础用法
 

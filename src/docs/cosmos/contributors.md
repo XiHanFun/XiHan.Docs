@@ -20,7 +20,7 @@ XiHan 框架仓库。基于 DotNet 构建的快速、轻量、高效的专用开
 
 ### XiHan.UI
 
-XiHan UI 仓库。基于 Vue 构建的快速、轻量、高效的专用组件库。
+XiHan.UI 仓库。基于 Vue 构建的快速、轻量、高效的专用组件库。
 
 [![贡献者](https://img.shields.io/github/contributors/XiHanFun/XiHan.UI?style=flat-square)](https://github.com/XiHanFun/XiHan.UI/graphs/contributors)
 

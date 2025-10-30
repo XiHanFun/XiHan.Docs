@@ -1,6 +1,6 @@
-# XiHan UI 视图组件
+# XiHan.UI 视图组件
 
-XiHan UI 是一个基于 Vue 3 构建的高效、轻量级组件库，采用 monorepo 结构组织，提供丰富、美观的 UI 组件，帮助开发者快速构建现代化的用户界面。
+XiHan.UI 是一个基于 Vue 3 构建的高效、轻量级组件库，采用 monorepo 结构组织，提供丰富、美观的 UI 组件，帮助开发者快速构建现代化的用户界面。
 
 ## 主要特性
 
@@ -12,7 +12,7 @@ XiHan UI 是一个基于 Vue 3 构建的高效、轻量级组件库，采用 mon
 
 ## 包结构
 
-XiHan UI 包含以下主要子包：
+XiHan.UI 包含以下主要子包：
 
 - **xihan-ui**: 主包，整合所有子包
 - **@xihan-ui/components**: UI 组件核心

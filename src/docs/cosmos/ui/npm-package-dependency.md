@@ -1,6 +1,6 @@
-# XiHan UI 包依赖关系
+# XiHan.UI 包依赖关系
 
-XiHan UI 采用 monorepo 结构进行组织，包含多个子包，各子包之间有明确的依赖关系。下面详细说明各个包的功能和依赖关系。
+XiHan.UI 采用 monorepo 结构进行组织，包含多个子包，各子包之间有明确的依赖关系。下面详细说明各个包的功能和依赖关系。
 
 ## 包概览
 
@@ -224,11 +224,11 @@ xihan-ui/
 
 ## 构建流程
 
-XiHan UI 使用 TurboRepo 进行任务编排，确保各个包按正确的依赖顺序进行构建。使用 Unbuild 作为构建工具，生成 ESM 和 CommonJS 格式的产物，并提供完整的 TypeScript 类型定义。
+XiHan.UI 使用 TurboRepo 进行任务编排，确保各个包按正确的依赖顺序进行构建。使用 Unbuild 作为构建工具，生成 ESM 和 CommonJS 格式的产物，并提供完整的 TypeScript 类型定义。
 
 ## 包导入路径
 
-在应用中导入 XiHan UI 组件库时，可以使用以下路径：
+在应用中导入 XiHan.UI 组件库时，可以使用以下路径：
 
 ```js
 // 导入主包
