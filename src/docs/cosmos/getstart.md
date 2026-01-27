@@ -1,127 +1,75 @@
----
-title: 快速上手
-index: false
----
-
 # 快速上手
 
-## 项目组成
+::: tip 提示
+本指南将帮助您快速了解并开始使用 XiHan 开发框架和组件库。
+:::
 
-本项目由 [XiHan.Framework](https://github.com/XiHanFun/XiHan.Framework)（开发框架）、[XiHan.UI](https://github.com/XiHanFun/XiHan.UI)（视图组件）、[XiHan.BasicApp](https://github.com/XiHanFun/XiHan.BasicApp)（基础应用）组成。
+## 项目概述
 
-- **开发框架子项目**：是后端模块化应用开发框架集成，基于 DotNet 构建。
-- **视图组件子项目**：是前端组件库集成，基于 Vue 构建。
-- **基础应用子项目**：为开发框架和视图组件的结合，为通用、全面的管理系统。
+**XiHan** 是一个完整的企业级开发解决方案，包含三个核心部分：
+
+- **XiHan.Framework** - 基于 .NET 10 的企业级后端开发框架
+- **XiHan.UI** - 基于 Vue 3 的前端组件库
+- **XiHan.BasicApp** - 完整的企业级应用示例
+
+## 技术栈
+
+### 后端技术栈
+
+- **.NET 10** - 最新的 .NET 平台，支持 AOT 编译
+- **ASP.NET Core** - 高性能的 Web 框架
+- **SqlSugar** - 灵活的 ORM 框架
+- **Entity Framework Core** - 微软官方 ORM（可选）
+- **Redis** - 分布式缓存
+- **PostgreSQL** - 推荐的关系型数据库
+
+### 前端技术栈
+
+- **Vue 3.5** - 渐进式 JavaScript 框架
+- **TypeScript 5.8** - 类型安全的 JavaScript 超集
+- **Vite** - 下一代前端构建工具
+- **pnpm** - 高效的包管理器
 
 ## 环境准备
 
-在开始使用 XiHan 系列项目前，请确保您的开发环境已安装以下工具：
+### 后端环境
 
-### 后端开发环境
+1. **安装 .NET 10 SDK**
+   - 访问 [.NET 官网](https://dotnet.microsoft.com/download) 下载并安装
+   - 验证安装：在命令行中运行 `dotnet --version`
 
-- [.NET SDK](https://dotnet.microsoft.com/download) (版本 10 或更高)
-- 推荐 IDE：Visual Studio 2022、JetBrains Rider 或 VS Code
+2. **安装数据库**
+   - PostgreSQL 14+ 或 MySQL 8.0+
+   - 或使用 Docker 快速启动数据库
 
-### 前端开发环境
+3. **安装 Redis**（可选，用于缓存）
+   - 本地安装或使用 Docker
 
-- [Node.js](https://nodejs.org/) (版本 18 或更高)
-- [pnpm](https://pnpm.io/installation) (推荐的包管理工具)
-- 推荐 IDE：Visual Studio Code 配合 Volar 插件
+### 前端环境
 
-## 入门指南
+1. **安装 Node.js**
+   - Node.js 24.0.2 或更高版本
+   - 推荐使用 [nvm](https://github.com/nvm-sh/nvm) 管理 Node 版本
 
-### 使用 XiHan.Framework (后端框架)
+2. **安装 pnpm**
+   ```bash
+   npm install -g pnpm
+   ```
 
-1. 创建新项目或在现有项目中安装 NuGet 包：
+## 开发工具推荐
 
-```bash
-dotnet add package XiHan.Framework.Core
-```
-
-2. 在 Program.cs 中引入和配置框架：
-
-```csharp
-using XiHan.Framework.Core;
-
-var builder = WebApplication.CreateBuilder(args);
-
-// 添加 XiHan 框架服务
-builder.Services.AddXiHanFramework();
-
-// 其他配置...
-
-var app = builder.Build();
-
-// 使用 XiHan 中间件
-app.UseXiHanFramework();
-
-app.Run();
-```
-
-### 使用 XiHan.UI (前端组件)
-
-1. 安装组件库：
-
-```bash
-# 使用 npm
-npm install @xihan-ui/core
-
-# 使用 pnpm
-pnpm add @xihan-ui/core
-```
-
-2. 在 Vue 项目中全局引入：
-
-```js
-// main.js
-import { createApp } from "vue";
-import XiHanUI from "@xihan-ui/core";
-import "@xihan-ui/core/dist/style.css";
-import App from "./App.vue";
-
-const app = createApp(App);
-app.use(XiHanUI);
-app.mount("#app");
-```
-
-3. 按需引入组件：
-
-```vue
-<template>
-  <xh-button type="primary">XiHan Button</xh-button>
-</template>
-
-<script setup>
-import { XhButton } from "@xihan-ui/core";
-</script>
-```
-
-### 使用 XiHan.BasicApp (完整应用)
-
-如果您想快速启动一个完整的应用，可以直接使用 XiHan.BasicApp：
-
-```bash
-# 克隆仓库
-git clone https://github.com/XiHanFun/XiHan.BasicApp.git
-
-# 进入目录
-cd XiHan.BasicApp
-
-# 安装前端依赖
-cd frontend
-pnpm install
-
-# 启动前端开发服务器
-pnpm dev
-
-# 在另一个终端中启动后端服务
-cd ../backend
-dotnet restore
-dotnet run
-```
+- **IDE**: Visual Studio 2022 / Rider / VS Code
+- **数据库工具**: DataGrip / Navicat / DBeaver
+- **API 测试**: Postman / Apifox
+- **Git 客户端**: GitHub Desktop / SourceTree
 
 ## 下一步
 
-- 探索 [Framework](./framework/index.md) 了解后端开发框架
-- 探索 [UI](./ui/index.md) 了解前端视图组件
-- 探索 [BasicApp](./basic-app/index.md) 了解完整应用案例
+- [项目简介](./guide.md) - 了解项目的设计理念和架构
+- [开发框架](./framework/index.md) - 探索后端框架的强大功能
+- [UI 组件库](./ui/index.md) - 发现丰富的前端组件
+- [基础应用](./basic-app/index.md) - 学习如何构建完整应用
+
+::: warning 注意
+确保您的开发环境满足上述要求，以获得最佳的开发体验。
+:::
