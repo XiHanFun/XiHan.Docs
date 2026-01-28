@@ -9,7 +9,6 @@
 ### 服务器要求
 
 - **操作系统**：
-
   - Windows Server 2019+
   - Ubuntu 20.04+
   - Debian 11+
@@ -23,18 +22,15 @@
 ### 软件环境
 
 - **运行时**：
-
-  - .NET 9.0 运行时
+  - .NET 10.0 运行时
   - Node.js 18.0+ (用于前端部署)
 
 - **数据库**：
-
   - SQL Server
   - MySQL
   - PostgreSQL
 
 - **Web 服务器**：
-
   - IIS 10+ (Windows)
   - Nginx 1.18+ (推荐用于 Linux)
   - Apache 2.4+
@@ -364,7 +360,7 @@ XiHan.BasicApp 使用 Serilog 记录日志，默认保存在：
 
 ## 系统要求
 
-- **.NET 环境**: .NET 9.0 运行时
+- **.NET 环境**: .NET 10.0 运行时
 - **操作系统**:
   - Windows Server 2019+
   - Ubuntu 20.04+
