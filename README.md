@@ -1,4 +1,4 @@
-![logo](./assets/logo.png)
+![logo](./assets/LOGO.png)
 
 [中文](README_cn.md)
 
