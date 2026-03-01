@@ -1,6 +1,6 @@
 ![LOGO](./assets/LOGO.png)
 
-[English](README.md)
+[曦寒懿官方交流群](https://qm.qq.com/q/qYp1Urv3z2) 462371834
 
 # XiHan.Docs
 
