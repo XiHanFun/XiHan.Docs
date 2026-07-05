@@ -55,6 +55,7 @@ await app.RunAsync();
 | [快速上手](./quickstart) | 环境准备、安装、第一个 Web API、常见配置 |
 | [核心概念](./concepts/modularity) | 模块系统、生命周期、依赖注入、动态 API |
 | [模块总览](./packages/) | 全部 57 个包的分层索引，每个包一份文档 |
+| [更新日志](./changelog) | 各版本变更记录（新增 / 修复 / 优化 / 调整 / 升级 / 移除） |
 
 ## 分层架构一览
 

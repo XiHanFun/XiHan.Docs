@@ -33,6 +33,7 @@ XiHan.BasicApp 采用**前后端分离**架构：
 | [功能清单](./features) | 身份、权限、多租户、审计、代码生成、平台能力、前端体验 |
 | [权限模型](./permissions) | RBAC + ABAC、权限码、数据范围、字段脱敏、租户版本门控 |
 | [部署](./deployment) | Linux systemd / Windows 部署 |
+| [更新日志](./changelog) | 各版本变更记录（新增 / 修复 / 优化 / 调整 / 升级 / 移除） |
 
 ## 技术栈速览
 

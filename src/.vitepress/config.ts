@@ -167,6 +167,7 @@ const frameworkSidebar: DefaultTheme.SidebarItem[] = [
       },
     ],
   },
+  { text: "更新日志", link: "/cosmos/framework/changelog" },
 ];
 const uiNavConst: DefaultTheme.NavItemWithLink[] = [
   {
@@ -214,6 +215,7 @@ const basicAppSidebar: DefaultTheme.SidebarItem[] = [
     collapsed: false,
     items: [{ text: "部署", link: "/cosmos/basic-app/deployment" }],
   },
+  { text: "更新日志", link: "/cosmos/basic-app/changelog" },
 ];
 
 const nav: DefaultTheme.NavItem[] = [
@@ -340,8 +342,12 @@ const nav: DefaultTheme.NavItem[] = [
     text: version,
     items: [
       {
-        text: "更新日志",
-        link: "/cosmos/change-log",
+        text: "开发框架更新日志",
+        link: "/cosmos/framework/changelog",
+      },
+      {
+        text: "基础应用更新日志",
+        link: "/cosmos/basic-app/changelog",
       },
     ],
   },
