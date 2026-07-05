@@ -1,414 +1,190 @@
-# XiHan.Framework 快速入门
+# 快速上手
 
-本文将引导您快速上手 XiHan.Framework，包括环境准备、安装配置、创建项目及基本功能的使用。
+本篇带你从零建一个基于 XiHan.Framework 的 Web API。**目标：5 分钟内跑起一个能被浏览器访问的接口。** 全程只用到真实存在的 API，照抄即可。
 
 ## 环境准备
 
-使用 XiHan.Framework 需要以下环境：
+| 依赖 | 版本 | 说明 |
+| --- | --- | --- |
+| .NET SDK | **10.0+** | 必需 |
+| IDE | Visual Studio 2022 / Rider / VS Code | 任选 |
+| 数据库 | PostgreSQL / MySQL / SQLite 等 | 仅在用到 `Data` 模块时需要 |
+| Redis | 6.0+ | 仅在用到分布式缓存时需要 |
 
-- **.NET SDK 10** 或更高版本
-- 推荐 IDE：
-  - Visual Studio 2022 (17.10+)
-  - JetBrains Rider 2024.1+
-  - VS Code 配合 C# Dev Kit 插件
-- 数据库（根据需要选择）：
-  - SQL Server 2019+
-  - MySQL 8.0+
-  - PostgreSQL 15+
-  - SQLite 3.35+
-
-## 安装方式
-
-### 通过 NuGet 包管理器安装
+检查 SDK 版本：
 
 ```bash
-# 安装核心包
-dotnet add package XiHan.Framework.Core
-
-# 安装常用扩展包
-dotnet add package XiHan.Framework.AspNetCore
-dotnet add package XiHan.Framework.EntityFrameworkCore
-# 或 SqlSugar 支持
-dotnet add package XiHan.Framework.SqlSugarCore
+dotnet --version   # 应输出 10.x
 ```
 
-### 通过项目模板安装
+## 第一步：创建项目
 
 ```bash
-# 安装项目模板
-dotnet new install XiHan.Templates
-
-# 使用模板创建新项目
-dotnet new xihanapp -n YourProjectName
+dotnet new web -n MyApp
+cd MyApp
 ```
 
-## 创建新项目
+## 第二步：安装框架模块
 
-### 方法一：使用项目模板（推荐）
-
-1. 创建新项目
+框架是**按模块安装**的，用什么装什么。建一个能提供 Web API 的应用，最少需要这两个：
 
 ```bash
-# 创建基础应用
-dotnet new xihanapp -n MyXiHanApp
+# 动态 API + 完整中间件管道（依赖会自动带上 Core、Web.Core 等）
+dotnet add package XiHan.Framework.Web.Api
 
-# 创建微服务应用
-dotnet new xihanmicroservice -n MyXiHanService
-
-# 创建模块化应用
-dotnet new xihanmodular -n MyXiHanModular
+# API 文档（Scalar + Swagger UI），开发期强烈推荐
+dotnet add package XiHan.Framework.Web.Docs
 ```
 
-2. 运行项目
+> `XiHan.Framework.Web.Api` 已经通过 `[DependsOn]` 传递依赖了 `Core`、`Web.Core`、`Application` 等底层模块，你不用单独安装它们。
 
-```bash
-cd MyXiHanApp
-dotnet build
-dotnet run
-```
+## 第三步：定义启动模块
 
-### 方法二：手动创建项目
-
-1. 创建新的 ASP.NET Core Web API 项目
-
-```bash
-dotnet new webapi -n MyXiHanApp
-cd MyXiHanApp
-```
-
-2. 添加 XiHan.Framework 包引用
-
-```bash
-dotnet add package XiHan.Framework.Core
-dotnet add package XiHan.Framework.AspNetCore
-dotnet add package XiHan.Framework.EntityFrameworkCore
-dotnet add package XiHan.Framework.AspNetCore.Swagger
-```
-
-3. 修改 Program.cs 文件，引入和配置 XiHan.Framework
+框架里，**一个"模块"就是一个继承 `XiHanModule` 的类**，用 `[DependsOn]` 声明它要用哪些能力。新建 `MyAppModule.cs`：
 
 ```csharp
-using XiHan.Framework.Core;
-using XiHan.Framework.AspNetCore;
-using XiHan.Framework.EntityFrameworkCore;
+using XiHan.Framework.Core.Modularity;
+using XiHan.Framework.Web.Api;
+using XiHan.Framework.Web.Docs;
+
+namespace MyApp;
+
+[DependsOn(
+    typeof(XiHanWebApiModule),   // 动态 API + 中间件管道
+    typeof(XiHanWebDocsModule)   // Scalar / Swagger 文档
+)]
+public class MyAppModule : XiHanModule
+{
+    // 这里可以重写 ConfigureServices / OnApplicationInitialization 等钩子，
+    // 现在先留空，框架会用默认管道帮你把一切装配好。
+}
+```
+
+## 第四步：改写 Program.cs
+
+把默认的 `Program.cs` 换成三行式启动：
+
+```csharp
+using XiHan.Framework.Web.Core.Extensions.DependencyInjection;
+using MyApp;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 添加 XiHan 框架基础服务
-builder.Services.AddXiHanFramework(options =>
-{
-    options.ApplicationName = "MyXiHanApp";
-});
-
-// 添加 XiHan Web 服务
-builder.Services.AddXiHanAspNetCore();
-
-// 添加控制器
-builder.Services.AddControllers()
-    .AddXiHanMvcCore(); // 添加框架MVC扩展
-
-// 添加 XiHan Swagger
-builder.Services.AddXiHanSwagger();
-
-// 添加数据库上下文
-builder.Services.AddXiHanDbContext<ApplicationDbContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
-
-// 添加框架仓储
-builder.Services.AddXiHanRepositories();
-
-// 自动注册服务
-builder.Services.AddXiHanServices();
+// 加载以 MyAppModule 为根的整棵模块依赖树（自动拓扑排序）
+await builder.AddApplicationAsync<MyAppModule>();
 
 var app = builder.Build();
 
-// 配置中间件管道
-if (app.Environment.IsDevelopment())
-{
-    app.UseXiHanSwagger();
-}
+// 触发所有模块的初始化钩子，装配中间件管道
+await app.InitializeApplicationAsync();
 
-app.UseXiHanExceptionHandler();
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
-
-app.Run();
+await app.RunAsync();
 ```
 
-4. 创建数据库上下文类
+> `AddApplicationAsync<T>` 和 `InitializeApplicationAsync` 是框架的两个入口方法：前者在**服务注册阶段**装配模块，后者在**应用初始化阶段**接入中间件。详见 [核心概念 · 生命周期](./concepts/lifecycle)。
+
+## 第五步：写第一个接口
+
+框架用**动态 API** 暴露接口：你只需要写一个**应用服务**类，框架会自动把它变成 REST 接口，**不需要写 Controller**。新建 `HelloAppService.cs`：
 
 ```csharp
-using Microsoft.EntityFrameworkCore;
-using XiHan.Framework.EntityFrameworkCore;
-using XiHan.Framework.Core;
+using XiHan.Framework.Application.Attributes;
+using XiHan.Framework.Application.Services;
 
-public class ApplicationDbContext : XiHanDbContext
+namespace MyApp;
+
+/// <summary>
+/// 打招呼服务 —— 会被自动暴露为 REST 接口
+/// </summary>
+[DynamicApi]
+public class HelloAppService : ApplicationServiceBase
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
+    public string GetGreeting(string name)
     {
-    }
-
-    // 添加实体集
-    public DbSet<Product> Products { get; set; }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
-
-        // 应用实体配置
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-    }
-}
-
-// 实体定义
-public class Product : Entity<int>
-{
-    public string Name { get; set; }
-    public decimal Price { get; set; }
-    public string Description { get; set; }
-    public int CategoryId { get; set; }
-    public Category Category { get; set; }
-}
-
-public class Category : Entity<int>
-{
-    public string Name { get; set; }
-    public List<Product> Products { get; set; }
-}
-```
-
-5. 添加控制器
-
-```csharp
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using XiHan.Framework.AspNetCore;
-
-[ApiController]
-[Route("api/[controller]")]
-public class ProductsController : XiHanControllerBase
-{
-    private readonly IRepository<Product> _productRepository;
-
-    public ProductsController(IRepository<Product> productRepository)
-    {
-        _productRepository = productRepository;
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<Result<List<Product>>>> GetProducts()
-    {
-        var products = await _productRepository.GetListAsync();
-        return Success(products);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Result<Product>>> GetProduct(int id)
-    {
-        var product = await _productRepository.GetByIdAsync(id);
-
-        if (product == null)
-        {
-            return NotFound("产品不存在");
-        }
-
-        return Success(product);
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<Result<Product>>> CreateProduct(Product product)
-    {
-        var createdProduct = await _productRepository.InsertAsync(product);
-        return CreatedAtAction(nameof(GetProduct), new { id = createdProduct.Id }, Success(createdProduct));
-    }
-
-    [HttpPut("{id}")]
-    public async Task<ActionResult<Result>> UpdateProduct(int id, Product product)
-    {
-        if (id != product.Id)
-        {
-            return BadRequest("ID不匹配");
-        }
-
-        await _productRepository.UpdateAsync(product);
-        return Success();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<ActionResult<Result>> DeleteProduct(int id)
-    {
-        await _productRepository.DeleteAsync(id);
-        return Success();
+        return $"你好，{name}！欢迎使用 XiHan.Framework。";
     }
 }
 ```
 
-6. 运行项目
+这里发生了什么：
+
+- 继承 `ApplicationServiceBase` —— 它同时标记了 `IApplicationService` 和 `ITransientDependency`，所以**会被自动注册进 DI 容器**，无需手写 `services.AddTransient`。
+- 打上 `[DynamicApi]` —— 框架的动态 API 约定会扫描到它，为 `GetGreeting` 生成对应的 HTTP 路由。
+
+> 想了解路由是怎么从方法名推导出来的、如何自定义分组/版本/路由，见 [核心概念 · 动态 API](./concepts/dynamic-api)。
+
+## 第六步：运行
 
 ```bash
 dotnet run
 ```
 
-## 基本功能演示
+启动后打开浏览器：
 
-### 依赖注入
+- **API 文档**：`https://localhost:<端口>/scalar`（由 `Web.Docs` 提供）
+- 在文档里找到 `Hello / GetGreeting`，填入 `name` 参数即可在线调用
 
-XiHan.Framework 使用 .NET 内置的依赖注入容器，并提供了更简便的服务注册方式：
+恭喜，你的第一个 XiHan.Framework 接口跑起来了 🎉
 
-```csharp
-// 通过特性标记服务生命周期
-[TransientService] // 瞬态服务
-public class ProductService : IProductService
-{
-    // 实现...
-}
+## 接下来加数据访问
 
-[ScopedService] // 作用域服务
-public class OrderService : IOrderService
-{
-    // 实现...
-}
+真实项目免不了要读写数据库。安装 `Data` 模块（SqlSugar），在启动模块上加一行依赖：
 
-[SingletonService] // 单例服务
-public class CacheService : ICacheService
-{
-    // 实现...
-}
-
-// 在 Program.cs 中自动注册所有服务
-builder.Services.AddXiHanServices(options =>
-{
-    options.AutoRegisterServices = true;
-    options.ScanAssemblies = new[] { typeof(Program).Assembly };
-});
+```bash
+dotnet add package XiHan.Framework.Data
 ```
 
-### 数据访问
-
-使用 XiHan.Framework 的仓储模式进行数据访问：
-
 ```csharp
-// 基本仓储用法
-public class ProductService
+[DependsOn(
+    typeof(XiHanWebApiModule),
+    typeof(XiHanWebDocsModule),
+    typeof(XiHanDataModule)      // ← 新增：SqlSugar 数据访问
+)]
+public class MyAppModule : XiHanModule { }
+```
+
+在 `appsettings.json` 配置连接串（以 PostgreSQL 为例）：
+
+```json
 {
-    private readonly IRepository<Product> _productRepository;
-
-    public ProductService(IRepository<Product> productRepository)
-    {
-        _productRepository = productRepository;
+  "XiHan": {
+    "Data": {
+      "SqlSugarCore": {
+        "ConnectionConfigs": [
+          {
+            "DbType": "PostgreSQL",
+            "ConnectionString": "Host=localhost;Port=5432;Database=myapp;Username=postgres;Password=your_password;"
+          }
+        ]
+      }
     }
-
-    // 获取所有产品
-    public async Task<List<Product>> GetAllProductsAsync()
-    {
-        return await _productRepository.GetListAsync();
-    }
-
-    // 获取分页产品
-    public async Task<PagedResult<Product>> GetPagedProductsAsync(int pageNumber, int pageSize)
-    {
-        return await _productRepository.GetPagedListAsync(
-            pageNumber: pageNumber,
-            pageSize: pageSize,
-            orderBy: q => q.OrderByDescending(p => p.Id)
-        );
-    }
-
-    // 根据条件查询
-    public async Task<List<Product>> GetProductsByPriceRangeAsync(decimal minPrice, decimal maxPrice)
-    {
-        return await _productRepository.GetListAsync(p => p.Price >= minPrice && p.Price <= maxPrice);
-    }
-
-    // 添加产品
-    public async Task<Product> AddProductAsync(Product product)
-    {
-        return await _productRepository.InsertAsync(product);
-    }
-}
-
-// 自定义仓储
-public interface IProductRepository : IRepository<Product>
-{
-    Task<List<Product>> GetProductsWithCategoryAsync(int categoryId);
-}
-
-public class ProductRepository : Repository<Product>, IProductRepository
-{
-    public ProductRepository(ApplicationDbContext context) : base(context)
-    {
-    }
-
-    public async Task<List<Product>> GetProductsWithCategoryAsync(int categoryId)
-    {
-        return await DbSet
-            .Include(p => p.Category)
-            .Where(p => p.CategoryId == categoryId)
-            .ToListAsync();
-    }
+  }
 }
 ```
 
-### 统一响应处理
+之后就能在应用服务里注入仓储 `IRepositoryBase<TEntity, TKey>` 读写数据。数据访问的完整用法见 [Data 模块文档](./packages/data)。
 
-使用 XiHan.Framework 的统一响应格式：
+## 你可能想加的其它能力
 
-```csharp
-// 在控制器中
-[HttpGet]
-public async Task<ActionResult<Result<List<ProductDto>>>> GetProducts()
-{
-    try
-    {
-        var products = await _productService.GetProductsAsync();
-        return Success(products);
-    }
-    catch (Exception ex)
-    {
-        return Error("获取产品列表失败", "ERR-PRODUCT-001");
-    }
-}
+| 想要 | 安装 | 文档 |
+| --- | --- | --- |
+| 缓存（内存 + Redis） | `XiHan.Framework.Caching` | [Caching](./packages/caching) |
+| JWT / OAuth2 认证 | `XiHan.Framework.Authentication` | [Authentication](./packages/authentication) |
+| RBAC 授权 | `XiHan.Framework.Authorization` | [Authorization](./packages/authorization) |
+| 事件总线 | `XiHan.Framework.EventBus` | [EventBus](./packages/eventbus) |
+| 定时任务 | `XiHan.Framework.Tasks` | [Tasks](./packages/tasks) |
+| SignalR 实时通信 | `XiHan.Framework.Web.RealTime` | [Web.RealTime](./packages/web-realtime) |
+| AI（Semantic Kernel + MCP） | `XiHan.Framework.AI` | [AI](./packages/ai) |
 
-[HttpGet("{id}")]
-public async Task<ActionResult<Result<ProductDto>>> GetProduct(int id)
-{
-    var product = await _productService.GetProductByIdAsync(id);
+完整模块清单见 [模块总览](./packages/)。
 
-    if (product == null)
-    {
-        return NotFound("产品不存在", "ERR-PRODUCT-404");
-    }
+## 想要一个完整的实战项目？
 
-    return Success(product);
-}
-
-// 响应结果示例 (成功)
-{
-    "succeeded": true,
-    "data": {
-        "id": 1,
-        "name": "示例产品",
-        "price": 199.99,
-        "description": "这是一个示例产品"
-    }
-}
-
-// 响应结果示例 (失败)
-{
-    "succeeded": false,
-    "message": "产品不存在",
-    "errorCode": "ERR-PRODUCT-404"
-}
-```
+[**XiHan.BasicApp**](../basic-app/) 是官方基于本框架构建的企业级中后台系统，包含多租户、RBAC + ABAC 权限、代码生成、实时通信等完整能力，是学习框架用法最好的参考。
 
 ## 下一步
 
-- 了解 [核心模块](./core) 的详细功能和使用方法
-- 学习如何使用 XiHan.Framework 的 [数据访问](./data-access) 功能
-- 探索 [Web API](./web-api) 开发和最佳实践
-- 了解 [身份认证](./identity) 和授权功能
+- [核心概念 · 模块系统](./concepts/modularity)：理解 `[DependsOn]` 与自动装配
+- [核心概念 · 生命周期](./concepts/lifecycle)：理解 8 个生命周期钩子
+- [核心概念 · 依赖注入](./concepts/dependency-injection)：理解约定式服务注册
+- [核心概念 · 动态 API](./concepts/dynamic-api)：理解应用服务如何变成接口

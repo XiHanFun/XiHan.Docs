@@ -1,52 +1,108 @@
 # XiHan.Framework 开发框架
 
-XiHan.Framework 是一个快速、轻量、高效的后端开发框架，基于 .NET 构建。本框架旨在提供一套完整的解决方案，帮助开发者快速构建高性能、可扩展的应用程序。
+快速、轻量、高效、用心的 **.NET 10 模块化开发框架**。面向前后端分离的企业级 ASP.NET Core 应用，优先使用 .NET 原生能力、减少第三方依赖，强调模块清晰、依赖可控、扩展可维护。
 
-## 主要特性
+> 当前版本 **v2.5.0-preview.1**，包含 **47** 个功能模块（共 57 个 NuGet 包）。全部开源，MIT 许可。
 
-- **高性能**: 基于 .NET 优化的高性能架构，确保应用程序高效运行
-- **模块化**: 采用模块化设计，各组件松耦合，便于扩展和维护
-- **易用性**: 简洁的 API 设计和丰富的约定，降低学习成本
-- **跨平台**: 支持 Windows、Linux、macOS 等多种操作系统平台
-- **安全性**: 内置完善的身份认证与授权体系，保障应用安全
-- **可扩展**: 灵活的插件体系，满足各种定制化需求
-- **DDD 支持**: 原生支持领域驱动设计，便于构建复杂业务系统
+## 一分钟了解它
 
-## 快速开始
+XiHan.Framework 把一套后端能力拆成许多**可独立安装的小模块**（NuGet 包），你按需引用。模块之间用一个 `[DependsOn]` 特性声明依赖，框架启动时**自动拓扑排序、依次加载**，你不用手写一长串 `AddXxx`。
 
 ```csharp
-// 在 Program.cs 中添加 XiHan 框架服务
-builder.Services.AddXiHanFramework(options =>
+// 一个"模块"就是一个类，声明它依赖哪些模块
+[DependsOn(
+    typeof(XiHanWebApiModule),   // 动态 API + 完整中间件管道
+    typeof(XiHanDataModule)      // SqlSugar 数据访问
+)]
+public class MyAppModule : XiHanModule
 {
-    options.ApplicationName = "MyApplication";
-    options.EnableSwagger = true;
-});
-
-// 自动注册所有服务
-builder.Services.AddXiHanServices();
-
-// 添加数据访问
-builder.Services.AddXiHanDbContext<AppDbContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
-});
-
-// 使用中间件
-app.UseXiHanFramework();
+    public override Task ConfigureServicesAsync(ServiceConfigurationContext context)
+    {
+        // 在这里注册你自己的服务
+        return Task.CompletedTask;
+    }
+}
 ```
 
-## 框架文档
+```csharp
+// Program.cs —— 三行启动
+var builder = WebApplication.CreateBuilder(args);
+await builder.AddApplicationAsync<MyAppModule>();   // 加载模块树
+var app = builder.Build();
+await app.InitializeApplicationAsync();             // 触发初始化钩子
+await app.RunAsync();
+```
 
-- [框架概述](./overview) - 了解框架设计理念和架构
-- [快速入门](./quickstart) - 快速搭建一个基于 XiHan 的应用
-- [核心模块](./core) - 框架的基础设施和常用功能
-- [数据访问](./data-access) - 数据库访问和领域模型映射
-- [Web API](./web-api) - Web API 开发和最佳实践
-- [身份认证](./identity) - 用户认证授权和安全设计
-- [缓存](./cache) - 缓存策略和实现方案
+就这么多。你引用的每个模块都会把自己的服务、中间件、后台任务挂到正确的位置。
+
+## 从这里开始
+
+<div class="tip custom-block" style="padding-top: 8px">
+
+第一次接触？按顺序读这三篇，20 分钟就能跑起一个接口：
+
+1. [**快速上手**](./quickstart) —— 5 分钟建一个能返回数据的 Web API
+2. [**核心概念**](./concepts/modularity) —— 搞懂"模块 / 生命周期 / DI / 动态 API"这四件事
+3. [**模块总览**](./packages/) —— 按需查阅你要用的每个包
+
+</div>
+
+## 文档地图
+
+| 板块 | 内容 |
+| --- | --- |
+| [框架概述](./overview) | 设计理念、分层架构、技术栈、版本与兼容性 |
+| [快速上手](./quickstart) | 环境准备、安装、第一个 Web API、常见配置 |
+| [核心概念](./concepts/modularity) | 模块系统、生命周期、依赖注入、动态 API |
+| [模块总览](./packages/) | 全部 57 个包的分层索引，每个包一份文档 |
+
+## 分层架构一览
+
+框架按严格的分层组织，下层不依赖上层，全部依赖抽象接口：
+
+```text
+┌───────────────────────────────────────────────────────────┐
+│  7. Web 层    Web.Api / Web.Docs / Web.Gateway / Web.Grpc  │
+│               Web.RealTime / Web.Core                       │
+├───────────────────────────────────────────────────────────┤
+│  6. 基础设施  Data 认证 授权 缓存 事件总线 AI Bot 任务       │
+│               日志 存储 搜索 脚本 可观测性 …                 │
+├───────────────────────────────────────────────────────────┤
+│  5. 应用层    Application → Application.Contracts            │
+│               MultiTenancy / Validation / Settings          │
+├───────────────────────────────────────────────────────────┤
+│  4. 领域层    Domain → Domain.Shared                        │
+├───────────────────────────────────────────────────────────┤
+│  3. 核心层    Core（模块系统 / DI / 生命周期 / 异常处理）    │
+├───────────────────────────────────────────────────────────┤
+│  2. 元数据层  Metadata（框架信息 / 版本 / 平台）             │
+├───────────────────────────────────────────────────────────┤
+│  1. 公共层    Utils（零依赖通用工具库）                      │
+└───────────────────────────────────────────────────────────┘
+```
+
+想看每一层里都有什么，去 [模块总览](./packages/)。
+
+## 技术栈
+
+| 类别 | 技术 | 版本 |
+| --- | --- | --- |
+| 运行时 | .NET | 10.0 |
+| ORM | SqlSugar | 5.1.4 |
+| 日志 | Serilog | 10.0.0 |
+| 缓存 | HybridCache + StackExchange.Redis | 10.5.0 |
+| AOP | Castle DynamicProxy | 5.2.1 |
+| 加密 | BouncyCastle | 2.6.2 |
+| 序列化 | System.Text.Json + Newtonsoft.Json | 13.0.4 |
+| 模板引擎 | Scriban | 7.1.0 |
+| AI | Semantic Kernel + MCP | 1.74.0 / 1.2.0 |
+| HTTP 韧性 | Polly | 10.0.6 |
+| gRPC | Grpc.AspNetCore | 2.76.0 |
+| API 文档 | Scalar + Swashbuckle | 2.14.1 / 10.1.7 |
 
 ## 社区资源
 
-- [GitHub 仓库](https://github.com/XiHanFun/XiHan.Framework)
-- [示例项目](https://github.com/XiHanFun/XiHan.BasicApp)
-- [问题反馈](https://github.com/XiHanFun/XiHan.Framework/issues)
+- [GitHub 仓库](https://github.com/XiHanFun/XiHan.Framework) · [Gitee 镜像](https://gitee.com/XiHanFun/XiHan.Framework)
+- [NuGet 包列表](https://www.nuget.org/packages?q=XiHan.Framework)
+- [XiHan.BasicApp](https://github.com/XiHanFun/XiHan.BasicApp) —— 基于本框架构建的企业级中后台，最完整的实战参考
+- [问题反馈](https://github.com/XiHanFun/XiHan.Framework/issues) · QQ 群 462371834
