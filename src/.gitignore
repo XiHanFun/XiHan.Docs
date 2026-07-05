@@ -26,3 +26,4 @@ interactive/public/shiki
 vite.config.ts.timestamp-*
 .vitepress/dist
 .vitepress/cache
+pnpm-lock.yaml
