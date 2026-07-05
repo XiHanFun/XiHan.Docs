@@ -18,41 +18,154 @@ const head: HeadConfig[] = [
   ["link", { rel: "icon", href: "/favicon.ico" }],
 ];
 
-const frameworkNavConst: DefaultTheme.NavItemWithLink[] = [
+// 生成单个模块包文档条目
+function pkg(text: string, name: string): DefaultTheme.SidebarItem {
+  return { text, link: `/cosmos/framework/packages/${name}` };
+}
+
+const frameworkSidebar: DefaultTheme.SidebarItem[] = [
   {
-    text: "开发框架",
-    link: "/cosmos/framework",
-    activeMatch: "/cosmos/framework/",
+    text: "开始",
+    collapsed: false,
+    items: [
+      { text: "框架简介", link: "/cosmos/framework/" },
+      { text: "框架概述", link: "/cosmos/framework/overview" },
+      { text: "快速上手", link: "/cosmos/framework/quickstart" },
+    ],
   },
   {
-    text: "框架概述",
-    link: "/cosmos/framework/overview",
-    activeMatch: "/cosmos/framework/overview/",
+    text: "核心概念",
+    collapsed: false,
+    items: [
+      { text: "模块系统", link: "/cosmos/framework/concepts/modularity" },
+      { text: "模块生命周期", link: "/cosmos/framework/concepts/lifecycle" },
+      { text: "依赖注入", link: "/cosmos/framework/concepts/dependency-injection" },
+      { text: "动态 API", link: "/cosmos/framework/concepts/dynamic-api" },
+    ],
   },
   {
-    text: "快速入门",
-    link: "/cosmos/framework/quickstart",
-    activeMatch: "/cosmos/framework/quickstart/",
-  },
-  {
-    text: "核心模块",
-    link: "/cosmos/framework/core",
-    activeMatch: "/cosmos/framework/core/",
-  },
-  {
-    text: "数据访问",
-    link: "/cosmos/framework/data-access",
-    activeMatch: "/cosmos/framework/data-access/",
-  },
-  {
-    text: "Web API",
-    link: "/cosmos/framework/web-api",
-    activeMatch: "/cosmos/framework/web-api/",
-  },
-  {
-    text: "身份认证",
-    link: "/cosmos/framework/identity",
-    activeMatch: "/cosmos/framework/identity/",
+    text: "模块总览",
+    link: "/cosmos/framework/packages/",
+    collapsed: false,
+    items: [
+      {
+        text: "公共与核心",
+        collapsed: true,
+        items: [
+          pkg("Utils 通用工具", "utils"),
+          pkg("Metadata 元数据", "metadata"),
+          pkg("Core 模块化核心", "core"),
+          pkg("Analyzers 分析器", "analyzers"),
+        ],
+      },
+      {
+        text: "领域与应用",
+        collapsed: true,
+        items: [
+          pkg("Domain.Shared", "domain-shared"),
+          pkg("Domain 领域层", "domain"),
+          pkg("Application.Contracts", "application-contracts"),
+          pkg("Application 应用层", "application"),
+        ],
+      },
+      {
+        text: "数据与持久化",
+        collapsed: true,
+        items: [
+          pkg("Data 数据访问", "data"),
+          pkg("Uow 工作单元", "uow"),
+          pkg("Caching 缓存", "caching"),
+        ],
+      },
+      {
+        text: "安全 · 认证 · 授权",
+        collapsed: true,
+        items: [
+          pkg("Security 安全加密", "security"),
+          pkg("Authentication 认证", "authentication"),
+          pkg("Authorization 授权", "authorization"),
+        ],
+      },
+      {
+        text: "多租户 · 配置 · 校验",
+        collapsed: true,
+        items: [
+          pkg("MultiTenancy.Abstractions", "multitenancy-abstractions"),
+          pkg("MultiTenancy 多租户", "multitenancy"),
+          pkg("Settings 设置", "settings"),
+          pkg("Validation.Abstractions", "validation-abstractions"),
+          pkg("Validation 校验", "validation"),
+        ],
+      },
+      {
+        text: "事件 · 消息 · 通信",
+        collapsed: true,
+        items: [
+          pkg("EventBus.Abstractions", "eventbus-abstractions"),
+          pkg("EventBus 事件总线", "eventbus"),
+          pkg("Messaging 消息", "messaging"),
+          pkg("Http 客户端", "http"),
+        ],
+      },
+      {
+        text: "通用基础设施",
+        collapsed: true,
+        items: [
+          pkg("Serialization 序列化", "serialization"),
+          pkg("ObjectMapping 对象映射", "objectmapping"),
+          pkg("Localization.Abstractions", "localization-abstractions"),
+          pkg("Localization 国际化", "localization"),
+          pkg("Logging 日志", "logging"),
+          pkg("Castle AOP", "castle"),
+          pkg("Threading 并发", "threading"),
+          pkg("Timing 时间", "timing"),
+          pkg("DistributedIds 分布式 ID", "distributed-ids"),
+        ],
+      },
+      {
+        text: "存储 · 模板 · 任务 · 治理",
+        collapsed: true,
+        items: [
+          pkg("ObjectStorage 对象存储", "object-storage"),
+          pkg("VirtualFileSystem 虚拟文件", "virtual-file-system"),
+          pkg("Templating 模板", "templating"),
+          pkg("Tasks 定时任务", "tasks"),
+          pkg("Traffic 流量治理", "traffic"),
+          pkg("Upgrade 升级引擎", "upgrade"),
+          pkg("Script 脚本引擎", "script"),
+          pkg("SearchEngines 搜索", "search-engines"),
+          pkg("Observability 可观测性", "observability"),
+          pkg("DevTools 开发工具", "devtools"),
+        ],
+      },
+      {
+        text: "AI 与机器人",
+        collapsed: true,
+        items: [
+          pkg("AI.Abstractions", "ai-abstractions"),
+          pkg("AI 集成", "ai"),
+          pkg("Bot 机器人核心", "bot"),
+          pkg("Bot.Email 邮件", "bot-email"),
+          pkg("Bot.Sms 短信", "bot-sms"),
+          pkg("Bot.Telegram", "bot-telegram"),
+          pkg("Bot.DingTalk 钉钉", "bot-dingtalk"),
+          pkg("Bot.Lark 飞书", "bot-lark"),
+          pkg("Bot.WeCom 企业微信", "bot-wecom"),
+        ],
+      },
+      {
+        text: "Web 层",
+        collapsed: true,
+        items: [
+          pkg("Web.Core Web 核心", "web-core"),
+          pkg("Web.Api 动态 API", "web-api"),
+          pkg("Web.Docs API 文档", "web-docs"),
+          pkg("Web.Gateway 网关", "web-gateway"),
+          pkg("Web.Grpc gRPC", "web-grpc"),
+          pkg("Web.RealTime 实时通信", "web-realtime"),
+        ],
+      },
+    ],
   },
 ];
 const uiNavConst: DefaultTheme.NavItemWithLink[] = [
@@ -77,26 +190,29 @@ const uiNavConst: DefaultTheme.NavItemWithLink[] = [
     activeMatch: "/cosmos/ui/npm-package-dependency/",
   },
 ];
-const basicAppNavConst: DefaultTheme.NavItemWithLink[] = [
+const basicAppSidebar: DefaultTheme.SidebarItem[] = [
   {
-    text: "基础应用",
-    link: "/cosmos/basic-app",
-    activeMatch: "/cosmos/basic-app/",
+    text: "开始",
+    collapsed: false,
+    items: [
+      { text: "应用简介", link: "/cosmos/basic-app/" },
+      { text: "系统概述", link: "/cosmos/basic-app/overview" },
+      { text: "快速开始", link: "/cosmos/basic-app/getting-started" },
+    ],
   },
   {
-    text: "系统概述",
-    link: "/cosmos/basic-app/overview",
-    activeMatch: "/cosmos/basic-app/overview/",
+    text: "深入",
+    collapsed: false,
+    items: [
+      { text: "系统架构", link: "/cosmos/basic-app/architecture" },
+      { text: "权限模型", link: "/cosmos/basic-app/permissions" },
+      { text: "功能清单", link: "/cosmos/basic-app/features" },
+    ],
   },
   {
-    text: "快速部署",
-    link: "/cosmos/basic-app/deployment",
-    activeMatch: "/cosmos/basic-app/deployment/",
-  },
-  {
-    text: "基础功能",
-    link: "/cosmos/basic-app/features",
-    activeMatch: "/cosmos/basic-app/features/",
+    text: "运维",
+    collapsed: false,
+    items: [{ text: "部署", link: "/cosmos/basic-app/deployment" }],
   },
 ];
 
@@ -231,13 +347,7 @@ const nav: DefaultTheme.NavItem[] = [
   },
 ];
 const sidebar: DefaultTheme.Sidebar = {
-  "/cosmos/framework/": [
-    {
-      text: "开发框架",
-      collapsed: false,
-      items: frameworkNavConst,
-    },
-  ],
+  "/cosmos/framework/": frameworkSidebar,
   "/cosmos/ui/": [
     {
       text: "视图组件",
@@ -245,13 +355,7 @@ const sidebar: DefaultTheme.Sidebar = {
       items: uiNavConst,
     },
   ],
-  "/cosmos/basic-app/": [
-    {
-      text: "基础应用",
-      collapsed: false,
-      items: basicAppNavConst,
-    },
-  ],
+  "/cosmos/basic-app/": basicAppSidebar,
 };
 
 function searchOptions(): Partial<DefaultTheme.AlgoliaSearchOptions> {
