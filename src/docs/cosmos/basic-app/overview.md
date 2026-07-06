@@ -21,13 +21,15 @@ XiHan.BasicApp 是一个**企业级中后台内核**：后端基于 .NET 10 与 
 
 | 领域 | 关键能力 |
 | --- | --- |
-| 身份与认证 | 用户/角色/部门/菜单；JWT 双令牌；账号密码、邮箱/短信验证码、OAuth2（GitHub/Google/QQ）、2FA |
-| 权限 | RBAC + ABAC，权限码 `resource:action:scope`，数据范围，字段级脱敏，会话角色激活 |
-| 多租户 | 字段级隔离，邮箱全局唯一登录，租户版本（Edition）权限白名单门控 |
-| 审计日志 | 访问/API/操作/异常/登录/实体变更 六类日志，落库前自动脱敏 |
-| 代码生成 | 单表/树形/主从三模式，实体→DTO→API→前端页一键生成，Scriban 模板 |
+| [身份与认证](./identity) | 用户/角色/部门/菜单；JWT 双令牌；账号密码、邮箱/短信验证码、OAuth2（GitHub/Google/QQ）、2FA |
+| [权限](./permissions) | RBAC + ABAC，权限码 `module:resource:action`（如 `saas:user:read`），数据范围，字段级脱敏，会话角色激活 |
+| [多租户](./multi-tenancy) | 字段级隔离，邮箱全局唯一登录，租户版本（Edition）权限白名单门控 |
+| [消息中心](./messaging) | 五类消息 + 优先级 + 强制阅读；模板；四渠道扇出；SignalR 通知与在线聊天 |
+| [审计日志](./audit-log) | 访问/API/操作/异常/登录/实体变更 六类日志，落库前自动脱敏 |
+| [代码生成](./code-generation) | 单表/树形/主从三模式，实体→DTO→API→前端页一键生成，Scriban 模板 |
+| [AI 能力](./ai) | Provider 库化管理（热切换）、RAG 知识库（Qdrant）、Agent / MCP |
 | 平台能力 | 动态 API、菜单单一事实源、分布式缓存、网关灰度、消息模板、SignalR 实时 |
-| 前端体验 | Schema 驱动列表、命令面板、多标签、消息中心、偏好中心、富文本、时区切换 |
+| [前端体验](./frontend) | Schema 驱动列表、命令面板、多标签、消息中心、偏好中心、富文本、时区切换 |
 
 完整清单见 [功能清单](./features)。
 

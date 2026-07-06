@@ -1,4 +1,4 @@
-# XiHan.UI 视图组件
+# XiHan.UI 视图组件 <Badge type="tip" text="v3.1.0" />
 
 XiHan.UI 是一个基于 Vue 3 构建的高效、轻量级组件库，采用 monorepo 结构组织，提供丰富、美观的 UI 组件，帮助开发者快速构建现代化的用户界面。
 
