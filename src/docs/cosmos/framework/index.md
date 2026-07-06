@@ -1,4 +1,4 @@
-# XiHan.Framework 开发框架 <Badge type="tip" text="v3.1.0" />
+# XiHan.Framework 开发框架
 
 快速、轻量、高效、用心的 **.NET 10 模块化开发框架**。面向前后端分离的企业级 ASP.NET Core 应用，优先使用 .NET 原生能力、减少第三方依赖，强调模块清晰、依赖可控、扩展可维护。
 
