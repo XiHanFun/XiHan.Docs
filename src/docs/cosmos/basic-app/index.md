@@ -1,4 +1,4 @@
-# XiHan.BasicApp 基础应用 <Badge type="tip" text="v3.1.0" />
+# XiHan.BasicApp 基础应用
 
 **企业级中后台内核。** 后端基于 .NET 10 与 [XiHan.Framework](../framework/)，前端基于 Vue 3，开箱即带多租户、RBAC + ABAC 权限、代码生成与实时通信等能力。它既是一套可直接投产的中后台起点，也是学习 .NET + Vue 全栈实践、以及 XiHan.Framework 用法的最佳参考。
 
