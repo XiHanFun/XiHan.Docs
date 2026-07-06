@@ -22,14 +22,12 @@
     "build": "vitepress build",
     "serve": "vitepress serve",
     "preview": "vitepress preview",
-    "update-pkg": "ncu --deep -u",
-    "cache-verify": "npm cache verify",
-    "clean-lock": "node ./scripts/clean-lock.js",
-    "clean-modules": "node ./scripts/clean-modules.js",
-    "clean-dist": "node ./scripts/clean-dist.js",
-    "clean-node": "pnpm run clean-lock && pnpm run clean-modules",
-    "reinstall": "pnpm run clean-node && pnpm run bootstrap",
-    "rebuild": "pnpm run clean-dist && pnpm run build"
+    "clean": "rimraf dist",
+    "clean:modules": "rimraf node_modules",
+    "upgrade": "pnpm upgrade",
+    "reinstall": "pnpm run clean:modules && pnpm install",
+    "rebuild": "pnpm run clean && pnpm run build",
+    "rebuild:dev": "pnpm run clean && pnpm run build:dev"
   },
   "dependencies": {
     "vue": "^3.5.39",
