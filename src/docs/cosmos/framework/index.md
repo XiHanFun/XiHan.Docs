@@ -1,8 +1,6 @@
-# XiHan.Framework 开发框架
+# XiHan.Framework 开发框架 <Badge type="tip" text="v3.1.0" />
 
 快速、轻量、高效、用心的 **.NET 10 模块化开发框架**。面向前后端分离的企业级 ASP.NET Core 应用，优先使用 .NET 原生能力、减少第三方依赖，强调模块清晰、依赖可控、扩展可维护。
-
-> 当前版本 **v2.5.0-preview.1**，包含 **47** 个功能模块（共 57 个 NuGet 包）。全部开源，MIT 许可。
 
 ## 一分钟了解它
 

@@ -1,8 +1,6 @@
-# XiHan.BasicApp 基础应用
+# XiHan.BasicApp 基础应用 <Badge type="tip" text="v3.1.0" />
 
 **企业级中后台内核。** 后端基于 .NET 10 与 [XiHan.Framework](../framework/)，前端基于 Vue 3，开箱即带多租户、RBAC + ABAC 权限、代码生成与实时通信等能力。它既是一套可直接投产的中后台起点，也是学习 .NET + Vue 全栈实践、以及 XiHan.Framework 用法的最佳参考。
-
-> 后端与前端当前版本：**v2.3.1**。全部开源，MIT 许可。
 
 ## 它是什么
 
@@ -25,15 +23,32 @@ XiHan.BasicApp 采用**前后端分离**架构：
 
 ## 文档地图
 
-| 板块 | 内容 |
-| --- | --- |
-| [系统概述](./overview) | 定位、技术栈、能力全景 |
-| [快速开始](./getting-started) | 环境要求、后端 / 前端 / 数据库启动、默认账号 |
-| [系统架构](./architecture) | 后端模块（Core / Web.Core / Saas / CodeGeneration / WebHost）与前端结构 |
-| [功能清单](./features) | 身份、权限、多租户、审计、代码生成、平台能力、前端体验 |
-| [权限模型](./permissions) | RBAC + ABAC、权限码、数据范围、字段脱敏、租户版本门控 |
-| [部署](./deployment) | Linux systemd / Windows 部署 |
-| [更新日志](./changelog) | 各版本变更记录（新增 / 修复 / 优化 / 调整 / 升级 / 移除） |
+**开始**
+
+- [系统概述](./overview) —— 定位、技术栈、能力全景
+- [快速开始](./getting-started) —— 环境要求、后端 / 前端 / 数据库启动、默认账号
+
+**架构与二次开发**
+
+- [系统架构](./architecture) —— 分层、模块（Saas / CodeGeneration / AI）、动态 API、菜单单一事实源、缓存
+- [前端指南](./frontend) —— Schema 驱动列表页、三级权限、国际化 / 时区、实时通信
+- [二次开发](./development) —— 加功能纵切片 / 加独立模块 / 加前端页
+
+**核心能力**
+
+- [身份与认证](./identity) —— 用户 / 角色 / 部门 / 菜单、多种登录、JWT 双令牌、2FA
+- [权限模型](./permissions) —— RBAC + ABAC、权限码、数据范围、字段脱敏、版本门控
+- [多租户与版本](./multi-tenancy) —— 字段级隔离、租户切换、版本（Edition）门控
+- [消息中心](./messaging) —— 五类消息、模板、四渠道扇出、SignalR 通知与聊天
+- [审计日志](./audit-log) —— 六类日志、自动脱敏、实体变更留痕
+- [代码生成](./code-generation) —— 单表 / 树形 / 主从、全栈一键生成
+- [AI 能力](./ai) —— Provider 库化管理、RAG 知识库、Agent / MCP
+
+**参考**
+
+- [功能清单](./features) —— 完整能力清单
+- [部署](./deployment) —— Linux systemd / Windows 部署
+- [更新日志](./changelog) —— 各版本变更记录
 
 ## 技术栈速览
 

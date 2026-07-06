@@ -11,11 +11,14 @@ export default {
   Layout: () => {
     return h(Theme.Layout, null, {});
   },
-  enhanceApp({ router }) {
+  enhanceApp(ctx) {
+    // 先执行默认主题的 enhanceApp，注册 Badge 等全局组件（否则 <Badge> 渲染为空）
+    Theme.enhanceApp?.(ctx);
+
     if (typeof window === "undefined") return;
 
     watch(
-      () => router.route.data.relativePath,
+      () => ctx.router.route.data.relativePath,
       () => updateHomePageStyle(location.pathname === "/"),
       { immediate: true }
     );

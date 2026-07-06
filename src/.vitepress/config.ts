@@ -202,20 +202,40 @@ const basicAppSidebar: DefaultTheme.SidebarItem[] = [
     ],
   },
   {
-    text: "深入",
+    text: "架构",
+    collapsed: false,
+    items: [{ text: "系统架构", link: "/cosmos/basic-app/architecture" }],
+  },
+  {
+    text: "核心能力",
     collapsed: false,
     items: [
-      { text: "系统架构", link: "/cosmos/basic-app/architecture" },
+      { text: "身份与认证", link: "/cosmos/basic-app/identity" },
       { text: "权限模型", link: "/cosmos/basic-app/permissions" },
-      { text: "功能清单", link: "/cosmos/basic-app/features" },
+      { text: "多租户与版本", link: "/cosmos/basic-app/multi-tenancy" },
+      { text: "消息中心", link: "/cosmos/basic-app/messaging" },
+      { text: "审计日志", link: "/cosmos/basic-app/audit-log" },
+      { text: "代码生成", link: "/cosmos/basic-app/code-generation" },
+      { text: "AI 能力", link: "/cosmos/basic-app/ai" },
     ],
   },
   {
-    text: "运维",
+    text: "前端与二次开发",
     collapsed: false,
-    items: [{ text: "部署", link: "/cosmos/basic-app/deployment" }],
+    items: [
+      { text: "前端指南", link: "/cosmos/basic-app/frontend" },
+      { text: "二次开发", link: "/cosmos/basic-app/development" },
+    ],
   },
-  { text: "更新日志", link: "/cosmos/basic-app/changelog" },
+  {
+    text: "参考",
+    collapsed: false,
+    items: [
+      { text: "功能清单", link: "/cosmos/basic-app/features" },
+      { text: "部署", link: "/cosmos/basic-app/deployment" },
+      { text: "更新日志", link: "/cosmos/basic-app/changelog" },
+    ],
+  },
 ];
 
 const nav: DefaultTheme.NavItem[] = [
@@ -339,7 +359,7 @@ const nav: DefaultTheme.NavItem[] = [
     ],
   },
   {
-    text: version,
+    text: "版本日志",
     items: [
       {
         text: "开发框架更新日志",
