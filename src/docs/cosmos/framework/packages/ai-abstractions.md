@@ -1,60 +1,166 @@
 # XiHan.Framework.AI.Abstractions
 
-> AI 抽象：AI 服务接口与契约
+> 纯 AI 契约包：会话门面、多 provider 解析、可插拔配置源、智能体、技能、RAG、提示词库的一组接口，零框架内部依赖。
 
 - **NuGet**：`XiHan.Framework.AI.Abstractions`
-- **模块类**：`—（无模块类，直接引用）`
+- **模块类**：—（无模块类，直接引用）
 - **所在层**：基础设施层
+- **关键依赖**：仅第三方 **Microsoft.Extensions.AI.Abstractions**（`IChatClient` / `IEmbeddingGenerator`）+ **Microsoft.Agents.AI.Abstractions**（`AIAgent`）；不引用任何 `XiHan.Framework.*`
 
-## 这是什么
+## 概述
 
-这个包只放 AI 相关的接口与契约，不含任何具体实现。它把「会话、Agent、多 provider 选择、提示词库、RAG（检索增强生成）」抽成一组接口，让上层代码只依赖抽象；真正的实现由 `XiHan.Framework.AI` 提供，应用层（如把 provider 配置存进数据库）也能通过实现这些接口来替换默认行为。
+这个包只放 AI 相关的接口与契约，不含任何具体实现，也不依赖框架内部任何包。它把「一次/流式会话、按 provider 名选模型、provider 配置来源、智能体、命名技能、RAG 检索增强、提示词库」抽成一组接口，让上层代码只依赖抽象。真正的实现由 `XiHan.Framework.AI` 提供；应用层（如把 provider 配置存进数据库、把提示词做成后台可维护的版本库）也能通过实现这些接口来替换默认行为。
+
+设计上贯穿两条主线：其一是**薄封装**——`IXiHanAiService` / `IXiHanAgentFactory` 只在 `Microsoft.Extensions.AI` 与 Microsoft Agent Framework 之上加「按 provider 名选模型」这一层 XiHan 语义，会话、工具调用、结构化输出、`AIAgent` 全走原生类型不重造；其二是**可插拔 store**——`IAiProviderConfigStore` / `IAiPromptStore` 沿用「框架给抽象、应用给实现」的范式，默认走 Options 兜底，应用层可无缝换成 DB store。
 
 ## 何时使用
 
-- 你的库/模块需要引用 AI 会话或 RAG 契约，但不想拉入具体实现与第三方 SDK
-- 你要提供自定义的 provider 配置源、提示词库或向量检索实现，替换框架默认项
+- 你的库/模块需要引用 AI 会话、Agent 或 RAG 契约，但不想拉入具体实现与第三方 SDK
+- 你要提供自定义的 provider 配置源、提示词库或知识检索实现，替换框架默认项
 - 想以 provider 名解耦模型调用，而不把某个厂商写死在业务里
+- 不该用它的场景：只是想直接发起对话/构建 Agent——那应引用实现包 `XiHan.Framework.AI` 并 `[DependsOn(typeof(XiHanAIModule))]`
 
-## 安装
+## 安装与启用
 
 ```bash
 dotnet add package XiHan.Framework.AI.Abstractions
 ```
 
-## 启用
-
-无模块类。直接引用即可，无需 `[DependsOn]`；具体实现与服务注册由 `XiHan.Framework.AI` 的 `XiHanAIModule` 负责。
+无模块类。直接引用即可，无需 `[DependsOn]`。服务注册与默认实现由 `XiHan.Framework.AI` 的 `XiHanAIModule` 负责——通常业务只引用实现包即可间接得到本包的全部契约。
 
 ## 核心能力
 
-- **会话门面契约**：`IXiHanAiService` 定义一次对话 / 流式对话，薄封装 `Microsoft.Extensions.AI` 的 `IChatClient`，只加「多 provider 选择」这层语义
-- **多 provider 解析**：`IAiChatClientResolver` / `IAiEmbeddingGeneratorResolver` 按 provider 名取已构建好的会话客户端 / 嵌入生成器，并支持 `Invalidate` 配置热切换
-- **可插拔配置源**：`IAiProviderConfigStore` 抽象 provider 配置来源（默认读 Options，应用层可换 DB store），配置载体是 `AiProviderOptions`
-- **Agent 与技能**：`IXiHanAgentFactory` 基于 Microsoft Agent Framework 构建 `AIAgent`；`IAiSkill` / `IAiSkillRegistry` 把应用注册的命名能力暴露为对话工具与 MCP tool
-- **RAG 契约**：`IChunkingStrategy`（切片）、`IKnowledgeIngestor`（摄取）、`IKnowledgeRetriever`（检索）、`IRagPromptAugmenter`（提示增强）
+- **会话门面契约**：`IXiHanAiService` 定义一次对话 / 流式对话，薄封装 `Microsoft.Extensions.AI` 的 `IChatClient`，只加「多 provider 选择」这层语义；会话选项载体 `XiHanChatOptions`
+- **多 provider 解析**：`IAiChatClientResolver` / `IAiEmbeddingGeneratorResolver` 按 provider 名取已构建好的会话客户端 / 嵌入生成器，二者都带 `Invalidate` 以支持配置热切换
+- **可插拔配置源**：`IAiProviderConfigStore` 抽象 provider 配置来源（默认读 Options，应用层可换 DB store），配置载体 `AiProviderOptions` / 根配置 `XiHanAiOptions`（配置节 `XiHan:AI`）
+- **智能体**：`IXiHanAgentFactory` 基于 Microsoft Agent Framework 从 provider 解析器构建原生 `AIAgent`
+- **技能**：`IAiSkill` / `IAiSkillRegistry` 把应用注册的命名能力暴露为对话工具（`AIFunction`）与 MCP tool
+- **RAG 契约**：`IChunkingStrategy`（切片）、`IKnowledgeIngestor`（摄取）、`IKnowledgeRetriever`（检索）、`IRagPromptAugmenter`（提示增强）及配套模型 `TextChunk` / `RetrievedChunk` / `KnowledgeIngestRequest` / `RetrievalFilter` / `ChunkingOptions`
 - **提示词库**：`IAiPromptStore` / `AiPromptTemplate` 抽象可版本化的提示模板来源
 
-## 主要类型
+## 主要 API / 类型
+
+### 会话（Chat）
 
 | 类型 | 说明 |
 | --- | --- |
-| `IXiHanAiService` | AI 会话服务门面（一次对话 / 流式对话） |
-| `IAiChatClientResolver` | 按 provider 名解析 `IChatClient`，含 `Invalidate` 热切换 |
-| `IAiEmbeddingGeneratorResolver` | 按 provider 名解析嵌入生成器（RAG 用） |
-| `IAiProviderConfigStore` | provider 配置来源抽象（Options 兜底 / 应用层可换 DB） |
-| `AiProviderOptions` | 单个 provider 配置：密钥 / 端点 / 会话模型 / 嵌入模型 / 采样 |
-| `IXiHanAgentFactory` | 从 provider 解析器构建 Microsoft Agent Framework 的 `AIAgent` |
-| `IAiSkill` / `IAiSkillRegistry` | 命名 AI 技能与注册表（暴露为对话工具 / MCP tool） |
-| `IKnowledgeIngestor` / `IKnowledgeRetriever` | RAG 摄取与检索契约 |
-| `IChunkingStrategy` / `IRagPromptAugmenter` | 文本切片策略 / 检索片段注入提示 |
-| `IAiPromptStore` / `AiPromptTemplate` | 提示词库抽象与模板 |
+| `IXiHanAiService` | AI 会话服务门面。`Task<ChatResponse> ChatAsync(IEnumerable<ChatMessage> messages, XiHanChatOptions? options = null, CancellationToken ct = default)`；`IAsyncEnumerable<ChatResponseUpdate> ChatStreamAsync(...)` |
+| `XiHanChatOptions` | 会话选项。`string? Provider`（null 用默认 provider）；`ChatOptions? ChatOptions`（透传 M.E.AI 的工具/温度/模型覆盖） |
+
+### Provider 解析与配置
+
+| 类型 | 说明 |
+| --- | --- |
+| `IAiChatClientResolver` | `IChatClient Resolve(string? providerName = null)`；`void Invalidate(string? providerName = null)`（清缓存，实现配置热切换；空则清全部，否则清指定 provider 及默认槽） |
+| `IAiEmbeddingGeneratorResolver` | `IEmbeddingGenerator<string, Embedding<float>> Resolve(string? providerName = null)`；`void Invalidate(string? providerName = null)`。模型取 `AiProviderOptions.EmbeddingModel` |
+| `IAiProviderConfigStore` | provider 配置来源抽象。`Task<AiProviderOptions?> GetAsync(string? providerName = null, CancellationToken ct = default)`（null 取默认 provider，无匹配返回 null 由调用方 fail-closed）；`Task<IReadOnlyList<AiProviderOptions>> GetAllAsync(...)` |
+| `AiProviderOptions` | 单个 provider 配置：`Provider` / `ApiKey` / `BaseUrl` / `Model` / `EmbeddingModel` / `MaxOutputTokens` / `Temperature` / `TimeoutSeconds` / `ExtraJson` |
+| `XiHanAiOptions` | 根配置（绑定配置节 `SectionName = "XiHan:AI"`）：`string? DefaultProvider`；`IDictionary<string, AiProviderOptions> Providers`（键为 provider 名，大小写不敏感） |
+
+### 智能体（Agents）
+
+| 类型 | 说明 |
+| --- | --- |
+| `IXiHanAgentFactory` | `AIAgent Create(string? instructions = null, string? name = null, IList<AITool>? tools = null, string? providerName = null)`。返回 MAF 原生 `AIAgent`，调用方直接用其 `RunAsync` / `RunStreamingAsync` / 多轮会话 API |
+
+### 技能（Skills）
+
+| 类型 | 说明 |
+| --- | --- |
+| `IAiSkill` | 命名可复用 AI 能力。`string Name`（唯一，作工具名 / MCP tool 名）；`string Description`；`AIFunction AsFunction()`（转为可供对话工具调用 / MCP 暴露的函数） |
+| `IAiSkillRegistry` | 技能注册表。`void Register(IAiSkill skill)`（同名覆盖）；`IReadOnlyList<IAiSkill> All`；`IAiSkill? Find(string name)` |
+
+### RAG（检索增强生成）
+
+| 类型 | 说明 |
+| --- | --- |
+| `IChunkingStrategy` | `IReadOnlyList<string> Chunk(string text, ChunkingOptions options)` |
+| `ChunkingOptions` | `int MaxChunkSize`（默认 1000）；`int Overlap`（相邻切片重叠字符数，默认 100） |
+| `IKnowledgeIngestor` | `Task<int> IngestAsync(KnowledgeIngestRequest request, CancellationToken ct = default)`（返回切片数）；`Task RemoveDocumentAsync(string documentId, int chunkCount, CancellationToken ct = default)`（按文档清理已入库向量） |
+| `KnowledgeIngestRequest` | 摄取请求：`DocumentId`（required）/ `Text`（required）/ `TenantId`（0=平台全局）/ `Title` / `Source` / `Provider`（嵌入 provider，null 用默认）/ `Chunking` |
+| `IKnowledgeRetriever` | `Task<IReadOnlyList<RetrievedChunk>> RetrieveAsync(string query, int topK = 5, RetrievalFilter? filter = null, string? provider = null, CancellationToken ct = default)` |
+| `RetrievalFilter` | 向量库 pre-filter：`long? TenantId`（0=平台全局，null 不限）；`string? DocumentId`（null 不限） |
+| `IRagPromptAugmenter` | `string Augment(string userPrompt, IReadOnlyList<RetrievedChunk> context)`（context 为空原样返回） |
+| `TextChunk` | 入库前切片：`DocumentId` / `Index` / `Text`（均 required）/ `TenantId` / `Title` / `Source` |
+| `RetrievedChunk` | 检索命中：`DocumentId` / `Index` / `Text`（均 required）/ `Title` / `Source` / `double? Score`（相似度，越大越相近；连接器量纲可能不同） |
+
+### 提示词库（Prompts）
+
+| 类型 | 说明 |
+| --- | --- |
+| `IAiPromptStore` | `Task<AiPromptTemplate?> GetAsync(string name, string? version = null, CancellationToken ct = default)`（version 空取当前版本）；`Task<IReadOnlyList<AiPromptTemplate>> ListAsync(...)` |
+| `AiPromptTemplate` | `Name`（唯一）/ `Content`（正文，可含占位/Scriban 变量）/ `Version`（空为当前）/ `Description` |
+
+## 配置
+
+配置载体在本包，但绑定与实现由 `XiHan.Framework.AI` 完成。根配置节名 `XiHan:AI`（`XiHanAiOptions.SectionName`），字段见上表。示例见 [XiHan.Framework.AI](./ai) 的「配置」小节。
+
+## 使用示例
+
+以下示例只依赖本包的契约类型（实现由 `XiHan.Framework.AI` 注入）。
+
+**注入门面发起一次对话：**
+
+```csharp
+public sealed class MyChatUseCase(IXiHanAiService ai)
+{
+    public async Task<string?> AskAsync(string question, CancellationToken ct)
+    {
+        var messages = new[] { new ChatMessage(ChatRole.User, question) };
+        // 指定 provider（null 用默认 provider）
+        var options = new XiHanChatOptions { Provider = "DeepSeek" };
+        var response = await ai.ChatAsync(messages, options, ct);
+        return response.Text;
+    }
+}
+```
+
+**从解析器直接拿 `IChatClient`（需要用 M.E.AI 原生管道时）：**
+
+```csharp
+public sealed class MyLowLevel(IAiChatClientResolver resolver)
+{
+    public IChatClient Client => resolver.Resolve(providerName: null); // 默认 provider
+}
+```
+
+**注册一个自定义技能（应用层）：**
+
+```csharp
+public sealed class SumSkill : IAiSkill
+{
+    public string Name => "sum_numbers";
+    public string Description => "计算两个整数之和";
+    public AIFunction AsFunction() =>
+        AIFunctionFactory.Create((int a, int b) => a + b, Name, Description);
+}
+
+// DI 注册后 DefaultAiSkillRegistry 构造时自动收纳
+services.AddSingleton<IAiSkill, SumSkill>();
+```
+
+## 扩展点 / 自定义
+
+本包全是契约，扩展方式是「实现接口并在 DI 覆盖实现包的默认项」（实现包一律以 `TryAdd*` 注册）：
+
+- **换 provider 配置源**：实现 `IAiProviderConfigStore`（如读数据库的 store），`TryAddSingleton` 之前 `AddSingleton` 覆盖，即可把 provider 配置从 appsettings 迁到 DB / 前端可维护；改配置后调 `IAiChatClientResolver.Invalidate` / `IAiEmbeddingGeneratorResolver.Invalidate` 热切换。
+- **换提示词库**：实现 `IAiPromptStore`（store 化 + 版本）。
+- **换 RAG 组件**：实现 `IChunkingStrategy` / `IKnowledgeIngestor` / `IKnowledgeRetriever` / `IRagPromptAugmenter` 任一，覆盖框架默认实现。
+- **供给技能**：`AddSingleton<IAiSkill, XxxSkill>()`，注册表构造时自动收纳，随后暴露为对话工具与 MCP tool。
+
+## 注意事项与最佳实践
+
+- **fail-closed 语义**：`IAiProviderConfigStore.GetAsync` 无匹配返回 `null`，调用方（如解析器）应据此抛出明确异常而非静默降级——这是框架约定。
+- **薄封装、勿重造**：会话/Agent 契约刻意贴近 `Microsoft.Extensions.AI` 与 MAF 原生类型（`ChatMessage` / `ChatResponse` / `AIAgent` / `AITool`），业务不必再包一层 DTO。
+- **嵌入模型是可选项**：`AiProviderOptions.EmbeddingModel` 为空表示该 provider 不支持嵌入；RAG 摄取/检索前须确保所选 provider 配了嵌入模型。
+- **RAG 向量库不属本抽象**：这些契约只描述「切片/摄取/检索/增强」的行为，**不涉及**具体向量数据库（Qdrant 等）——向量存储是实现包 + 应用层部署事项，见 [XiHan.Framework.AI](./ai)。
 
 ## 依赖模块
 
 - 无框架内部依赖（不引用任何 `XiHan.Framework.*`）
-- 第三方核心：**Microsoft.Extensions.AI.Abstractions**（`IChatClient` / `IEmbeddingGenerator`）+ **Microsoft.Agents.AI.Abstractions**（Agent 抽象）
+- 第三方核心：**Microsoft.Extensions.AI.Abstractions**（`IChatClient` / `IEmbeddingGenerator` / `ChatMessage` / `AIFunction` / `AITool`）、**Microsoft.Agents.AI.Abstractions**（`AIAgent`）
 
 ## 相关模块
 
 - [XiHan.Framework.AI](./ai)（这些抽象的默认实现）
+- [XiHan.Framework.Http](./http)（实现包的传输依赖）
