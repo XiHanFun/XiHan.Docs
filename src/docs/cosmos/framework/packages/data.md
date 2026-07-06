@@ -186,7 +186,7 @@ public class MyModule : XiHanModule { }
 | `EnableTableInitialization` | `bool` | `false` | `CodeFirst` 建表 |
 | `EnableDataSeeding` | `bool` | `false` | 执行种子数据 |
 
-`SqlSugarConnectionConfigOptions` 字段：`ConfigId`（默认 `"Default"`）、`ConnectionString`、`DbType`（SqlSugar 枚举）、`IsAutoCloseConnection`（默认 `true`）、`InitKeyType`（默认 `InitKeyType.Attribute`）、`MoreSettings`、`SlaveConnectionConfigs`（主从读写分离）。
+`SqlSugarConnectionConfigOptions` 字段：`ConfigId`（默认 `"Default"`）、`ConnectionString`、`DbType`（SqlSugar 枚举）、`IsAutoCloseConnection`（默认 `true`）、`InitKeyType`（默认 `InitKeyType.Attribute`）、`MoreSettings`、`DbLinkName`、`LanguageType`、`IndexSuffix`、`SlaveConnectionConfigs`（主从读写分离，详见下文）。
 
 `DbType` 取 SqlSugar 的 `DbType` 枚举值，支持 **PostgreSQL / MySql / MariaDB** 等（`DbInitializer` 对 `MySql`/`MySqlConnector` 会自动把库字符集归一化为 utf8mb4）。
 
@@ -219,6 +219,69 @@ public class MyModule : XiHanModule { }
   }
 }
 ```
+
+## 主从读写分离
+
+框架把 SqlSugar 的原生主从能力**完整放出来**，遵循「想改就改、不改吃默认」：SqlSugar 自动把 `SELECT` 按权重路由到从库、`INSERT/UPDATE/DELETE` 与事务走主库，无需业务感知。配置有两个通道。
+
+### 通道 A：appsettings 声明从库（够用即可）
+
+在连接里填 `SlaveConnectionConfigs` 即可让读走从库：
+
+```json
+{
+  "ConfigId": "1",
+  "ConnectionString": "主库连接串",
+  "DbType": "PostgreSQL",
+  "SlaveConnectionConfigs": [
+    { "ConnectionString": "从库1连接串" },
+    { "ConnectionString": "从库2连接串" }
+  ]
+}
+```
+
+::: warning HitRate 无法经 appsettings 设置（重要）
+SqlSugar 的 `SlaveConnectionConfig.HitRate`（读权重）是**字段**而非属性，.NET 配置绑定器只绑属性、不绑字段，所以 appsettings 里写的 `HitRate` **绑不上、恒为 0**，会导致从库权重为 0 而**永远收不到读流量**。
+
+框架已对此兜底：构建时把 `HitRate <= 0` 的从库**归一化**为 `DefaultSlaveHitRate`（默认 10），保证 appsettings 声明的从库能真正分担读。**要给从库设置差异化权重，请用下面的通道 B。**
+:::
+
+### 通道 B：代码钩子完整定制原生配置
+
+`XiHanSqlSugarCoreOptions.ConfigureConnectionConfigs` 在 `SqlSugarScope` 构建前，把已填好框架默认值的**原生** `List<ConnectionConfig>` 交给你，任何原生能力都能改——差异化 `HitRate`、`ConfigureExternalServices`（如可空列处理）、自定义主从探活等：
+
+```csharp
+services.Configure<XiHanSqlSugarCoreOptions>(options =>
+{
+    options.ConfigureConnectionConfigs = configs =>
+    {
+        foreach (var config in configs.Where(c => Equals(c.ConfigId, "1")))
+        {
+            // HitRate 只能在代码里设（字段赋值不受配置绑定限制）
+            config.SlaveConnectionConfigs =
+            [
+                new SlaveConnectionConfig { HitRate = 30, ConnectionString = "从库1连接串" },
+                new SlaveConnectionConfig { HitRate = 10, ConnectionString = "从库2连接串" }
+            ];
+        }
+    };
+});
+```
+
+该钩子对运行时动态注册的租户连接同样生效（以单元素列表触发，请按 `ConfigId` 分支处理并保证幂等）。库隔离租户也可在 `SqlSugarTenantConnection.SlaveConnectionConfigs` 直接带从库。
+
+> 追加 `DataExecuting` 逻辑请用 `AppendDataExecuting`，**切勿**在 `ConfigureDbAction` 里直接给 `Aop.DataExecuting` 赋值——该事件是单次赋值，直接赋值会整体冲掉框架的雪花主键/审计/租户注入。核心注入焊死、只许追加。
+
+### 可选：从库健康探针（默认关闭）
+
+打开 `EnableSlaveHealthCheck` 后，框架后台周期性探测从库连通性：不可用的从库自动摘除读权重（`HitRate=0`），恢复后按 `SlaveFailureCooldownSeconds` 冷却窗口回填原始权重。默认关闭、零成本；仅覆盖 appsettings 静态连接，运行时租户连接不在探测范围。
+
+| 选项 | 默认 | 说明 |
+| --- | --- | --- |
+| `DefaultSlaveHitRate` | `10` | 通道 A 从库权重归一化默认值 |
+| `EnableSlaveHealthCheck` | `false` | 是否启用从库健康探针 |
+| `SlaveHealthCheckIntervalSeconds` | `30` | 探测周期（秒） |
+| `SlaveFailureCooldownSeconds` | `120` | 故障冷却窗口（秒），避免抖动 |
 
 ## 使用示例
 
