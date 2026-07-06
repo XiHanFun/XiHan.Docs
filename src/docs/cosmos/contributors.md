@@ -48,12 +48,13 @@ XiHan 文档仓库。
 
 请阅读我们的[贡献指南](contributing.md)了解更多信息。
 
-## 赞助
+## 支持&赞助
 
-如果您觉得我们的项目对您有帮助，可以考虑赞助我们的开发工作：
+如果此项目对你的开发有助益，也欢迎请作者一杯咖啡。
 
-- [Github](https://github.com/sponsors/zhaifanhua)
-- [PayPal](https://www.paypal.com/paypalme/zhaifanhua)
-- [ZhaiFanhua](https://www.zhaifanhua.com/sponsor/)
-
-感谢所有为 XiHanFun 开源组织做出贡献的人！
+<table>
+  <tr>
+    <td align="center"><img src="/images/alipay.png" width="200" /><br/>支付宝</td>
+    <td align="center"><img src="/images/weixinpay.png" width="200" /><br/>微信</td>
+  </tr>
+</table>
