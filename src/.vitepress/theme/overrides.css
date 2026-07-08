@@ -101,7 +101,7 @@ table {
   white-space: nowrap;
 }
 .VPNavBarMenu .VPNavBarMenuLink[href*="/cosmos/framework"]::after {
-  content: "v3.2.0";
+  content: "v3.4.0";
 }
 .VPNavBarMenu .VPNavBarMenuLink[href*="/cosmos/ui"]::after {
   content: "实验性";
@@ -110,5 +110,5 @@ table {
   background-color: var(--vp-badge-warning-bg);
 }
 .VPNavBarMenu .VPNavBarMenuLink[href*="/cosmos/basic-app"]::after {
-  content: "v3.2.0";
+  content: "v3.4.0";
 }
