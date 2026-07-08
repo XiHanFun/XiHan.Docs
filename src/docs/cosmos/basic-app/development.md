@@ -217,7 +217,7 @@ public class XiHanBasicAppAIModule : XiHanModule
 <ProjectReference Include="..\XiHan.BasicApp.Saas\XiHan.BasicApp.Saas.Local.csproj" />
 ```
 
-框架「源码 vs NuGet」的真正切换点在基座 `XiHan.BasicApp.Core`：`Core.csproj` 用 `PackageReference` 引 `XiHan.Framework.* Version="3.1.0"`（版本在 `props/version.props`）；`Core.Local.csproj` 用 `ProjectReference` 指向同级 `XiHan.Framework/framework/src/*`（本地源码调试）。`.Local` 链一路传递（`Core.Local → Web.Core.Local → Saas.Local → <你的模块>.Local → WebHost.Local`）。详见[本地调试](#本地调试)。
+框架「源码 vs NuGet」的真正切换点在基座 `XiHan.BasicApp.Core`：`Core.csproj` 用 `PackageReference` 引 `XiHan.Framework.* Version="3.4.0"`（版本在 `props/version.props`）；`Core.Local.csproj` 用 `ProjectReference` 指向同级 `XiHan.Framework/framework/src/*`（本地源码调试）。`.Local` 链一路传递（`Core.Local → Web.Core.Local → Saas.Local → <你的模块>.Local → WebHost.Local`）。详见[本地调试](#本地调试)。
 
 ### 用 `Replace` 而非 `TryAdd` 覆盖框架默认
 
@@ -321,7 +321,7 @@ export const positionApi = {
 
 | 方案 | slnx | 引用方式 | 用途 |
 | --- | --- | --- | --- |
-| **正式** | `backend/XiHan.BasicApp.slnx` | 各 `*.csproj` → 框架走 NuGet（`XiHan.Framework.* 3.1.0`，版本在 `props/version.props`） | 常规开发、发布 |
+| **正式** | `backend/XiHan.BasicApp.slnx` | 各 `*.csproj` → 框架走 NuGet（`XiHan.Framework.* 3.4.0`，版本在 `props/version.props`） | 常规开发、发布 |
 | **本地源码** | `backend/XiHan.BasicApp.Local.slnx` | 各 `*.Local.csproj` → 框架走同级 `XiHan.Framework` 源码 `ProjectReference` | 需要连框架源码断点/改框架时 |
 
 两套 slnx 的项目槽位一一对应，只是分别指向 `.csproj` / `.Local.csproj`。新增独立模块（配方 B）时，**两套 slnx 都要加**对应的 csproj 变体。框架源码不是作为 slnx 节点加入，而是经 `.Local.csproj` 的 `ProjectReference` 引入。
