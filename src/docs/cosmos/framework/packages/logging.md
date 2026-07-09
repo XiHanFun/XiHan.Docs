@@ -108,9 +108,9 @@ public class MyModule : XiHanModule { }
 | --- | --- | --- | --- |
 | `IsEnabled` | `bool` | `true` | 是否启用日志 |
 | `MinimumLevel` | `LogLevel` | `Information` | 最小日志级别（映射为 Serilog `LogEventLevel`） |
-| `ConsoleOutputTemplate` | `string` | `[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}` | 控制台输出模板 |
+| `ConsoleOutputTemplate` | `string` | `[{Timestamp:HH:mm:ss} {Level:u3}] [{TraceId}] {SourceContext}: {Message:lj}{NewLine}{Exception}` | 控制台输出模板（链路 ID 紧跟级别之后） |
 | `FileOutputPath` | `string` | `logs/xihan-.log` | 文件输出路径（Serilog 会在文件名中插入日期后缀） |
-| `FileOutputTemplate` | `string` | `[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}` | 文件输出模板 |
+| `FileOutputTemplate` | `string` | `[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [{TraceId} {SpanId}] {SourceContext}: {Message:lj}{NewLine}{Exception}` | 文件输出模板（链路 ID 紧跟级别之后） |
 | `RollingInterval` | `RollingInterval` | `Day` | 文件滚动间隔 |
 | `RetainedFileCountLimit` | `int?` | `31` | 保留文件数（`null` 表示永久保留） |
 | `FileSizeLimitBytes` | `long?` | `104857600`（100MB） | 单文件大小上限 |
