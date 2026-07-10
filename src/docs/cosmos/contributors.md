@@ -47,14 +47,3 @@ XiHan 文档仓库。
 - 报告问题
 
 请阅读我们的[贡献指南](contributing.md)了解更多信息。
-
-## 支持&赞助
-
-如果此项目对你的开发有助益，也欢迎请作者一杯咖啡。
-
-<table>
-  <tr>
-    <td align="center"><img src="/images/alipay.png" width="200" /><br/>支付宝</td>
-    <td align="center"><img src="/images/weixinpay.png" width="200" /><br/>微信</td>
-  </tr>
-</table>

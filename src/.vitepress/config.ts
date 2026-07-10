@@ -380,6 +380,10 @@ const nav: DefaultTheme.NavItem[] = [
         text: "贡献者",
         link: "cosmos/contributors",
       },
+      {
+        text: "支持&赞助",
+        link: "cosmos/sponsor",
+      },
     ],
   },
   {
