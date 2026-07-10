@@ -5,14 +5,3 @@
 # XiHan.Docs
 
 快速、轻量、高效、用心的框架和组件库，基于 DotNte 和 Vue 构建。
-
-## 支持&赞助
-
-如果此项目对你的开发有助益，也欢迎请作者一杯咖啡。
-
-<table>
-  <tr>
-    <td align="center"><img src="./assets/alipay.png" width="200" /><br/>支付宝</td>
-    <td align="center"><img src="./assets/weixinpay.png" width="200" /><br/>微信</td>
-  </tr>
-</table>
