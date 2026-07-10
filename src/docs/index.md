@@ -68,12 +68,12 @@ features:
 
   - title: 拥抱开源
     icon: 🤩
-    details: 所有代码均开源在 GitHub 和 Gitee 上且处于积极维护状态，在共享所得之时，也积极促进技术之进，社区之兴。
+    details: 所有代码均开源在 GitHub、Gitee、Atomgit 上且处于积极维护状态，在共享所得之时，也积极促进技术之进，社区之兴。
     link: https://github.com/XiHanFun
     linkText: "了解 XiHanFun"
 
 footer:
-  message: 基于 MIT 许可发布 | Copyright © 2021-至今 XiHanFun
+  message: 基于 MIT 许可发布 | Copyright ©2021-Present XiHanFun and ZhaiFanhua
   links:
     - text: 快速上手
       link: cosmos/getstart

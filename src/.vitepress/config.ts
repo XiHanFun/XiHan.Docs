@@ -509,9 +509,9 @@ export default defineConfig({
     },
     footer: {
       message:
-        "Released under The <a href='https://opensource.org/license/MIT' target='_blank'>MIT</a> License.",
+        "Released under The <a href='https://opensource.org/license/MIT' target='_blank'>MIT</a> License",
       copyright:
-        "Copyright ©2021-Present <a href='https://www.xihanfun.com' target='_blank'>XiHanFun</a> All Rights Reserved.",
+        "Copyright ©2021-Present <a href='https://www.xihanfun.com' target='_blank'>XiHanFun</a> and <a href='https://www.zhaifanhua.com' target='_blank'>ZhaiFanhua</a>",
     },
   },
 });
