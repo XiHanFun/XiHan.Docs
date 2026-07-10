@@ -39,7 +39,10 @@ const frameworkSidebar: DefaultTheme.SidebarItem[] = [
     items: [
       { text: "模块系统", link: "/cosmos/framework/concepts/modularity" },
       { text: "模块生命周期", link: "/cosmos/framework/concepts/lifecycle" },
-      { text: "依赖注入", link: "/cosmos/framework/concepts/dependency-injection" },
+      {
+        text: "依赖注入",
+        link: "/cosmos/framework/concepts/dependency-injection",
+      },
       { text: "动态 API", link: "/cosmos/framework/concepts/dynamic-api" },
     ],
   },
@@ -306,7 +309,7 @@ const nav: DefaultTheme.NavItem[] = [
     text: "代码仓库",
     items: [
       {
-        text: "Github(国际)",
+        text: "Github主库(国际)",
         items: [
           {
             text: "后端 | 开发框架",
@@ -323,7 +326,7 @@ const nav: DefaultTheme.NavItem[] = [
         ],
       },
       {
-        text: "Gitee(国内)",
+        text: "Gitee同步备库(国内)",
         items: [
           {
             text: "后端 | 开发框架",
@@ -336,6 +339,23 @@ const nav: DefaultTheme.NavItem[] = [
           {
             text: "用例 | 基础应用",
             link: "https://gitee.com/XiHanFun/XiHan.BasicApp",
+          },
+        ],
+      },
+      {
+        text: "Atomgit同步备库(国内)",
+        items: [
+          {
+            text: "后端 | 开发框架",
+            link: "https://atomgit.com/XiHanFun/XiHan.Framework",
+          },
+          {
+            text: "前端 | 视图组件",
+            link: "https://atomgit.com/XiHanFun/XiHan.UI",
+          },
+          {
+            text: "用例 | 基础应用",
+            link: "https://atomgit.com/XiHanFun/XiHan.BasicApp",
           },
         ],
       },
@@ -442,6 +462,7 @@ export default defineConfig({
     socialLinks: [
       { icon: "github", link: "https://github.com/XiHanFun" },
       { icon: "gitee", link: "https://gitee.com/XiHanFun" },
+      { icon: "git", link: "https://atomgit.com/XiHanFun" },
     ],
     search: {
       provider: "local",
