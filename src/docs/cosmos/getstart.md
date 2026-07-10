@@ -24,59 +24,116 @@ index: false
 
 ### 前端开发环境
 
-- [Node.js](https://nodejs.org/) (版本 18 或更高)
-- [pnpm](https://pnpm.io/installation) (推荐的包管理工具)
-- 推荐 IDE：Visual Studio Code 配合 Volar 插件
+- [Node.js](https://nodejs.org/) (版本 24 或更高)
+- [pnpm](https://pnpm.io/installation) (版本 10 或更高；XiHan.BasicApp 前端要求 11 或更高)
+- 推荐 IDE：Visual Studio Code 配合 Vue - Official 插件
+
+### 运行 XiHan.BasicApp 额外需要
+
+- PostgreSQL 14+（或 MySQL / MariaDB）
+- Redis 6.0+
 
 ## 入门指南
 
 ### 使用 XiHan.Framework (后端框架)
 
-1. 创建新项目或在现有项目中安装 NuGet 包：
+框架是**按模块安装**的，用什么装什么。搭一个 Web API 最少需要下面两个包：
+
+1. 创建新项目并安装 NuGet 包：
 
 ```bash
-dotnet add package XiHan.Framework.Core
+dotnet new web -n MyApp
+cd MyApp
+
+# 动态 API + 中间件管道（依赖会自动带上 Core、Web.Core、Application 等）
+dotnet add package XiHan.Framework.Web.Api
+
+# API 文档（Scalar / Swagger UI），开发期推荐
+dotnet add package XiHan.Framework.Web.Docs
 ```
 
-2. 在 Program.cs 中引入和配置框架：
+2. 定义启动模块。框架里**一个"模块"就是一个继承 `XiHanModule` 的类**，用 `[DependsOn]` 声明它要用哪些能力：
 
 ```csharp
-using XiHan.Framework.Core;
+// MyAppModule.cs
+using XiHan.Framework.Core.Modularity;
+using XiHan.Framework.Web.Api;
+using XiHan.Framework.Web.Docs;
+
+namespace MyApp;
+
+[DependsOn(
+    typeof(XiHanWebApiModule),   // 动态 API + 中间件管道
+    typeof(XiHanWebDocsModule)   // Scalar / Swagger 文档
+)]
+public class MyAppModule : XiHanModule
+{
+    // 可重写 ConfigureServices / OnApplicationInitialization 等生命周期钩子
+}
+```
+
+3. 在 Program.cs 中加载模块树：
+
+```csharp
+using MyApp;
+using XiHan.Framework.Web.Core.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 添加 XiHan 框架服务
-builder.Services.AddXiHanFramework();
-
-// 其他配置...
+// 加载以 MyAppModule 为根的整棵模块依赖树（自动拓扑排序）
+await builder.AddApplicationAsync<MyAppModule>();
 
 var app = builder.Build();
 
-// 使用 XiHan 中间件
-app.UseXiHanFramework();
+// 触发所有模块的初始化钩子，装配中间件管道
+await app.InitializeApplicationAsync();
 
-app.Run();
+await app.RunAsync();
 ```
 
+4. 写第一个接口。框架用**动态 API** 暴露接口，只需写一个应用服务类，**不需要写 Controller**：
+
+```csharp
+// HelloAppService.cs
+using XiHan.Framework.Application.Attributes;
+using XiHan.Framework.Application.Services;
+
+namespace MyApp;
+
+[DynamicApi]
+public class HelloAppService : ApplicationServiceBase
+{
+    public string GetGreeting(string name)
+    {
+        return $"你好，{name}！欢迎使用 XiHan.Framework。";
+    }
+}
+```
+
+`dotnet run` 后打开 `https://localhost:<端口>/scalar` 即可在线调用。
+
+> 更详细的分步讲解、数据访问接入与可选模块清单，见[框架快速上手](./framework/quickstart.md)。
+
 ### 使用 XiHan.UI (前端组件)
+
+> XiHan.UI 仍在积极重构中，当前全局注册的组件为 `XhButton`、`XhButtonGroup`、`XhIcon`，其余组件尚未稳定。
 
 1. 安装组件库：
 
 ```bash
 # 使用 npm
-npm install @xihan-ui/core
+npm install xihan-ui
 
 # 使用 pnpm
-pnpm add @xihan-ui/core
+pnpm add xihan-ui
 ```
 
-2. 在 Vue 项目中全局引入：
+2. 在 Vue 项目中全局引入（`install` 会自动初始化主题系统）：
 
 ```js
 // main.js
 import { createApp } from "vue";
-import XiHanUI from "@xihan-ui/core";
-import "@xihan-ui/core/dist/style.css";
+import XiHanUI from "xihan-ui";
 import App from "./App.vue";
 
 const app = createApp(App);
@@ -88,11 +145,11 @@ app.mount("#app");
 
 ```vue
 <template>
-  <xh-button type="primary">XiHan Button</xh-button>
+  <Button type="primary">XiHan Button</Button>
 </template>
 
 <script setup>
-import { XhButton } from "@xihan-ui/core";
+import { Button } from "xihan-ui";
 </script>
 ```
 
@@ -104,21 +161,19 @@ import { XhButton } from "@xihan-ui/core";
 # 克隆仓库
 git clone https://github.com/XiHanFun/XiHan.BasicApp.git
 
-# 进入目录
-cd XiHan.BasicApp
+# 启动后端
+cd XiHan.BasicApp/backend
+dotnet run --project src/main/XiHan.BasicApp.WebHost --launch-profile Development
 
-# 安装前端依赖
-cd frontend
+# 在另一个终端中启动前端
+cd XiHan.BasicApp/frontend
 pnpm install
-
-# 启动前端开发服务器
 pnpm dev
-
-# 在另一个终端中启动后端服务
-cd ../backend
-dotnet restore
-dotnet run
 ```
+
+后端启动后访问 `http://127.0.0.1:9708/scalar` 查看 API 文档（Development 端口 `9708`，Production 端口 `9709`）。
+
+数据库连接串在 `backend/src/main/XiHan.BasicApp.WebHost/appsettings.Development.json` 中配置。
 
 ## 下一步
 

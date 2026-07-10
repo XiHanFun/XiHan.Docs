@@ -16,12 +16,12 @@ hero:
       link: cosmos/getstart
 
     - theme: alt
-      text: 在线预览
-      link: https://basicapp.xihanfun.com
-
-    - theme: alt
       text: 项目简介
       link: cosmos/guide
+
+    - theme: brand
+      text: 在线预览
+      link: https://basicapp.xihanfun.com
 
     - theme: alt
       text: Github
@@ -30,6 +30,10 @@ hero:
     - theme: alt
       text: Gitee
       link: https://gitee.com/XiHanFun
+
+    - theme: alt
+      text: Atomgit
+      link: https://atomgit.com/XiHanFun
 
 features:
   - title: 开发框架
