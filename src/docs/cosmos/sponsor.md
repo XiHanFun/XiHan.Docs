@@ -20,7 +20,7 @@
 
 <table>
   <tr>
-    <td align="center"><img src="/images/alipay.png" width="200" /><br/>支付宝(支持花呗、信用卡)</td>
+    <td align="center"><img src="/images/alipay.png" width="200" /><br/>支付宝(支持信用卡)</td>
     <td align="center"><img src="/images/weixinpay.png" width="200" /><br/>微信(支持信用卡)</td>
   </tr>
 </table>
