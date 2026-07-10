@@ -1,6 +1,6 @@
 # 模块总览
 
-XiHan.Framework 由 **57 个 NuGet 包**组成，按分层组织。每个包都有独立文档——下面的表格按层分组，点击即可查阅。
+XiHan.Framework 由 **61 个 NuGet 包**组成，按分层组织。每个包都有独立文档——下面的表格按层分组，点击即可查阅。
 
 > 命名约定：`XiHan.Framework.[模块名]` 为通用类库，`XiHan.Framework.Web.[模块名]` 为 Web 功能。安装即 `dotnet add package <包名>`。
 
@@ -69,6 +69,9 @@ DDD 分层与应用服务契约。
 | --- | --- |
 | [EventBus.Abstractions](./eventbus-abstractions) | 事件总线抽象：发布/订阅接口、事件处理管道 |
 | [EventBus](./eventbus) | 事件总线：本地/分布式事件、Outbox 模式、事件存储 |
+| [EventBus.RabbitMQ](./eventbus-rabbitmq) | 分布式事件总线的 RabbitMQ 提供程序：direct 交换机 + 事件名路由键、队列竞争消费 |
+| [EventBus.Kafka](./eventbus-kafka) | 分布式事件总线的 Kafka 提供程序：单主题 + 事件名作 Key、消费者组竞争消费 |
+| [EventBus.Redis](./eventbus-redis) | 分布式事件总线的 Redis Streams 提供程序：`XADD` / `XREADGROUP` 消费者组竞争消费 |
 | [Messaging](./messaging) | 消息处理：消息代理抽象（发布/消费/路由） |
 | [Http](./http) | HTTP 客户端：Polly 韧性策略（重试/熔断）、请求管道 |
 
@@ -81,6 +84,7 @@ DDD 分层与应用服务契约。
 | [Localization.Abstractions](./localization-abstractions) | 国际化抽象：`IStringLocalizer` 抽象层 |
 | [Localization](./localization) | 国际化：多语言资源文件、动态文化切换 |
 | [Logging](./logging) | 结构化日志：Serilog 集成、文件/控制台输出、异步写入 |
+| [Auditing](./auditing) | 审计日志：6 类日志记录、Channel 异步队列 + 批量消费者、脱敏器、写入器契约（默认空实现） |
 | [Castle](./castle) | AOP 动态代理：Castle DynamicProxy 集成、服务拦截器注册 |
 | [Threading](./threading) | 并发辅助：取消令牌提供者、基于 AsyncLocal 的环境作用域 |
 | [Timing](./timing) | 时间策略：时区管理、时间抽象 |
@@ -138,9 +142,11 @@ Utils（零依赖）
       └ Core
           ├ Serialization
           ├ Security → Authentication → Authorization
+          │     └ Auditing（+ MultiTenancy.Abstractions）
           ├ Threading / Timing / DistributedIds
           ├ VirtualFileSystem → Localization
           ├ Uow → Caching(+Redis) / EventBus
+          │                          └ EventBus.RabbitMQ / EventBus.Kafka / EventBus.Redis
           ├ Domain.Shared → Domain → Data(SqlSugar)
           │     └ Application.Contracts → Application
           ├ MultiTenancy.Abstractions → MultiTenancy → Tasks / Traffic / Upgrade

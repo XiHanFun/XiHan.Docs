@@ -73,6 +73,7 @@ public class MyModule : XiHanModule { }
 | --- | --- |
 | `LocalEventBus` | 本地事件总线实现（单例）；注入 `ILocalEventBus` 使用；`Subscribe/Unsubscribe/UnsubscribeAll` + `GetEventHandlerFactories` |
 | `LocalDistributedEventBus` | 分布式事件总线实现（单例，可替换）；在 `LocalEventBus` 之上做 Outbox/Inbox 与事件名→类型映射 |
+| `BrokerDistributedEventBusBase` | 面向真实消息中间件的分布式事件总线基类；抽取三个 Broker Provider 的公共逻辑（事件类型映射、订阅委派本地总线、发件箱投递、入站幂等/重试、Consumer Span）。Provider 只需实现 `InitializeAsync` 与 `PublishToBrokerAsync` |
 | `NullDistributedEventBus` | 分布式事件总线空实现（`Instance` 单例），所有发布/订阅均为空操作 |
 | `NullLocalEventBus` | 本地事件总线空实现（`Instance` 单例） |
 | `XiHanLocalEventBusOptions` | 本地事件总线选项：`ITypeList<IEventHandler> Handlers`（处理器类型列表） |
@@ -189,7 +190,7 @@ await _distributedEventBus.PublishAsync(new OrderShippedEvent { OrderId = 1001 }
 
 ## 扩展点 / 自定义
 
-- **替换分布式事件总线为真正的 MQ**：默认 `LocalDistributedEventBus` 用 `[Dependency(TryRegister = true)]` 注册，你自己的 `IDistributedEventBus` 实现（如 RabbitMQ/Kafka）会优先生效。
+- **替换分布式事件总线为真正的 MQ**：框架已提供三个开箱即用的 Broker 提供程序——[EventBus.RabbitMQ](./eventbus-rabbitmq)、[EventBus.Kafka](./eventbus-kafka)、[EventBus.Redis](./eventbus-redis)，装上并 `[DependsOn]` 对应模块即可，业务代码无需改动。原理：默认 `LocalDistributedEventBus` 用 `[Dependency(TryRegister = true)]` 注册，Provider 走常规注册并在其后追加，DI 解析取最后一条注册，故 Provider 胜出。自己实现 `IDistributedEventBus` 同理。
 - **替换发件箱/收件箱为持久化实现**：默认内存实现用 `TryAddSingleton` 注册；把你的 `IEventOutbox` / `IEventInbox`（如落 SqlSugar/DB）注册进容器，并在 `XiHanDistributedEventBusOptions.Outboxes/Inboxes` 的 `ImplementationType` 指向它即可。
 - **事件命名**：跨服务事件建议加 `[EventName("稳定名字")]`，避免依赖 `Type.FullName`（重构改名会破坏契约）。
 - **事件筛选/多事件盒**：用 `OutboxConfigDictionary.Configure("名字", ...)` 配多个命名事件盒，配 `Selector` 做事件类型路由。
@@ -214,5 +215,8 @@ await _distributedEventBus.PublishAsync(new OrderShippedEvent { OrderId = 1001 }
 ## 相关模块
 
 - [XiHan.Framework.EventBus.Abstractions](./eventbus-abstractions)
+- [XiHan.Framework.EventBus.RabbitMQ](./eventbus-rabbitmq)（分布式事件走 RabbitMQ）
+- [XiHan.Framework.EventBus.Kafka](./eventbus-kafka)（分布式事件走 Kafka）
+- [XiHan.Framework.EventBus.Redis](./eventbus-redis)（分布式事件走 Redis Streams）
 - [XiHan.Framework.Messaging](./messaging)
 - [XiHan.Framework.Uow](./uow)

@@ -106,6 +106,9 @@ const frameworkSidebar: DefaultTheme.SidebarItem[] = [
         items: [
           pkg("EventBus.Abstractions", "eventbus-abstractions"),
           pkg("EventBus 事件总线", "eventbus"),
+          pkg("EventBus.RabbitMQ", "eventbus-rabbitmq"),
+          pkg("EventBus.Kafka", "eventbus-kafka"),
+          pkg("EventBus.Redis", "eventbus-redis"),
           pkg("Messaging 消息", "messaging"),
           pkg("Http 客户端", "http"),
         ],
@@ -119,6 +122,7 @@ const frameworkSidebar: DefaultTheme.SidebarItem[] = [
           pkg("Localization.Abstractions", "localization-abstractions"),
           pkg("Localization 国际化", "localization"),
           pkg("Logging 日志", "logging"),
+          pkg("Auditing 审计日志", "auditing"),
           pkg("Castle AOP", "castle"),
           pkg("Threading 并发", "threading"),
           pkg("Timing 时间", "timing"),
