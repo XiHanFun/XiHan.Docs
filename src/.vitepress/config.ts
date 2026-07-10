@@ -244,6 +244,31 @@ const basicAppSidebar: DefaultTheme.SidebarItem[] = [
   },
 ];
 
+// cosmos 根下的独立页原本没有配 sidebar，会落到默认主题的窄列布局
+const startSidebar: DefaultTheme.SidebarItem[] = [
+  {
+    text: "开始",
+    collapsed: false,
+    items: [
+      { text: "项目简介", link: "/cosmos/guide" },
+      { text: "快速上手", link: "/cosmos/getstart" },
+    ],
+  },
+];
+
+const contributeSidebar: DefaultTheme.SidebarItem[] = [
+  {
+    text: "参与贡献",
+    collapsed: false,
+    items: [
+      { text: "公约", link: "/cosmos/code-of-conduct" },
+      { text: "指南", link: "/cosmos/contributing" },
+      { text: "贡献者", link: "/cosmos/contributors" },
+      { text: "支持&赞助", link: "/cosmos/sponsor" },
+    ],
+  },
+];
+
 const nav: DefaultTheme.NavItem[] = [
   {
     text: withNavBadge("🧩 开发框架", releases.framework),
@@ -409,6 +434,14 @@ const sidebar: DefaultTheme.Sidebar = {
     },
   ],
   "/cosmos/basic-app/": basicAppSidebar,
+
+  // cosmos 根下的独立页：按前缀逐页登记（VitePress 取路径段最多的键，不会与上面三个目录键相冲）
+  "/cosmos/guide": startSidebar,
+  "/cosmos/getstart": startSidebar,
+  "/cosmos/code-of-conduct": contributeSidebar,
+  "/cosmos/contributing": contributeSidebar,
+  "/cosmos/contributors": contributeSidebar,
+  "/cosmos/sponsor": contributeSidebar,
 };
 
 function searchOptions(): Partial<DefaultTheme.AlgoliaSearchOptions> {
