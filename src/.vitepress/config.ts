@@ -1,10 +1,9 @@
 import { DefaultTheme, HeadConfig, defineConfig } from "vitepress";
-import pkg from "../package.json";
+import { releases, withNavBadge } from "./versions";
 
 const title: string = "曦寒官方文档";
 const description: string = "开发框架和组件库";
 const keywords: string = "曦寒,曦寒懿,开发框架,组件库,官方文档,开源,摘繁华";
-const version: string = pkg.version;
 const logo: string = "/images/logo.png";
 const head: HeadConfig[] = [
   ["meta", { name: "author", content: "ZhaiFanhua" }],
@@ -247,17 +246,17 @@ const basicAppSidebar: DefaultTheme.SidebarItem[] = [
 
 const nav: DefaultTheme.NavItem[] = [
   {
-    text: "🧩 开发框架",
+    text: withNavBadge("🧩 开发框架", releases.framework),
     link: "/cosmos/framework",
     activeMatch: "/cosmos/framework/",
   },
   {
-    text: "🎨 视图组件",
+    text: withNavBadge("🎨 视图组件", releases.ui),
     link: "/cosmos/ui",
     activeMatch: "/cosmos/ui/",
   },
   {
-    text: "🏠 基础应用",
+    text: withNavBadge("🏠 基础应用", releases.basicApp),
     link: "/cosmos/basic-app",
     activeMatch: "/cosmos/basic-app/",
   },
