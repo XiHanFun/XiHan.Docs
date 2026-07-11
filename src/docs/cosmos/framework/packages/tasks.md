@@ -1,6 +1,6 @@
 # XiHan.Framework.Tasks
 
-> 任务库：自研调度引擎（Cron/Interval/Delay）+ 后台常驻服务基类，执行期自动切换租户上下文。
+> 任务库：自研调度引擎（Cron/Interval/Delay）+ 一次性后台作业队列（BackgroundJobs）+ 后台常驻服务基类，执行期自动切换租户上下文。
 
 - **NuGet**：`XiHan.Framework.Tasks`
 - **模块类**：`XiHanTasksModule`
@@ -9,21 +9,23 @@
 
 ## 概述
 
-XiHan.Framework.Tasks 提供两条相互独立的能力线：
+XiHan.Framework.Tasks 提供三条相互独立的能力线：
 
 1. **定时任务调度（ScheduledJobs）**：以 `CompositeJobScheduler` 为核心的自研调度引擎，支持 Cron 表达式、固定间隔（Interval）、一次性延迟（Delay）三种自动触发方式，外加手动触发（Manual）。任务经过一条可插拔的中间件管道（日志 → 超时 → 锁 → 重试 → 指标）执行，并在正确的租户上下文中运行。
-2. **后台常驻服务（BackgroundServices）**：`XiHanBackgroundServiceBase<T>` 抽象基类，封装「循环拉取 → 并发处理 → 异常重试 → 优雅停机 → 运行统计」的通用骨架，子类只需实现「取任务」和「处理任务」两个方法即可拥有一个生产级后台 worker。
+2. **后台作业队列（BackgroundJobs）**：`IBackgroundJobManager.EnqueueAsync<TArgs>` 提供一次性、fire-and-forget 的异步作业入队门面——入队仅落库并立即返回，执行完全交给轮询的 `BackgroundJobWorker` 驱动，天然具备持久化、崩溃恢复、失败指数退避重试能力，与触发它的业务请求解耦。
+3. **后台常驻服务（BackgroundServices）**：`XiHanBackgroundServiceBase<T>` 抽象基类，封装「循环拉取 → 并发处理 → 异常重试 → 优雅停机 → 运行统计」的通用骨架，子类只需实现「取任务」和「处理任务」两个方法即可拥有一个生产级后台 worker。
 
-两者都在模块启用后自动接入 .NET 托管服务生命周期（`IHostedService` / `BackgroundService`）。
+三者都在模块启用后自动接入 .NET 托管服务生命周期（`IHostedService` / `BackgroundService`）。
 
 ## 何时使用
 
 - 需要按 Cron 表达式、固定时间间隔或一次性延迟运行的定时作业（如每日报表、定时清理、延迟提醒）。
+- 需要把一次性、耗时的操作从请求线程甩出去异步执行（如发送邮件/短信、生成文件、调用第三方接口），且要求失败自动退避重试、进程重启不丢失——用 `IBackgroundJobManager.EnqueueAsync`。
 - 需要一个常驻后台服务，持续从 Redis / 数据库 / 消息队列拉取并**并发**处理任务（如发件箱、导出任务消费）。
 - 希望任务执行自带日志、超时、分布式锁、重试、指标等横切能力，而不必自己拼装。
-- 多租户应用中，希望定时任务在正确的租户上下文里执行（自动 `ICurrentTenant.Change`）。
+- 多租户应用中，希望定时任务/后台作业在正确的租户上下文里执行（自动 `ICurrentTenant.Change`）。
 
-选型提示：**「周期性/定时触发」用 ScheduledJobs；「持续拉队列消费」用 `XiHanBackgroundServiceBase<T>`。** 两者可在同一应用中并存。
+选型提示：**「周期性/定时触发」用 ScheduledJobs；「一次性 fire-and-forget、入队即返回」用 `IBackgroundJobManager`；「持续拉队列消费」用 `XiHanBackgroundServiceBase<T>`。** 三者可在同一应用中并存。
 
 ## 安装与启用
 
@@ -46,7 +48,17 @@ public class MyModule : XiHanModule { }
 
 同时按固定顺序注册五个中间件 `IJobMiddleware`：`LoggingMiddleware` → `TimeoutMiddleware` → `LockMiddleware` → `RetryMiddleware` → `MetricsMiddleware`，并注册托管服务 `JobHostedService`（应用启动时自动 `StartAsync` 调度器）。
 
-> 说明：`XiHanBackgroundServiceBase<T>` 及其依赖的 `XiHanBackgroundServiceOptions`、`IDynamicServiceConfig` 属于 BackgroundServices 命名空间，**不由 `AddXiHanTasks` 自动注册**——你的具体后台服务需自行 `services.AddHostedService<T>()` 并按需 `Configure<XiHanBackgroundServiceOptions>(...)`。
+与 ScheduledJobs 不同，**BackgroundJobs（一次性作业队列）在 `XiHanTasksModule.PreConfigureServices` 阶段就已通过 `AddXiHanBackgroundJobs(config)` 自动注册**（早于业务模块的 `ConfigureServices`，以便挂载作业处理器自动发现钩子）。注册内容（同样 `TryAdd` 语义，均可被业务侧替换）：
+
+- `IBackgroundJobSerializer` → `BackgroundJobSerializer`（基于 `System.Text.Json`）
+- `IBackgroundJobStore` → `InMemoryBackgroundJobStore`（内存存储，默认）
+- `IBackgroundJobManager` → `BackgroundJobManager`
+- `IBackgroundJobExecuter` → `BackgroundJobExecuter`
+- 托管服务 `BackgroundJobWorker`（轮询驱动执行）
+
+同时通过 `services.OnRegistered` 钩子自动收集所有实现 `IAsyncBackgroundJob<TArgs>` 的非抽象类型，登记进 `BackgroundJobOptions` 注册表——继承 `AsyncBackgroundJob<TArgs>` 基类的作业处理器会被约定注册为瞬时服务并自动纳入发现；若直接实现接口而不继承基类，需自行带生命周期标记或手动注册。
+
+> 说明：`XiHanBackgroundServiceBase<T>` 及其依赖的 `XiHanBackgroundServiceOptions`、`IDynamicServiceConfig` 属于 BackgroundServices 命名空间，**不由 `AddXiHanTasks` / `AddXiHanBackgroundJobs` 自动注册**——你的具体后台服务需自行 `services.AddHostedService<T>()` 并按需 `Configure<XiHanBackgroundServiceOptions>(...)`。
 
 ## 工作原理
 
@@ -66,6 +78,14 @@ public class MyModule : XiHanModule { }
 - **多租户感知**：`CompositeJobScheduler.ResolveTenantId` 按优先级解析租户——① 参数里的 `tenantId` → ② `JobInfo.TenantId` → ③ 当前异步上下文租户（`AsyncLocalCurrentTenantAccessor`）；执行时若解析到租户，`JobExecutor` 用 `ICurrentTenant.Change(tenantId, ...)` 切到该租户上下文再跑任务。`TenantId` 为空视为 Host（宿主）任务。
 - 执行结果与异常均落 `JobInstance` 状态并写 `JobHistory`（即便状态回写失败也保证历史留痕，便于排障）。
 
+### 后台作业队列（BackgroundJobs）
+
+- **入队**：`BackgroundJobManager.EnqueueAsync<TArgs>` 用作业参数类型 `TArgs` 解析出稳定作业名（优先已注册配置里的 `JobName`，否则回退 `[BackgroundJobName]` 特性，再回退参数类型全名），连同序列化后的参数、当前租户 `ICurrentTenant.Id`、优先级、`NextTryTime`（按 `delay` 计算或立即）打包成 `BackgroundJobInfo` 写入 `IBackgroundJobStore` 并立即返回作业 Id，不等待执行。
+- **轮询执行**：`BackgroundJobWorker`（`BackgroundService`）启动后先等待 `FirstWaitDurationMilliseconds`，随后按 `JobPollPeriodMilliseconds` 周期用 `PeriodicTimer` 轮询；每轮先通过 `IDistributedLock.TryAcquireAsync`（`DistributedLockName` + `DistributedLockExpirySeconds`）抢占单活锁，抢不到则本轮直接跳过（多实例下天然保证同一时刻只有一个实例在处理）。
+- **领取与执行**：抢到锁后按 `ApplicationName` 过滤调用 `IBackgroundJobStore.GetWaitingJobsAsync` 批量领取（契约：`!IsAbandoned && NextTryTime <= 现在`，按 `Priority` 降序、`TryCount` 升序、`NextTryTime` 升序排序，限 `MaxJobFetchCount` 条），逐个反序列化参数、以 `ICurrentTenant.Change(job.TenantId)` 切换租户上下文后交给 `IBackgroundJobExecuter.ExecuteAsync`（反射解析 `IAsyncBackgroundJob<TArgs>` 处理器并调用其 `ExecuteAsync`）。
+- **成功/失败**：成功即 `IBackgroundJobStore.DeleteAsync` 删除；抛出 `BackgroundJobExecutionException`（业务失败信号）则按指数退避计算下次重试时间（`nextWait = DefaultFirstWaitDurationSeconds × DefaultWaitFactor^(TryCount-1)` 秒），累计耗时（自 `CreationTime` 起）超过 `DefaultTimeoutSeconds`（默认 2 天）则标记 `IsAbandoned` 放弃；找不到作业配置或反序列化失败等致命错误同样直接放弃。单个作业异常不会杀死 Worker，下一轮继续处理其余作业。
+- **作业处理器发现**：实现 `IAsyncBackgroundJob<TArgs>`（或继承 `AsyncBackgroundJob<TArgs>` 基类）的非抽象类型，会在服务注册期被自动收集进 `BackgroundJobOptions`，形成「参数类型 ↔ 处理器类型 ↔ 作业名」三向映射，入队与执行两端各自据此解析。
+
 ### 后台服务（XiHanBackgroundServiceBase）
 
 - 主循环：`IsTaskProcessingEnabled` 门控 → 当前运行数 < `MaxConcurrentTasks` 时调 `FetchWorkItemsAsync` 批量取任务 → 每个任务包进带重试/超时的 `Task.Run` 并发执行；无任务或已满并发时按 `IdleDelayMilliseconds` 空转等待。
@@ -78,6 +98,7 @@ public class MyModule : XiHanModule { }
 - **多触发方式调度**：Cron / Interval / Delay / Manual 四类触发；调度器每秒巡检。
 - **执行管道 + 中间件**：横切逻辑（日志、超时、锁、重试、指标）以 `IJobMiddleware` 串联，可 `XiHanJobBuilder.AddMiddleware<T>()` 追加自定义。
 - **声明式任务定义**：`[JobName]`、`[JobSchedule]`、`[JobRetry]`、`[JobTimeout]`、`[JobConcurrent]`、`[JobPriority]`、`[JobDescription]` 特性 + `RegisterJobsFromAssembly` 反射自动注册。
+- **一次性作业队列**：`IBackgroundJobManager.EnqueueAsync` fire-and-forget 入队，`BackgroundJobWorker` 轮询驱动执行，自带失败指数退避重试与累计超时放弃，默认内存存储、可一行切换 Redis 持久化跨实例。
 - **任务锁**：`CachingJobLockProvider` 复用 Caching 统一分布式锁（有 Redis 则跨实例、否则进程内回退），配合 `AllowConcurrent=false` 防止同名任务并发重入。
 - **多租户感知**：调度解析 + 执行期租户上下文切换，天然适配多租户定时作业。
 - **后台常驻服务基类**：并发控制、批量拉取、重试（指数退避）、优雅停机、运行统计、动态配置一站封装。
@@ -122,6 +143,28 @@ public class MyModule : XiHanModule { }
 | `[JobPriority(JobPriority)]` | 优先级 |
 | `[JobDescription(text)]` | 任务描述 |
 
+### 后台作业队列（BackgroundJobs）
+
+| 类型 | 说明 |
+| --- | --- |
+| `IBackgroundJobManager` / `BackgroundJobManager` | 入队门面：`Task<string> EnqueueAsync<TArgs>(TArgs args, BackgroundJobPriority priority = Normal, TimeSpan? delay = null)` |
+| `IAsyncBackgroundJob<TArgs>` | 作业处理器契约：`Task ExecuteAsync(TArgs args)`（继承标记接口 `IBackgroundJob`） |
+| `AsyncBackgroundJob<TArgs>` | 作业处理器抽象基类，实现 `ITransientDependency`（约定自动瞬时注册）+ `Logger` 属性 |
+| `IBackgroundJobExecuter` / `BackgroundJobExecuter` | 执行器：从 DI 解析处理器，反射调用 `IAsyncBackgroundJob<TArgs>.ExecuteAsync` |
+| `IBackgroundJobStore` | 存储端口：`FindAsync(jobId)`、`InsertAsync(jobInfo)`、`GetWaitingJobsAsync(applicationName, maxResultCount)`、`DeleteAsync(jobId)`、`UpdateAsync(jobInfo)` |
+| `InMemoryBackgroundJobStore` | 默认内存实现（进程内、单实例，进程重启丢失） |
+| `RedisBackgroundJobStore` | 可选 Redis 实现：有序集合索引（score=下次执行时间）+ 字符串键存作业体 JSON，放弃的作业移出索引并设 TTL 便于事后排查 |
+| `IBackgroundJobSerializer` / `BackgroundJobSerializer` | 参数序列化端口，默认基于 `System.Text.Json` |
+| `BackgroundJobWorker` | 轮询 `BackgroundService`：抢分布式锁 → 领取 → 执行 → 成功删除 / 失败退避 / 超时放弃 |
+| `BackgroundJobInfo` | 持久化模型：`Id`、`ApplicationName`、`TenantId`、`JobName`、`JobArgs`（JSON）、`TryCount`、`CreationTime`、`NextTryTime`、`LastTryTime`、`IsAbandoned`、`Priority` |
+| `BackgroundJobExecutionContext` | 执行上下文：`ServiceProvider`、`JobType`、`JobArgs`、`CancellationToken` |
+| `BackgroundJobExecutionException` | 业务失败信号（区别于致命错误），可携带 `JobName` / `JobArgs`，触发退避重试 |
+| `BackgroundJobPriority` | `Low`(5) / `BelowNormal`(10) / `Normal`(15，默认) / `AboveNormal`(20) / `High`(25)，领取时按值降序排序 |
+| `[BackgroundJobName(name)]` | 标注在**作业参数类型**上，给作业一个稳定持久化名（不标注则回退参数类型全名；重命名处理器类型不影响已入库作业） |
+| `BackgroundJobConfiguration` | 「作业名 ↔ 处理器类型 ↔ 参数类型」三向映射（单条配置） |
+| `BackgroundJobOptions` | 作业注册表（自动发现填充）：`AddJob<TJob>()`、`GetJobOrNull(name)`、`GetJobByArgsOrNull(argsType)`、`GetJobs()` |
+| `BackgroundJobArgsHelper` | 反射工具：`GetJobArgsType(jobType)`、`IsBackgroundJob(type)` |
+
 ### 后台服务（BackgroundServices）
 
 | 类型 | 说明 |
@@ -141,6 +184,8 @@ public class MyModule : XiHanModule { }
 | `XiHanJobBuilder.UseInMemoryStore()` / `UseInMemoryLock()` / `UseDistributedLock()` | 内置存储 / 锁快捷方法（锁后端由 Caching 按 Redis 配置自动选择） |
 | `IJobScheduler.RegisterJobsFromAssembly(Assembly)` | 反射扫描程序集内带 `[JobName]` 的 `IJobWorker` 自动注册 |
 | `IJobScheduler.RegisterCronJob<T>(name, cron, ...)` / `RegisterIntervalJob<T>(name, interval, ...)` | 代码方式注册单个任务 |
+| `IServiceCollection.AddXiHanBackgroundJobs(IConfiguration)` | 注册后台作业队列全套（管理器 + 轮询 Worker + 内存存储默认 + 处理器自动发现）；模块已在 `PreConfigureServices` 自动调用，通常无需手动调用 |
+| `IServiceCollection.UseRedisBackgroundJobStore(Action<RedisBackgroundJobStoreOptions>?)` | 将 `IBackgroundJobStore` 替换为 `RedisBackgroundJobStore`（`services.Replace`），复用 Caching 注册的 `IConnectionMultiplexer` |
 
 ## 配置
 
@@ -169,6 +214,29 @@ public class MyModule : XiHanModule { }
 | `TaskTimeoutMilliseconds` | `int` | `0` | 单任务超时（0=不超时） |
 | `ShutdownTimeoutMilliseconds` | `int` | `30000` | 停机等待任务收尾超时 |
 
+`BackgroundJobWorkerOptions`（后台作业队列，配置节 `XiHan:BackgroundJobs`，`BackgroundJobWorkerOptions.SectionName`，模块自动绑定）：
+
+| 字段 | 类型 | 默认值 | 含义 |
+| --- | --- | --- | --- |
+| `IsJobExecutionEnabled` | `bool` | `true` | 是否启用作业执行（关闭后入队仍可用，只是 Worker 不执行，适合数据迁移等场景） |
+| `ApplicationName` | `string?` | `null` | 应用名称，用于多实例隔离；为空表示不区分 |
+| `FirstWaitDurationMilliseconds` | `int` | `5000` | 首次轮询前的等待 |
+| `JobPollPeriodMilliseconds` | `int` | `5000` | 轮询间隔 |
+| `MaxJobFetchCount` | `int` | `1000` | 每轮最多领取的作业数量 |
+| `DefaultFirstWaitDurationSeconds` | `int` | `60` | 首次失败后的等待秒数（退避基数） |
+| `DefaultWaitFactor` | `double` | `2.0` | 退避倍率 |
+| `DefaultTimeoutSeconds` | `int` | `172800`（2 天） | 放弃阈值：自创建起累计重试时间超过此值即放弃，唯一的失败上限（无固定次数） |
+| `DistributedLockName` | `string` | `"XiHanBackgroundJobWorker"` | 分布式锁名称，保证多实例下单活 Worker |
+| `DistributedLockExpirySeconds` | `int` | `300` | 分布式锁 TTL（崩溃安全网，应大于单轮处理耗时） |
+
+`RedisBackgroundJobStoreOptions`（切换 `services.UseRedisBackgroundJobStore(...)` 时可选配置，无固定配置节名，代码方式传入）：
+
+| 字段 | 类型 | 默认值 | 含义 |
+| --- | --- | --- | --- |
+| `KeyPrefix` | `string` | `"XiHan:BackgroundJobs"` | 键前缀：作业体键 `{Prefix}:job:{id}`，活跃索引有序集合 `{Prefix}:index` |
+| `AbandonedRetentionDays` | `int` | `7` | 已放弃作业的保留天数（移出活跃索引，作业体设 TTL 便于事后排查） |
+| `FetchMultiplier` | `int` | `4` | 候选加载倍数：每轮从索引取 `maxResultCount × 本值` 条到期候选，内存二次排序后再取 `maxResultCount` |
+
 示例 `appsettings.json`：
 
 ```json
@@ -183,6 +251,11 @@ public class MyModule : XiHanModule { }
         "HistoryRetentionDays": 30,
         "EnableMetrics": true
       }
+    },
+    "BackgroundJobs": {
+      "IsJobExecutionEnabled": true,
+      "JobPollPeriodMilliseconds": 5000,
+      "MaxJobFetchCount": 1000
     }
   }
 }
@@ -232,7 +305,62 @@ string instanceId = await scheduler.TriggerJobAsync("DailyReport",
     new Dictionary<string, object?> { ["tenantId"] = 1001 });
 ```
 
-### 示例 2：后台常驻服务持续消费队列
+### 示例 2：一次性 fire-and-forget 后台作业
+
+```csharp
+using XiHan.Framework.Tasks.BackgroundJobs.Abstractions;
+using XiHan.Framework.Tasks.BackgroundJobs.Attributes;
+using XiHan.Framework.Tasks.BackgroundJobs.Models;
+
+// 作业参数类型即作业的稳定标识来源，建议显式标注 [BackgroundJobName]
+[BackgroundJobName("SendWelcomeEmail")]
+public class SendWelcomeEmailArgs
+{
+    public long UserId { get; set; }
+
+    public string Email { get; set; } = default!;
+}
+
+// 继承 AsyncBackgroundJob<TArgs>：自动瞬时注册 + 自动纳入作业发现，无需手动登记
+public class SendWelcomeEmailJob : AsyncBackgroundJob<SendWelcomeEmailArgs>
+{
+    private readonly IEmailSender _emailSender;
+
+    public SendWelcomeEmailJob(IEmailSender emailSender) => _emailSender = emailSender;
+
+    public override async Task ExecuteAsync(SendWelcomeEmailArgs args)
+    {
+        await _emailSender.SendAsync(args.Email, "欢迎注册", "...");
+    }
+}
+```
+
+```csharp
+public class RegistrationAppService
+{
+    private readonly IBackgroundJobManager _jobManager;
+
+    public RegistrationAppService(IBackgroundJobManager jobManager) => _jobManager = jobManager;
+
+    public async Task RegisterAsync(long userId, string email)
+    {
+        // ... 业务逻辑（写库等） ...
+
+        // 入队即返回作业 Id；实际发送由 BackgroundJobWorker 异步轮询执行，失败自动指数退避重试
+        await _jobManager.EnqueueAsync(new SendWelcomeEmailArgs { UserId = userId, Email = email });
+
+        // 也可指定优先级 / 延迟执行
+        await _jobManager.EnqueueAsync(
+            new SendWelcomeEmailArgs { UserId = userId, Email = email },
+            priority: BackgroundJobPriority.High,
+            delay: TimeSpan.FromMinutes(5));
+    }
+}
+```
+
+无需额外注册——`XiHanTasksModule` 已在 `PreConfigureServices` 自动接管 `IBackgroundJobManager` / `BackgroundJobWorker` 与作业处理器发现。
+
+### 示例 3：后台常驻服务持续消费队列
 
 ```csharp
 using Microsoft.Extensions.Logging;
@@ -274,6 +402,7 @@ services.AddHostedService<OutboxConsumer>();
 
 - **替换任务存储 / 锁**：`services.AddSingleton<IJobStore, MyStore>()`（覆盖默认 `TryAddSingleton`），或 `builder.UseStore<MyStore>()` / `builder.UseLockProvider<MyLock>()`。
 - **追加中间件**：实现 `IJobMiddleware`，`builder.AddMiddleware<MyMiddleware>()`；注册顺序即执行顺序。
+- **持久化后台作业队列**：默认内存存储进程重启丢失；`services.UseRedisBackgroundJobStore()` 一行切换为 Redis 持久化 + 跨实例（复用 Caching 的 `IConnectionMultiplexer`），或自行实现 `IBackgroundJobStore` 接自建存储（如数据库）。
 - **自定义后台服务**：继承 `XiHanBackgroundServiceBase<T>`，实现 `FetchWorkItemsAsync` / `ProcessItemAsync`，可重写 `OnTaskFailed` / `CreateDefaultRetryPolicy`。
 - **运行时热调**：通过 `IDynamicServiceConfig` 动态改并发数、空闲延迟、启停，无需重启。
 
@@ -285,12 +414,15 @@ services.AddHostedService<OutboxConsumer>();
 - 多租户任务：优先用参数 `tenantId` 或 `JobInfo.TenantId` 指定租户；未指定时回退到当前异步上下文租户。宿主级任务令 `TenantId` 为空。
 - 后台服务的 `XiHanBackgroundServiceOptions` **默认不启用单任务超时**（`EnableTaskTimeout=false`、`TaskTimeoutMilliseconds=0`），如需超时须显式打开。
 - 默认 `InMemoryJobStore` 是进程内内存存储，进程重启丢失历史；需持久化请自行实现 `IJobStore`。
+- 后台作业队列没有固定重试次数上限，只有**累计耗时**上限（`DefaultTimeoutSeconds`，默认 2 天）——退避间隔按指数增长，高频失败的作业会更快被判定放弃，而非跑满固定次数。
+- `BackgroundJobWorker` 靠分布式锁保证多实例单活；默认 `InMemoryBackgroundJobStore` 进程重启丢失全部待执行作业，需要持久化与跨实例可靠投递请切换 `UseRedisBackgroundJobStore()` 或自实现 `IBackgroundJobStore`。
+- `[BackgroundJobName]` 标注在**作业参数类型**而非处理器类型上；不标注时回退参数类型全名——修改参数类型的命名空间/类名会导致名称变化，已入库未执行的旧作业将找不到配置而被放弃，关键作业建议显式标注固定名称。
 
 ## 依赖模块
 
-- [XiHan.Framework.Caching](./caching) — 任务锁复用其统一的分布式锁（Redis 跨实例 / 进程内回退自动选择）。
-- [XiHan.Framework.MultiTenancy](./multitenancy) 与 [XiHan.Framework.MultiTenancy.Abstractions](./multitenancy-abstractions) — 任务的租户解析与执行期 `ICurrentTenant.Change` 上下文切换。
-- [XiHan.Framework.Timing](./timing) — 时间基础设施。
+- [XiHan.Framework.Caching](./caching) — 任务锁与 `BackgroundJobWorker` 单活锁复用其统一的分布式锁（Redis 跨实例 / 进程内回退自动选择）；`RedisBackgroundJobStore` 复用其注册的 `IConnectionMultiplexer`。
+- [XiHan.Framework.MultiTenancy](./multitenancy) 与 [XiHan.Framework.MultiTenancy.Abstractions](./multitenancy-abstractions) — 任务/作业的租户解析与执行期 `ICurrentTenant.Change` 上下文切换。
+- [XiHan.Framework.Timing](./timing) — 时间基础设施（`IClock`）。
 
 （Cron 解析、重试与调度均为框架自研，未引入第三方调度库。）
 

@@ -34,14 +34,14 @@ dotnet add package XiHan.Framework.Web.Api
 public class MyModule : XiHanModule { }
 ```
 
-模块声明 `[DependsOn(XiHanWebCoreModule, XiHanMultiTenancyModule, XiHanSerializationModule)]`。`ConfigureServices` 里配置 `ForwardedHeadersOptions`（信任 `X-Forwarded-For/Proto/Host`）并调用 `AddXiHanWebApi` + `AddXiHanRateLimiting` + `AddXiHanCircuitBreaking`；`OnApplicationInitialization` 装配下述完整中间件管道。
+模块声明 `[DependsOn(XiHanWebCoreModule, XiHanMultiTenancyModule, XiHanSerializationModule, XiHanAuditingModule)]`。`ConfigureServices` 里配置 `ForwardedHeadersOptions`（信任 `X-Forwarded-For/Proto/Host`）并调用 `AddXiHanWebApi` + `AddXiHanRateLimiting` + `AddXiHanCircuitBreaking`；`OnApplicationInitialization` 装配下述完整中间件管道。
 
 `AddXiHanWebApi(configuration)` 内部依次装配：
 
 - `AddXiHanWebApiSecurity`：`IRequestContextAccessor`（单例）、`ITraceIdProvider`（Scoped）、绑定 `XiHanOpenApiSecurityOptions`、`IOpenApiSecurityClientStore`（默认 `DefaultOpenApiSecurityClientStore`）。
 - `AddXiHanWebApiCors`：绑定 `XiHanCorsOptions` 并按其构建默认 CORS 策略。
 - `AddXiHanWebApiAuth`：按 `XiHan:Authentication:Jwt` 装配 JWT Bearer；按 `XiHan:Web:Api:Auth` 装配授权（可全局要求登录）；OAuth 启用时追加 `ExternalCookie` 临时 scheme。
-- `AddXiHanWebApiLogging`：五类日志的 `ILogQueue<>`（单例）+ 五个 `HostedService` Worker + 五个 Pipeline（Scoped）+ 两个过滤器（`XiHanActionLoggingFilter`、`XiHanApiResponseResultFilter`）+ 五个 `Null*LogWriter` 默认写入器（`TryAddScoped`，由上层应用覆盖落库）。
+- `AddXiHanWebApiLogging`：仅注册本包两个 MVC 过滤器（`XiHanActionLoggingFilter`、`XiHanApiResponseResultFilter`）。五类日志的 `ILogQueue<>`（单例）+ 五个 `HostedService` Worker + 五个 Pipeline（Scoped）+ 五个 `Null*LogWriter` 默认写入器已下沉至 [XiHan.Framework.Auditing](./auditing) 包的 `AddXiHanAuditing`（随 `XiHanAuditingModule` 依赖自动装配），由上层应用覆盖写入器落库。
 - `AddXiHanWebApiMvc`：`AddDynamicApi`（动态 API 发现与约定）+ `AddControllers`（挂两个全局过滤器、统一 JSON、模型校验失败工厂）+ 两个租户贡献者 + `AddOpenApi`。
 
 ## 中间件管道顺序（`OnApplicationInitialization`）
@@ -109,6 +109,21 @@ public class MyModule : XiHanModule { }
 | `VisibleInApiExplorer` | `bool` | 是否在 API 浏览器/文档中显示。 |
 | `CustomProperties` | `string` | 自定义键值属性（`key=value`，可叠加）。 |
 
+### 参数来源推断与授权特性透传
+
+`DynamicApiParameterAnalyzer`（`DynamicApi/ParameterAnalysis`）在生成控制器动作前逐参数分析，决定其绑定来源（`ParameterSource`：`Route`/`Query`/`Body`/`Form`/`Header`/`Services`），按以下优先级：
+
+1. **显式绑定优先**：参数已标 `[FromRoute]`/`[FromQuery]`/`[FromBody]`/`[FromForm]`/`[FromHeader]`/`[FromServices]` 时直接采用，并保留其 `Name`。
+2. **基础设施类型 → `Services`**：`CancellationToken`/`HttpContext`/`ClaimsPrincipal`/`IServiceProvider` 等特殊类型自动注入，不计入客户端必填参数。
+3. **表单文件 → `Form`**：参数类型（含嵌套属性/集合）包含 `IFormFile`/`IFormFileCollection` 时判为表单来源，动作方法自动加 `[Consumes("multipart/form-data")]`，因此文件上传应用服务方法无需手写控制器即可工作。
+4. **Id 形参 → `Route`**：参数名为 `id` 或以 `Id`/`ID` 结尾、类型为常见标识类型（`long`/`int`/`Guid`/`string` 等）或自定义 Id 值对象（类型名以 `Id` 结尾或实现 `IParsable<TSelf>`）时：`GET`/`DELETE`/`HEAD` 直接拼入路由；`PUT`/`PATCH` 仅第一个此类参数拼入路由，其余降级为 `Query`。
+5. **唯一复杂类型 → `Body`**：非 `GET`/`DELETE`/`HEAD` 方法下，首个复杂类型（class/record）参数判为请求体；若已有一个 Body 参数，后续复杂类型参数降级为 `Query`（避免多 Body 冲突）。
+6. **兜底 → `Query`**：其余简单类型/集合类型参数走查询字符串。
+
+同一 HTTP 方法 + 路由模板出现重复映射（多为重载方法未显式区分路由）时，控制器生成阶段直接抛 `DynamicApiException` 报冲突，而非放任运行期路由歧义。
+
+应用服务类/方法上的 `[Authorize]`（含 `Policy`/`Roles`/`AuthenticationSchemes`）与 `[AllowAnonymous]` 会被原样复制到生成的动态控制器/动作上，因此可直接在应用服务上做声明式鉴权，无需为需要特殊授权策略的接口改写手工控制器。
+
 ### `DynamicApiOptions` 全局配置
 
 在 `AddXiHanWebApiMvc` 中以代码固定配置（非从 appsettings 读取）；如需覆盖可 `ConfigureDynamicApiConventions` / `ConfigureDynamicApiRoutes`。真实字段与框架默认：
@@ -165,7 +180,7 @@ public class MyModule : XiHanModule { }
 
 | 字段 | 类型 | 默认 | 含义 |
 | --- | --- | --- | --- |
-| `RequireAuthenticatedUser` | `bool` | `true` | 为 `true` 时设置全局 `FallbackPolicy`，所有未标 `[AllowAnonymous]` 的端点均需登录；仅在 `XiHan:Authentication:Jwt:SecretKey` 有效时生效，否则抛异常。 |
+| `RequireAuthenticatedUser` | `bool` | `false` | 为 `true` 时设置全局 `FallbackPolicy`，所有未标 `[AllowAnonymous]` 的端点均需登录；仅在 `XiHan:Authentication:Jwt:SecretKey` 有效时生效，否则抛异常。 |
 | `SignalRHubPathPrefix` | `string` | `"/hubs"` | 该前缀下的请求允许从 query string `access_token` 提取 JWT（WebSocket/SSE 无法带 Authorization 头）。 |
 
 > JWT 参数来自 `XiHan:Authentication:Jwt`（`JwtOptions`，见 [Authentication](./authentication)）：`SecretKey`/`Issuer`/`Audience`/`ValidateIssuer`/`ValidateAudience`/`ValidateLifetime`/`ClockSkewMinutes`。JWT 过期时会回写响应头 `Token-Expired: true`。
@@ -227,9 +242,11 @@ public class MyModule : XiHanModule { }
 | `QueryStringKeys` | `string[]` | `["tenantId","tenant"]` | 租户 QueryString 键。 |
 | `FallbackTenant` | `string?` | `null` | 未解析出租户时的兜底。 |
 
-### 异步日志队列：`XiHan:Web:Api:LogQueue`（`XiHanWebApiLogQueueOptions`）
+### 异步日志队列：`XiHan:Auditing:LogQueue`（`XiHanAuditingLogQueueOptions`，来自 [Auditing](./auditing) 包）
 
-访问/操作/异常/API/登录五类日志经 `Channel` 队列 + `HostedService` Worker 异步落库；默认写入器为 `Null*LogWriter`（不落库），上层应用以 `TryAddScoped` 覆盖为真实实现。主要字段：`IgnoredPathPrefixes`（默认 `["/hubs"]`）、`EnableAccessLogQueue`/`EnableOperationLogQueue`/`EnableExceptionLogQueue`/`EnableApiLogQueue`/`EnableLoginLogQueue`（均默认 `false`）、`QueueCapacity`(10000)、`DropOnFull`(false)、`BatchSize`(100)、`BatchDelayMilliseconds`(200)。
+访问/操作/异常/API/登录五类日志经 `Channel` 队列 + `HostedService` Worker 异步落库；队列/Worker/Pipeline/Options 均由 `XiHanAuditingModule` 装配（Web.Api 依赖它自动引入），默认写入器为 `Null*LogWriter`（不落库），上层应用注册真实实现覆盖（后注册者胜出）。主要字段：`IgnoredPathPrefixes`（默认 `["/hubs"]`）、`EnableAccessLogQueue`/`EnableOperationLogQueue`/`EnableExceptionLogQueue`/`EnableApiLogQueue`/`EnableLoginLogQueue`（均默认 `false`）、`QueueCapacity`(10000)、`DropOnFull`(false)、`BatchSize`(100)、`BatchDelayMilliseconds`(200)。
+
+> 注意：此配置节从早期版本的 `XiHan:Web:Api:LogQueue`（`XiHanWebApiLogQueueOptions`）迁移为 `XiHan:Auditing:LogQueue`（`XiHanAuditingLogQueueOptions`），随审计基础设施一并下沉至 Auditing 包；Web.Api 本身不再持有该 Options 类型。
 
 ### 示例 `appsettings.json`
 
@@ -329,7 +346,7 @@ public class PingController : XiHanController
 ## 扩展点 / 自定义
 
 - **自定义动态路由约定**：实现 `IDynamicApiConvention` 并在动态 API 注册前放入 DI（`TryAddSingleton` 语义，先注册者胜出），可整体接管命名/路由生成。
-- **覆盖日志落库**：以 `AddScoped` 覆盖 `IAccessLogWriter`/`IOperationLogWriter`/`IExceptionLogWriter`/`IApiLogWriter`/`ILoginLogWriter`（默认 `Null*` 由 `TryAddScoped` 注册，可被覆盖）——这是把审计日志接入数据库的标准做法。
+- **覆盖日志落库**：以 `AddScoped` 覆盖 `IAccessLogWriter`/`IOperationLogWriter`/`IExceptionLogWriter`/`IApiLogWriter`/`ILoginLogWriter`（契约定义在 [Auditing](./auditing) 包，默认 `Null*` 由该包 `TryAddScoped` 注册，后注册的实现胜出）——这是把审计日志接入数据库的标准做法。
 - **自定义租户来源**：向 `XiHanTenantResolveOptions.TenantResolvers` 追加实现 `TenantResolveContributorBase` 的贡献者（默认已含 Header、QueryString）。
 - **OpenApi 安全客户端存储**：替换 `IOpenApiSecurityClientStore`（默认 `DefaultOpenApiSecurityClientStore` 读 `Options.Clients`），改为数据库/远程加载客户端凭据。
 - **反向代理拓扑**：默认 `ForwardedHeadersOptions` 仅信任本机回环代理；反代在其它主机时，应用侧追加 `KnownProxies`/`KnownNetworks`。
@@ -345,12 +362,13 @@ public class PingController : XiHanController
 
 ## 依赖模块
 
-- 内部依赖：[XiHan.Framework.Web.Core](./web-core)、[XiHan.Framework.Application](./application)、[XiHan.Framework.MultiTenancy](./multitenancy)、[XiHan.Framework.Serialization](./serialization)、[XiHan.Framework.Localization](./localization)、[XiHan.Framework.Logging](./logging)。
+- 内部依赖：[XiHan.Framework.Web.Core](./web-core)、[XiHan.Framework.Application](./application)、[XiHan.Framework.MultiTenancy](./multitenancy)、[XiHan.Framework.Serialization](./serialization)、[XiHan.Framework.Localization](./localization)、[XiHan.Framework.Logging](./logging)、[XiHan.Framework.Auditing](./auditing)（`[DependsOn]` 声明的模块依赖；提供异步日志队列/管道/写入器基础设施）。
 - 第三方核心：`Microsoft.AspNetCore.OpenApi`。
 
 ## 相关模块
 
 - [XiHan.Framework.Web.Core](./web-core) — 本包的底座（HttpContext / 当前主体 / 客户端信息 / 托管环境）。
+- [XiHan.Framework.Auditing](./auditing) — 访问/操作/异常/接口/登录五类日志与实体变更审计的采集队列、管道、写入器契约（本包中间件/过滤器是其主要生产方之一）。
 - [XiHan.Framework.Web.Docs](./web-docs) — 在动态 API 之上提供 Scalar/Swagger UI 文档界面。
 - [动态 API](../concepts/dynamic-api) — 动态 API 的设计与约定说明。
 - [模块生命周期](../concepts/lifecycle) — `ConfigureServices` / `OnApplicationInitialization` 等生命周期钩子。

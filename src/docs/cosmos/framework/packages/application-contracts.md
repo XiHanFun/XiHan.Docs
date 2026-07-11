@@ -147,8 +147,39 @@ public interface ICrudApplicationService<TEntityDto, TKey, TCreateDto, TUpdateDt
 
 分两个区段：
 
-- **协议状态（100～599）**：与 HTTP Status Code 一致，成员采用 HTTP 官方名称（如 `Success = 200`、`Created = 201`、`BadRequest = 400`、`Unauthorized = 401`、`Forbidden = 403`、`NotFound = 404`、`UnprocessableEntity = 422`、`TooManyRequests = 429`、`InternalServerError = 500`、`ServiceUnavailable = 503` 等）。该区段同样适用于微服务、消息队列、RPC 等非 HTTP 场景。
-- **业务状态（10000～99999）**：表达更细粒度的业务语义，按千位分类留段：
+**协议状态（100～599）**：与 HTTP Status Code 一致，成员采用 HTTP 官方名称；该区段同样适用于微服务、消息队列、RPC 等非 HTTP 场景。
+
+| 区段 | 成员 | 值 | 描述 |
+| --- | --- | --- | --- |
+| 1xx 信息 | `Continue` | 100 | 继续请求 |
+| | `SwitchingProtocols` | 101 | 切换协议 |
+| 2xx 成功 | `Success` | 200 | 请求成功 |
+| | `Created` | 201 | 资源创建成功（通常用于 POST 创建操作） |
+| | `Accepted` | 202 | 请求已接受但尚未处理完成（异步任务提交，如导出、批量作业，结果需另行查询） |
+| | `NoContent` | 204 | 无内容返回（删除操作或无需响应体的更新） |
+| 3xx 重定向 | `MultipleChoices` | 300 | 多种响应可选 |
+| | `MovedPermanently` | 301 | 永久重定向 |
+| | `Found` | 302 | 临时重定向 |
+| | `NotModified` | 304 | 资源未修改（配合 ETag / If-Modified-Since 条件请求） |
+| 4xx 客户端错误 | `BadRequest` | 400 | 请求错误（参数/格式错误或缺少必要参数） |
+| | `Unauthorized` | 401 | 未授权（未通过身份认证） |
+| | `Forbidden` | 403 | 禁止访问（已认证但无权限） |
+| | `NotFound` | 404 | 资源不存在 |
+| | `MethodNotAllowed` | 405 | 请求方法不允许 |
+| | `RequestTimeout` | 408 | 请求超时 |
+| | `Conflict` | 409 | 请求冲突（重复创建、乐观锁版本冲突、防重放校验失败等） |
+| | `Gone` | 410 | 资源已永久删除（区别于 404，明确曾经存在） |
+| | `UnsupportedMediaType` | 415 | 媒体类型不支持 |
+| | `UnprocessableEntity` | 422 | 请求语义错误（参数格式正确但业务语义校验未通过） |
+| | `TooManyRequests` | 429 | 请求过于频繁（限流/防刷） |
+| 5xx 服务端错误 | `InternalServerError` | 500 | 服务器内部错误 |
+| | `NotImplemented` | 501 | 功能未实现 |
+| | `BadGateway` | 502 | 网关错误（从上游服务收到无效响应） |
+| | `ServiceUnavailable` | 503 | 服务不可用（维护、过载或依赖服务不可用） |
+| | `GatewayTimeout` | 504 | 网关超时（等待上游服务响应超时） |
+
+**业务状态（10000～99999）**：表达更细粒度的业务语义，按千位分类留段：
+
   - `10xxx` 认证与授权：`LoginExpired = 10001`、`TokenInvalid = 10002`、`TokenExpired = 10003`、`PermissionDenied = 10004`
   - `11xxx` 数据校验：`ValidationFailed = 11000`
   - `12xxx` 业务处理：`BusinessFailed = 12000`

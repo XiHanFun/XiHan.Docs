@@ -63,6 +63,7 @@ PageRequestDtoBase
 - **命名约定**：`QueryConvention` 定义「哪些属性后缀是范围/列表/关键字」「字符串默认模糊还是精确」等推断规则
 - **就地执行扩展**：`PageExtensions` 在 `IQueryable`/`IEnumerable`/`List` 上直接套过滤、排序、关键字、分页并产出 `` `PageResultDtoBase<T>` ``
 - **基于特性的校验**：`QueryFieldAttribute` / `KeywordSearchAttribute` / `QueryOperatorSupportAttribute` 标注实体属性，配合 `AttributePageExtensions` 做白名单式校验（`ValidateRequest` / `EnsureValid` / `TryValidate`）
+- **面向实体的执行引擎**：`` `PageQueryExecutor<T>` ``（`Paging.Executors`）是 `AttributePageExtensions` / `AutoQueryExtensions` 背后的真正实现——按 `QueryFieldAttribute` 解析字段别名、按 `QueryOperatorSupportAttribute` 校验操作符、按 `KeywordSearchAttribute` 回填默认关键字字段，再执行过滤/关键字/排序/分页，全程带白名单校验（可关闭）
 
 ## 主要 API / 类型
 
@@ -109,13 +110,25 @@ PageRequestDtoBase
 | `KeywordSearchAttribute` | 标记属性参与关键字搜索。`Enabled=true` / `MatchMode=Contains` / `Priority=0` / `IncludeInDefault=true` / `Alias` |
 | `QueryOperatorSupportAttribute` | 白名单：`SupportedOperators`（构造入参 `params QueryOperator[]`）；`IsSupported(op)` / `GetSupportedOperatorsDescription()`，用于拦截非法操作符 |
 
+### 执行引擎 / 反射解析 / 校验器（Executors / Reflection / Validators）
+
+这一组类型是 `AttributePageExtensions` 与 `AutoQueryExtensions`（当 `validate: true`）背后真正的执行者，属于文档此前未展开的一层：
+
+| 类型 | 命名空间 | 说明 |
+| --- | --- | --- |
+| `` `PageQueryExecutor<T>` `` | `Paging.Executors` | 面向实体 `T` 的分页查询执行器。构造时通过 `AttributeReader.GetQueryFields<T>()` 建立字段信息表；`Execute(query, request, validate=true)` / `ExecuteAsync(...)`：先按 `validate` 调 `AttributeBasedValidator.ValidatePageRequest<T>`（失败抛 `InvalidOperationException`），再解析 `Filter`/`Sort` 的字段别名到真实属性名、按 `KeywordSearchAttribute` 回填未指定字段时的默认关键字搜索字段，最后执行过滤→关键字→排序→分页；另有 `GetQueryFields()` / `GetDefaultKeywordFields()` |
+| `AttributeReader` | `Paging.Reflection` | 静态反射工具：`GetQueryFields<T>()` / `GetQueryFields(Type)` 读取每个公开属性上的 `QueryFieldAttribute` / `KeywordSearchAttribute` / `QueryOperatorSupportAttribute`，产出 `Dictionary<string, QueryFieldInfo>`（属性名与 `Alias` 都作为键，大小写不敏感）；`GetDefaultKeywordFields<T>()` / `(Type)` 按 `KeywordSearchAttribute.Priority` 排序返回参与默认关键字搜索的属性；`IsFilterAllowed` / `IsSortAllowed` / `IsOperatorSupported`（无特性时按属性类型推断默认支持的操作符） |
+| `QueryFieldInfo` | `Paging.Reflection` | `AttributeReader` 的产出模型：`PropertyName` / `PropertyType` / `Alias` / `AllowFilter` / `AllowSort` / `Priority` / `KeywordSearchEnabled` / `KeywordMatchMode` / `KeywordPriority` / `IncludeInDefaultKeywordSearch` / `KeywordAlias` / `SupportedOperators` |
+| `PageValidator` | `Paging.Validators` | 不依赖特性的基础校验：`ValidatePageRequest` / `ValidatePageMetadata` / `ValidateFilter` / `ValidateSort`，均返回 `ValidationResult` |
+| `AttributeBasedValidator` | `Paging.Validators` | 基于实体特性的校验，是 `AttributePageExtensions.ValidateRequest/EnsureValid/TryValidate` 与 `PageQueryExecutor<T>` 内部校验的实现：`ValidatePageRequest<T>(request)` / `ValidatePageRequest(entityType, request)`（先套 `PageValidator` 基础校验，再逐条检查字段是否存在/允许过滤或排序/操作符是否受支持、关键字字段是否为字符串类型）；`GetFieldValidationInfo<T>(fieldName)` / `(entityType, fieldName)` 输出单个字段的可读校验信息（调试/错误提示用） |
+
 ### 扩展方法（Extensions）
 
 | 静态类 | 关键方法 |
 | --- | --- |
 | `PageExtensions` | `` `ApplyFilter<T>` `` / `` `ApplyFilters<T>` `` / `` `ApplySort<T>` `` / `` `ApplySorts<T>` `` / `` `ApplyKeywordSearch<T>` `` / `` `ApplyPaging<T>` `` / `` `ApplyPageRequest<T>` `` / `` `ToPageResult<T>` `` / `` `ToPageResultAsync<T>` ``（`IQueryable`/`IEnumerable`/`List`） |
-| `AttributePageExtensions` | `` `ToPageResultWithValidation<T>` `` / `` `ToPageResultWithValidationAsync<T>` `` / `` `ValidateRequest<T>` `` / `` `EnsureValid<T>` ``（校验失败抛 `InvalidOperationException`）/ `` `TryValidate<T>` `` |
-| `AutoQueryExtensions` | `AutoBuild(this object dto)` / `` `ToPageResultAuto<T>` `` / `` `ToPageResultAutoAsync<T>` `` |
+| `AttributePageExtensions` | `` `ToPageResultWithValidation<T>` `` / `` `ToPageResultWithValidationAsync<T>` ``（内部委托给 `` `PageQueryExecutor<T>` ``）/ `` `ValidateRequest<T>` `` / `` `EnsureValid<T>` ``（校验失败抛 `InvalidOperationException`）/ `` `TryValidate<T>` ``（均委托给 `AttributeBasedValidator`） |
+| `AutoQueryExtensions` | `AutoBuild(this object dto)` / `` `ToPageResultAuto<T>` `` / `` `ToPageResultAutoAsync<T>` ``（`validate: true` 时同样走 `` `PageQueryExecutor<T>` ``） |
 | `PageConverter` | `ToMetadata` / `ToDto` / `` `ConvertItems<TSource,TTarget>` `` / `ConvertItemsAsync` / `Clone` / `Merge`（第二个请求覆盖第一个）/ `CreateEmptyResult` |
 | `ValidationResult` | 校验结果：`IsValid` / `Errors`；静态 `Success()` / `Failure(params errors)`；`GetErrorMessage()` |
 
@@ -169,6 +182,31 @@ var request = queryDto.AutoBuild();               // 反射 + 约定 → PageReq
 var page = query.ToPageResultAuto(queryDto);      // 一步到位（默认带校验）
 ```
 
+### 基于实体特性做白名单校验 + 别名解析
+
+```csharp
+public class User
+{
+    [QueryField(Priority = 1)]
+    public long Id { get; set; }
+
+    [QueryField("userName")]                       // 前端传 userName，映射到 Name 属性
+    [KeywordSearch]
+    public string Name { get; set; } = string.Empty;
+
+    [QueryOperatorSupport(QueryOperator.Equal, QueryOperator.In)] // 只允许 Equal / In
+    public int Status { get; set; }
+}
+
+// 前端字段名用别名 userName，实体属性是 Name
+var request = new PageRequestDtoBase()
+    .WithFilter("userName", "张", QueryOperator.Contains)
+    .WithFilter("Status", 5, QueryOperator.GreaterThan); // 未在 QueryOperatorSupport 白名单中
+
+// 校验失败会抛 InvalidOperationException（Status 不支持 GreaterThan）
+var page = query.ToPageResultWithValidation<User>(request);
+```
+
 ## 扩展点 / 自定义
 
 - **调整自动推断约定**：构造自定义 `QueryConvention`（改 `RangeSuffixes`/`ListSuffixes`/`KeywordPatterns`/`StringDefaultContains` 等）以适配你的 DTO 命名习惯；`AutoQueryBuilder` 默认使用 `QueryConvention.Default`。
@@ -182,7 +220,7 @@ var page = query.ToPageResultAuto(queryDto);      // 一步到位（默认带校
 - **`QueryFilter.Field` 不能为空**：赋空白字符串会立即抛 `ArgumentException`；`QuerySort.Field` 同理。
 - **`IsValid()` 的语义**：`IsNull`/`IsNotNull` 不需要值；`In`/`NotIn` 需要 `Values` 非空；`Between` 需要 `Values` 恰好 2 个；其余操作符需要 `Value` 非空。无效的过滤/排序会在 `ApplyFilters`/`ApplySorts` 中被静默跳过。
 - **`PageSize` 会被钳制**：入参 `PageSize` 超过 `MaxPageSize=500` 会被截断，小于 `MinPageSize=1` 会回退到默认 20；`PageIndex` 小于 1 会被钳为 1。
-- **本包表达式实现的局限**：`PageExtensions.ApplyFilter` 只处理到 `Equal/NotEqual/比较/Contains/StartsWith/EndsWith/IsNull/IsNotNull`，`In/NotIn/Between` 在这里会走 `default` 分支被忽略——它面向内存/通用 `IQueryable`；真正的数据库翻译在 `XiHan.Framework.Data` 仓储层完成，务必以仓储实现为准。
+- **本包表达式实现的局限**：`PageExtensions.ApplyFilter` 只处理到 `Equal/NotEqual/比较/Contains/StartsWith/EndsWith/IsNull/IsNotNull`，`In/NotIn/Between` 在这里会走 `default` 分支被忽略——它面向内存/通用 `IQueryable`；真正的数据库翻译在 `XiHan.Framework.Data` 仓储层完成，务必以仓储实现为准。**`` `PageQueryExecutor<T>` ``（`AttributePageExtensions`/`AutoQueryExtensions` 的底层执行器）的过滤实现是同一套逻辑，同样不处理 `In/NotIn/Between`**——它带来的增量只是字段别名解析与基于特性的白名单校验，不是更强的表达式翻译能力。
 - **关键字搜索是 OR、过滤是 AND**：多个 `Filters` 之间是 AND，关键字对多个字段之间是 OR；排序按 `Priority` 升序稳定应用。
 
 ## 依赖模块

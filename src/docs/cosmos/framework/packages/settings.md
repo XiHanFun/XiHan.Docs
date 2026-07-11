@@ -51,7 +51,9 @@ UserSettingValueProvider (U)          → 取 ISettingStore（当前用户 UserI
 
 ### 定义提供者自动发现
 
-模块启动时用 `OnRegistered` 回调扫描所有注册类型，凡实现 `ISettingDefinitionProvider` 的都收集起来放进 `XiHanSettingOptions.DefinitionProviders`。你只需写一个实现类（并被 DI 登记），无需手动注册。定义汇总到 `SettingDefinitionContext`（`ISettingDefinitionContext`，单例），`Add` 遇重名 `Name` 会抛 `XiHanException`。
+模块启动时用 `OnRegistered` 回调扫描所有注册类型，凡实现 `ISettingDefinitionProvider` 的都收集起来放进 `XiHanSettingOptions.DefinitionProviders`。`SettingDefinitionContext`（`ISettingDefinitionContext`，单例）提供 `Add`/`GetOrNull`/`GetAll`，`Add` 遇重名 `Name` 会抛 `XiHanException`。
+
+> ⚠️ 核对源码后需特别指出：本包**没有任何代码遍历 `XiHanSettingOptions.DefinitionProviders` 并调用 `Define(context)`**，`SettingDefinitionContext` 不会被自动填充；`SettingManager` 的构造函数也只注入 `ILogger`/`ISettingStore`/`IServiceProvider`，既不读取 `XiHanSettingOptions`，也不读取 `ISettingDefinitionContext`——它自己的定义表 `_definitions` 是该 `SettingManager` 实例私有的空 `ConcurrentDictionary`。也就是说，写一个 `ISettingDefinitionProvider` 实现并被 DI 登记，**并不会**让对应设置自动可用；`GetOrNullAsync`/`SetValueAsync` 在定义未注册时会抛 `XiHanException($"Setting '{name}' is not defined.")`。要让设置真正生效，调用方必须自行拿到目标 `ISettingManager` 实例并显式调用 `AddDefinition(...)`（见下方使用示例）。截至目前，`XiHan.Framework` 与 `XiHan.BasicApp` 仓库内均未见把 `DefinitionProviders` 桥接到 `SettingManager` 的代码，接入前请以源码为准评估，不要假设「实现了 Provider 就自动可用」。
 
 ### 取值链与作用域
 
@@ -63,6 +65,8 @@ UserSettingValueProvider (U)          → 取 ISettingStore（当前用户 UserI
 4. 若定义标记 `IsEncrypted` 且值非空 → 解密后返回
 
 > ⚠️ 注意：`GetOrNullAsync` 的 `scope` 参数在当前实现里**读取时并未参与**取值路径——取值由 `definition.Providers` 与全局回退决定。作用域主要影响**写入**（见下）。要让某设置从多来源取值，需在其 `SettingDefinition` 上 `AddProvider(...)` 挂上对应提供者，或依赖全局存储回退。
+>
+> ⚠️ 同理，`AddXiHanSettings`（及多租户模块）注册进 `XiHanSettingOptions.ValueProviders` 的默认值提供者链（`D → C → G → U`，多租户下插入 `T`）也**未被 `SettingManager` 读取**——`SettingManager` 构造函数不注入 `IOptions<XiHanSettingOptions>`。这份列表目前只是一份「已注册值提供者类型」的清单，真正参与取值的只有各 `SettingDefinition.Providers`（需显式 `AddProvider`）与全局存储 / 默认值回退。若要让 `ValueProviders` 实际生效，需要自行编写消费逻辑（例如启动时解析 `IOptions<XiHanSettingOptions>`，实例化后逐个 `AddProvider` 挂到相应定义上）。
 
 `SetValueAsync(name, value, scope)` 按作用域解析出 `(providerName, providerKey)` 再写存储：
 
@@ -81,7 +85,7 @@ UserSettingValueProvider (U)          → 取 ISettingStore（当前用户 UserI
 
 ## 核心能力
 
-- **设置定义提供者模式**：实现 `ISettingDefinitionProvider.Define(...)` 声明设置项，模块启动时自动发现并汇总
+- **设置定义提供者模式（自动发现未接线到读写路径）**：实现 `ISettingDefinitionProvider.Define(...)` 声明设置项；模块启动时自动发现该实现类型并收集进 `XiHanSettingOptions.DefinitionProviders`，但当前源码没有消费者据此调用 `Define()`——定义仍需调用方显式对目标 `ISettingManager` 调用 `AddDefinition(...)` 才会生效（见「工作原理」）
 - **多来源值提供者链**：`D → C → G → U`（+ 多租户 `T`），逐个取第一个非空值
 - **作用域读写**：`SettingScope` 分 `Application`（`"G"`）/ `Tenant`（`"T"`）/ `User`（`"U"`）/ `Session`（同 `"U"`）；用户/租户键来自 `ICurrentUser`
 - **加密与校验**：定义可标记 `IsEncrypted` 走 AES；可挂 `Validator` 校验写入值
@@ -127,10 +131,12 @@ UserSettingValueProvider (U)          → 取 ISettingStore（当前用户 UserI
 
 | 字段 | 类型 | 默认值 | 含义 |
 | --- | --- | --- | --- |
-| `DefinitionProviders` | `ITypeList<ISettingDefinitionProvider>` | 空（自动发现填充） | 设置定义提供者集合 |
-| `ValueProviders` | `ITypeList<ISettingValueProvider>` | 空（`AddXiHanSettings` 填充默认四项） | 值提供者链 |
-| `DeletedSettings` | `HashSet<string>` | 空 | 标记删除的设置名 |
-| `ReturnOriginalValueIfDecryptFailed` | `bool` | `true` | 解密失败时是否返回原始值 |
+| `DefinitionProviders` | `ITypeList<ISettingDefinitionProvider>` | 空（自动发现填充） | 设置定义提供者集合（⚠️ 当前无代码读取此列表，未接入 `SettingManager`，见「工作原理」） |
+| `ValueProviders` | `ITypeList<ISettingValueProvider>` | 空（`AddXiHanSettings` 填充默认四项） | 值提供者链（⚠️ 当前无代码读取此列表，`SettingManager` 不注入 `XiHanSettingOptions`） |
+| `DeletedSettings` | `HashSet<string>` | 空 | 标记删除的设置名（⚠️ 同样未被 `SettingManager` 读取） |
+| `ReturnOriginalValueIfDecryptFailed` | `bool` | `true` | 解密失败时是否返回原始值（⚠️ 同样未被 `SettingManager` 读取） |
+
+> ⚠️ `SettingManager` 的构造函数不注入 `IOptions<XiHanSettingOptions>`，因此以上四个字段目前均不参与 `SettingManager` 的实际读写逻辑，仅作为可被自定义代码消费的选项容器存在。
 
 配置节 `XiHan:Settings:Aes`（`XiHanAesOptions.SectionName`）：
 
@@ -179,6 +185,8 @@ public class MySettingDefinitionProvider : ISettingDefinitionProvider
 }
 ```
 
+> 上面的 `MySettingDefinitionProvider` 会被自动收集进 `XiHanSettingOptions.DefinitionProviders`，但如前所述本包不会自动调用其 `Define(...)`。要让 `SettingManager` 真正认识这些定义，需要自己构造好 `SettingDefinition` 后对目标 `ISettingManager` 调用 `AddDefinition(...)`（或自行编写逻辑：解析 `IOptions<XiHanSettingOptions>` 拿到 `DefinitionProviders`，实例化后调用 `Define(context)`，再把 `context.GetAll()` 逐条喂给 `AddDefinition`）。
+
 ### 读写设置
 
 ```csharp
@@ -209,11 +217,12 @@ var def = new SettingDefinition("App.PageSize", defaultValue: "20")
 ## 扩展点 / 自定义
 
 - **替换存储**：实现 `ISettingStore`（如查数据库）并注册；默认 `NullSettingStore` 用 `TryRegister`，你的实现会覆盖它。
-- **自定义值提供者**：继承 `SettingValueProvider` 或实现 `ISettingValueProvider`，给出唯一 `Name`，通过 `Configure<XiHanSettingOptions>` 加入 `ValueProviders`，或在具体 `SettingDefinition` 上 `AddProvider`。
+- **自定义值提供者**：继承 `SettingValueProvider` 或实现 `ISettingValueProvider`，给出唯一 `Name`；真正生效的接入方式是在具体 `SettingDefinition` 上 `AddProvider(...)`。通过 `Configure<XiHanSettingOptions>` 加入 `ValueProviders` 目前只是登记类型清单，本包没有代码据此自动挂载到定义上，需自行编写消费逻辑。
 - **监听变更**：订阅 `SettingManager.OnSettingChanged`，在设置写回后做缓存失效/通知等。
 
 ## 注意事项与最佳实践
 
+- **定义 / 值提供者的自动发现未接线到读写路径**：`ISettingDefinitionProvider` 自动发现只是把类型收集进 `DefinitionProviders`，`AddXiHanSettings` 注册的默认值提供者链只是把类型收集进 `ValueProviders`——本包没有代码消费这两份列表，`SettingManager` 也不注入 `IOptions<XiHanSettingOptions>`。设置定义必须显式调用 `ISettingManager.AddDefinition(...)` 才会被 `GetOrNullAsync`/`SetValueAsync` 认识，否则抛 `XiHanException`。
 - **读取按定义的 Providers、不按 scope**：`GetOrNullAsync` 遍历的是 `SettingDefinition.Providers`，`scope` 参数不参与读取路径。若某设置需要多来源/分级取值，务必在定义上 `AddProvider`，或依赖全局存储回退。
 - **`Session` 与 `User` 同键**：写入 `Session` 作用域实际用 `"U"` + `UserId`，与 `User` 无区分。
 - **加密密钥硬编码**：`XiHanAesOptions` 目前未被 `SettingManager` 使用，加密走硬编码密钥；生产使用加密设置前需评估。

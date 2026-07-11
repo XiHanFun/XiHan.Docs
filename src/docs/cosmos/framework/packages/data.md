@@ -34,7 +34,7 @@ dotnet add package XiHan.Framework.Data
 public class MyModule : XiHanModule { }
 ```
 
-`XiHanDataModule` 依赖 `XiHanDomainModule`、`XiHanUowModule`、`XiHanDistributedIdsModule`、`XiHanMultiTenancyModule`、`XiHanSecurityModule`。它在 `ConfigureServices` 里调用 `AddXiHanDataSqlSugar(config)` 注册全部服务；在 `OnApplicationInitializationAsync` 里创建作用域、取 `IDbInitializer` 执行 `InitializeAsync()` 完成数据库初始化（初始化失败会抛出中断启动）。
+`XiHanDataModule` 依赖 `XiHanDomainModule`、`XiHanUowModule`、`XiHanDistributedIdsModule`、`XiHanMultiTenancyModule`、`XiHanSecurityModule`、`XiHanAuditingModule`。它在 `ConfigureServices` 里调用 `AddXiHanDataSqlSugar(config)` 注册全部服务；在 `OnApplicationInitializationAsync` 里创建作用域、取 `IDbInitializer` 执行 `InitializeAsync()` 完成数据库初始化（初始化失败会抛出中断启动）。
 
 启用后你得到（均为 `TryAdd` 语义，可被业务覆盖）：
 
@@ -43,8 +43,9 @@ public class MyModule : XiHanModule { }
 - `ISqlSugarClientResolver` / `ISqlSugarTenantConnectionResolver` / `ISqlSugarConnectionConfigurator`
 - `SqlSugarDataExecutingHandler`（主键/审计/租户/TraceId 注入）
 - `IDatabaseMetadataProvider`（库表元数据）
-- `IEntityAuditContextProvider`（默认从当前用户/请求填充）、`IEntityDiffLogWriter`（默认 `Null` 零开销）
+- `IEntityAuditContextProvider`（默认从当前用户/请求填充）、`IEntityDiffLogWriter`（默认 `Null` 零开销）——这两个契约的默认实现随依赖的 [XiHan.Framework.Auditing](./auditing) 模块一并注册，本包直接复用
 - `IDbInitializer`（建库/建表/种子）
+- `SqlSugarSlaveHealthCheckService`（后台从库健康探针，始终注册；由 `EnableSlaveHealthCheck` 开关决定是否实际探测，未开启时空转零成本）
 
 ## 工作原理
 
@@ -68,6 +69,7 @@ public class MyModule : XiHanModule { }
 - **静态连接与运行时动态连接一致**：`SqlSugarConnectionConfigurator` 复用同一套过滤器/AOP 装配逻辑，保证运行时新注册的租户连接与启动期静态连接行为完全一致。
 - **事务不在仓储内开启**：仓储只做 before 预读保证实体在当前租户范围内，事务边界统一由工作单元接管（见 [XiHan.Framework.Uow](./uow)）。
 - **写操作前的租户安全校验**：`UpdateAsync`/`DeleteAsync`/批量操作会先按当前过滤器读取实体，读不到即视为"不存在或不在当前租户范围内"并抛 `InvalidOperationException`，防止越租户改删。
+- **SQL 执行自动上报链路追踪**：每条 SQL 执行完成（或异常）后，`SetSugarAop` 按已知耗时回溯生成一个 `db.query`（`ActivityKind.Client`）的 OpenTelemetry Activity，挂在当前请求 Activity 之下，携带 `db.system`/`db.statement` 标签，异常时记录状态与堆栈；基于 `XiHanActivitySources.DataSource`，无监听者时直接跳过、零开销。
 
 ## 核心能力
 
@@ -80,6 +82,8 @@ public class MyModule : XiHanModule { }
 - **数据库初始化**：可选建库（自动处理 MySQL utf8mb4 归一化）、`CodeFirst` 建表（含分表 `SplitTables` 识别）、按 `Order` 顺序执行 `IDataSeeder`。
 - **雪花 ID**：接入 `XiHan.Framework.DistributedIds`，通过 `StaticConfig.CustomSnowFlakeFunc` 作为 SqlSugar 全局主键生成器。
 - **SQL 日志与慢查询**：可开启 SQL/异常/慢 SQL 日志，慢 SQL 阈值可配。
+- **主从读写分离**：SqlSugar 原生主从能力完整放出，appsettings 声明从库即可分担读；差异化权重与更多原生定制走代码钩子；可选从库健康探针自动摘除/回填权重（详见下文）。
+- **SQL 执行链路追踪**：每条 SQL 执行完成/异常自动上报 `db.query` OpenTelemetry Client Span，挂在当前请求 Activity 下；无监听者时零开销，不需要额外配置。
 
 ## 主要 API / 类型
 
@@ -385,7 +389,8 @@ services.AddDataSeeder<RoleSeeder>();
 - [XiHan.Framework.MultiTenancy](./multitenancy)（`ICurrentTenant`/`ICurrentTenantAccessor` 租户上下文）
 - [XiHan.Framework.Security](./security)（`ICurrentUser` 审计上下文）
 - [XiHan.Framework.DistributedIds](./distributed-ids)（雪花 ID 生成器）
-- [XiHan.Framework.Core](./core)（模块化基础设施）
+- [XiHan.Framework.Auditing](./auditing)（`IEntityAuditContextProvider`/`IEntityDiffLogWriter` 默认实现来源）
+- [XiHan.Framework.Core](./core)（模块化基础设施，含链路追踪 `XiHanActivitySources`）
 - 第三方核心：**SqlSugarCore** `5.1.4.216`
 
 ## 相关模块
@@ -393,4 +398,5 @@ services.AddDataSeeder<RoleSeeder>();
 - [XiHan.Framework.Uow](./uow)
 - [XiHan.Framework.Domain](./domain)
 - [XiHan.Framework.MultiTenancy](./multitenancy)
+- [XiHan.Framework.Auditing](./auditing)
 - [XiHan.Framework.Caching](./caching)

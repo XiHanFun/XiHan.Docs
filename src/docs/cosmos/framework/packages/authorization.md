@@ -57,7 +57,7 @@ xihan.hybrid:p={URL编码的权限码};a={URL编码的ABAC策略码}
 3. 若无 ABAC 策略码 → 直接 `Succeed`。
 4. 若有 ABAC 策略码 → `IAbacAttributeCollector` 收集主体/资源/环境属性 → `IAbacEvaluator.EvaluateAsync` 评估 → 允许才 `Succeed`。
 
-**RBAC 权限来源（`DefaultPermissionChecker`）**：`IsGrantedAsync` 先查用户直接权限，再遍历用户的启用角色查角色权限，任一命中（且 `IsEnabled`）即通过。`GetGrantedPermissionsAsync` 合并去重用户+角色权限。真实权限数据由 `IPermissionStore` / `IRoleStore` 提供（默认实现为占位，需业务层替换）。
+**RBAC 权限来源（`DefaultPermissionChecker`）**：`IsGrantedAsync` 先查用户直接权限，再遍历用户的启用角色查角色权限，任一命中（且 `IsEnabled`）即通过。`GetGrantedPermissionsAsync` 合并去重用户+角色权限。真实权限数据由 `IPermissionStore` / `IRoleStore` 提供（默认实现为线程安全的纯内存实现，进程重启即丢失且不预置任何数据，生产需业务层替换为读库实现）。
 
 ## 核心能力
 
@@ -182,7 +182,7 @@ public class ReportService(IAuthorizationService authz)
 
 ## 扩展点 / 自定义
 
-- **权限 / 角色 / 策略存储**：默认实现（`DefaultPermissionStore` / `DefaultRoleStore` / `DefaultPolicyStore`）为占位/内存级；生产必须实现 `IPermissionStore` / `IRoleStore` / `IPolicyStore` 读真实库，DI 覆盖（扩展方法用 `TryAddScoped`，先注册即生效）。
+- **权限 / 角色 / 策略存储**：默认实现（`DefaultPermissionStore` / `DefaultRoleStore` / `DefaultPolicyStore`）基于 `ConcurrentDictionary` 的线程安全内存实现，可正常增删查（含各自的 `ClearAsync` 及 `AddRolesAsync` / `AddPermissionsAsync` / `AddPoliciesAsync` 等批量播种方法，便于开发/测试播种数据），但不持久化、不预置数据；生产必须实现 `IPermissionStore` / `IRoleStore` / `IPolicyStore` 读真实库，DI 覆盖（扩展方法用 `TryAddScoped`，先注册即生效）。
 - **超管通配 `*`**：由你实现的 `IPermissionChecker` / `IPermissionStore` 快照负责（如超管权限集含 `*`），本包不硬编码超管身份。
 - **自定义 ABAC 逻辑**：实现 `IAbacEvaluator` 覆盖 `DefaultAbacEvaluator`，接你自己的策略引擎（如 OPA/规则 DSL）；或实现 `IAbacAttributeCollector` 补充领域特有的资源属性。
 - **自定义 Policy 要求**：实现 `IAuthorizationRequirement`（Policies 版）放进 `PolicyDefinition.CustomRequirements`。
@@ -193,7 +193,7 @@ public class ReportService(IAuthorizationService authz)
 - **策略名有 URL 编码**：权限码/ABAC 码里含 `;`、`=`、空格等会被 `Uri.EscapeDataString` 编码进策略名；直接手写策略名时须遵循 `xihan.hybrid:p=...;a=...` 格式（一般用特性即可，无需手写）。
 - **ABAC 需要资源对象**：`same_tenant`/`self_only`/比较表达式依赖资源属性；Controller 上要让 ABAC 拿到 `HttpContext`（`route.*`/`query.*`）或显式把资源对象作为授权 `resource` 传入。
 - **两个同名 `IAuthorizationRequirement`**：Policy 子系统的自定义要求 vs ASP.NET Core 的标记接口，命名空间不同、用途不同，勿混用。
-- **默认存储不可用于生产**：干净库若不接真实 `IPermissionStore`/`IRoleStore`，所有权限判定都会失败（无数据）。
+- **默认存储不可用于生产**：默认内存存储不持久化、不预置数据；若不接真实 `IPermissionStore`/`IRoleStore` 且从未通过其 API 授予过数据，所有权限判定都会失败。
 
 ## 依赖模块
 

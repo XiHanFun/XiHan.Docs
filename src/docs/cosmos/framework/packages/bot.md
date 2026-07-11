@@ -114,7 +114,7 @@ BotDispatchResult.From(context.Results, context.IsSkipped)  →  聚合成败 + 
 | `BotClient` | `IBotClient` 默认实现，委托 `BotDispatcher`；模板方法先经 `IBotTemplateEngine` 渲染 |
 | `BotDispatcher` | 调度器。`Task<BotDispatchResult> DispatchAsync(BotMessage, IReadOnlyList<string>? channels, CancellationToken)` |
 | `BotProviderManager` | 提供者管理。`IReadOnlyList<IBotProvider> GetAllProviders()`；`ResolveProviders(IReadOnlyList<string>? channels)` |
-| `BotContext` | 单次调度上下文：`Message` / `Channels` / `CancellationToken` / `Items` / `Providers` / `Results` / `StrategyName` / `IsSkipped` / `IsSuccess` / `HasFailures`；`SetProviders(...)` / `AddResult(providerName, result)` / `ClearResults()` |
+| `BotContext` | 单次调度上下文：`Message` / `Channels` / `CancellationToken` / `Items` / `Providers` / `Results` / `StrategyName` / `LastException` / `IsSkipped` / `IsSuccess` / `HasFailures`；`SetProviders(...)` / `AddResult(providerName, result)` / `ClearResults()` |
 
 ### 提供者、策略、管道
 

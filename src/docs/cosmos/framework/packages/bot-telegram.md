@@ -5,7 +5,7 @@
 - **NuGet**：`XiHan.Framework.Bot.Telegram`
 - **模块类**：`XiHanBotTelegramModule`
 - **所在层**：基础设施层
-- **关键依赖**：`Telegram.Bot`（22.10.1，官方 SDK）+ `Microsoft.AspNetCore.App`（`FrameworkReference`，Webhook 端点需要）；框架内部依赖 `XiHan.Framework.Bot`。
+- **关键依赖**：`Telegram.Bot`（22.10.1.1，官方 SDK）+ `Microsoft.AspNetCore.App`（`FrameworkReference`，Webhook 端点需要）；框架内部依赖 `XiHan.Framework.Bot`。
 
 ## 概述
 
@@ -124,7 +124,7 @@ Webhook 模式还需在应用管道里 `app.UseTelegramBotWebhook()`（映射 We
 | `IBotStartPayloadHandler` | `Task<bool> HandleAsync(ctx, string payload, ct)`（处理 `/start` 深链，返回 `true` 消费） |
 | `IBotStateHandler` | `bool CanHandle(ctx, string stateStep)`、`Task HandleAsync(ctx, stateStep, statePayload?, ct)` |
 
-`[BotCommand(command)]`：`Command` / `Description` / `AdminOnly` / `Aliases` / `Pattern`（正则匹配非命令文本）。`[BotCallback(action)]`：`Action` / `AdminOnly`。`TelegramBotContext` 统一封装一次更新（`Bot` / `Update` / `Message` / `Callback` / `ChatId` / `UserId` / `Text` / `IsCommand` / `IsCallback` / `IsGroup` / `IsAdmin` 等 + `GetCommandToken` / `GetCommandArgs` / `GetCallbackAction` / `SetCallbackAnswer`）。
+`[BotCommand(command)]`：`Command` / `Description` / `AdminOnly` / `Aliases` / `Pattern`（正则匹配非命令文本，编译时带 100ms 超时防 ReDoS）。`[BotCallback(action)]`：`Action` / `AdminOnly`。`TelegramBotContext` 统一封装一次更新（`Bot` / `Update` / `Message` / `Callback` / `ChatId` / `UserId` / `Text` / `IsCommand` / `IsCallback` / `IsReply` / `IsGroup` / `IsChannel` / `IsAdmin` / `LanguageCode`（Telegram 客户端语言，未识别回退 `zh-CN`）等 + `GetCommandToken` / `GetCommandArgs` / `GetCallbackAction` / `SetCallbackAnswer` / `MarkCallbackAnswered`）。
 
 ### 平台层 · 可插拔 store
 
@@ -179,11 +179,25 @@ Webhook 模式还需在应用管道里 `app.UseTelegramBotWebhook()`（映射 We
 | `EnableFallbackReply` | `bool` | `false` | 全局兜底回复（与单机器人设置 OR 组合） |
 | `Network` | `TelegramBotNetworkOptions` | `new()` | 代理 / 自定义 BaseUrl / 超时 |
 
-`TelegramBotConfig`（单机器人）：`Name`（业务名，唯一，忽略大小写）、`Token`（必填）、`AdminUsers`（`long[]`）、`AllowedGroupChatIds`（`long[]`，**fail-closed：空=拒绝所有群**；私聊不受限）、`AllowedCommands`（`string[]`，空=不限）、`EnableFallbackReply`、`Remark`。
+`TelegramBotConfig`（单机器人）：`Id`（数据库来源配置 Id，仅用于变更检测与审计定位）、`Name`（业务名，唯一，忽略大小写）、`Token`（必填）、`AdminUsers`（`long[]`）、`AllowedGroupChatIds`（`long[]`，**fail-closed：空=拒绝所有群与频道**；私聊不受限；白名单同时覆盖群组与频道，频道 ChatId 与超级群同为 -100 前缀）、`AllowedCommands`（`string[]`，空=不限）、`EnableFallbackReply`、`Remark`。`IsSameAs` 逐字段比对（含 Name/Token/Id/AdminUsers/AllowedGroupChatIds/AllowedCommands/EnableFallbackReply），任一变化 Manager 即重启该机器人。
 
-`TelegramBotNetworkOptions`：`ProxyUrl`（空=直连）、`BaseUrl`（空=官方 api.telegram.org）、`TimeoutSeconds`（默认 100）。
-`TelegramBotRetryOptions`：`MaxRetries`（3）、`BaseDelayMs`（500）、`MaxDelayMs`（10000）、`NotifyAdminOnFinalFailure`（true）。
+`TelegramBotNetworkOptions`：`ProxyUrl`（空=直连，支持 `user:pass@host:port` 形式的代理凭证）、`BaseUrl`（空=官方 api.telegram.org，可指向自建 Bot API Server）、`TimeoutSeconds`（默认 100，`<=0` 按 100 处理）。
+`TelegramBotRetryOptions`：`MaxRetries`（3，不含首次发送）、`BaseDelayMs`（500，首次重试延迟，之后翻倍）、`MaxDelayMs`（10000）、`NotifyAdminOnFinalFailure`（true）。
 `TelegramBotPlatformConsts`：`SecretTokenHeaderName = "X-Telegram-Bot-Api-Secret-Token"`、`CallbackDataSeparator = ':'`、`StartCommand = "/start"`、`DefaultWebhookRoutePrefix = "/api/telegram-bot/webhook"`。
+
+`TelegramBotTexts`（平台文案，带中文默认值，应用层可整体覆盖）：
+
+| 字段 | 默认值 | 用途 |
+| --- | --- | --- |
+| `InternalErrorReply` | "系统处理异常，已记录日志，请稍后重试或联系管理员。" | 分发异常兜底回复 |
+| `CommandDisabledReply` | "该命令未开启。" | 命令不在白名单 |
+| `AdminOnlyCommandReply` | "该命令仅管理员可用。" | 非管理员执行管理员命令 |
+| `AdminOnlyCallbackReply` | "该操作仅管理员可用。" | 非管理员点击管理员按钮 |
+| `UnhandledMessageReply` | "暂不支持处理该消息，发送 /help 查看可用命令。" | 无处理器命中且兜底回复开启 |
+| `SendFailureAdminNotifyTitle` | "消息发送失败告警" | 发送最终失败通知管理员的标题 |
+| `StartReply` | "你好，欢迎使用 {botUsername}！发送 /help 查看可用命令。" | 内置 `/start` 欢迎语（支持 `{botUsername}` 占位符） |
+| `HelpHeader` | "可用命令：" | 内置 `/help` 列表头部 |
+| `MyIdReply` | "ChatId：{chatId}\nUserId：{userId}" | 内置 `/myid` 回复（支持 `{chatId}` / `{userId}` 占位符） |
 
 ## 使用示例
 
@@ -229,7 +243,7 @@ Webhook 模式下别忘了在管道里 `app.UseTelegramBotWebhook();`。
 ## 注意事项与最佳实践
 
 - **Webhook secret 必须配**：Webhook 模式下 `WebhookSecretToken` 为空会拒绝请求（fail-closed，401）。
-- **群白名单 fail-closed**：`AllowedGroupChatIds` 为空时拒绝所有群消息（私聊与内置命令 `/start` `/myid` `/id` `/help` `/h` 例外，但仍受命令白名单/AdminOnly 约束）。
+- **群/频道白名单 fail-closed**：`AllowedGroupChatIds` 为空时拒绝所有群组与频道消息（私聊与内置命令 `/start` `/myid` `/id` `/help` `/h` 例外，但仍受命令白名单/AdminOnly 约束）。
 - **平台默认关**：不设 `Settings.Enabled=true` 平台层不工作。
 - **多实例慎用内存 store**：内存去重/会话/审计仅进程内有效，横向扩展需换分布式实现。
 - **旧实例延迟释放**：配置热更后旧 `BotInstance` 保活 150 秒再释放，避免打断在途 Webhook 分发/重试。
@@ -237,7 +251,7 @@ Webhook 模式下别忘了在管道里 `app.UseTelegramBotWebhook();`。
 ## 依赖模块
 
 - [XiHan.Framework.Bot](./bot)（内核，`IBotProvider` / `BotResult` / `BotMessage`）
-- `Telegram.Bot` 22.10.1（官方 SDK）、`Microsoft.AspNetCore.App`（Webhook 端点）
+- `Telegram.Bot` 22.10.1.1（官方 SDK）、`Microsoft.AspNetCore.App`（Webhook 端点）
 
 ## 相关模块
 

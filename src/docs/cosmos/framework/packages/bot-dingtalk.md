@@ -56,9 +56,9 @@ _url = WebHookUrl + "?access_token=" + AccessToken
 _keyWord = KeyWord == null ? null : KeyWord + "\n"   // 自动前缀到标题/正文
 ```
 
-发送时（`Send`）若配置了 `Secret`，加签：`timestamp = 毫秒时间戳`，`sign = UrlEncode(HmacSha256(Secret, timestamp + "\n" + Secret))`，最终 URL 追加 `&timestamp={ts}&sign={sign}`。然后 `url.AsHttp().SetJsonBody(payload).PostAsync<DingTalkResultInfoDto>()`，按 `ErrCode == 0 || ErrMsg == "ok"` 判成功。
+发送时（`Send`）**无条件**计算签名并追加到 URL：`timestamp = 毫秒时间戳`，`sign = UrlEncode(HmacSha256(Secret, timestamp + "\n" + Secret))`，`url` 都会追加 `&timestamp={ts}&sign={sign}`——即使未配置 `Secret`（此时以空字符串作密钥参与运算）也照样带上这两个查询参数；钉钉服务端是否据此校验，取决于该机器人是否启用了「加签」安全设置。然后 `url.AsHttp().SetJsonBody(payload).PostAsync<DingTalkResultInfoDto>()`，按 `ErrCode == 0 || ErrMsg == "ok"` 判成功。
 
-`DingTalkBotProvider.SendAsync` 按 `message.Type` 路由：`Markdown`、`Link`、`Card`（ActionCard），其余按 `Text`。@ 提及由 `message.Mentions` 构建 `DingTalkAt`（含 `"@all"` → `IsAtAll`）。
+`DingTalkBotProvider.SendAsync` 按 `message.Type` 路由：`Markdown` 走 `MarkdownMessage`；`Link` 从 `message.Data` 按 `DingTalkMessageDataKeys.DingTalkLink` 取出 `DingTalkLink` 走 `LinkMessage`；`Card` 依次尝试从 `Data` 取 `DingTalkActionCard`（键 `DingTalkMessageDataKeys.DingTalkActionCard`）走 `ActionCardMessage`，取不到再尝试 `DingTalkFeedCard`（键 `DingTalkMessageDataKeys.DingTalkFeedCard`）走 `FeedCardMessage`；以上分支若对应 `Data` 取不到值，或消息类型不属于以上三种，统一跌落到默认分支发送纯文本 `TextMessage`。@ 提及由 `message.Mentions` 构建 `DingTalkAt`（含 `"@all"` → `IsAtAll`）。
 
 ## 核心能力
 
@@ -132,7 +132,7 @@ await bot.SendAsync(card, new[] { BotProviderNames.DingTalk });
 
 ## 注意事项与最佳实践
 
-- **加签与关键字二选一或并用**：与钉钉机器人安全设置一致；`Secret` 非空才加签，`KeyWord` 非空则自动前缀（注意别让关键字被 Markdown 语法吞掉）。
+- **加签与关键字可二选一或并用**：与钉钉机器人安全设置一致；`KeyWord` 非空则自动前缀（注意别让关键字被 Markdown 语法吞掉）。`timestamp`/`sign` 签名参数每次请求都会计算并追加到 URL，未配置 `Secret` 时以空字符串参与运算，钉钉服务端是否校验取决于该机器人是否启用了「加签」。
 - **未配置 / 未启用返回 `BadRequest`**：`GetAsync` 返回 `null`、`Enabled=false` 或 `AccessToken` 为空时不发送。
 - **限流**：钉钉自定义机器人有每分钟条数限制（错误码 `410100`），高频场景配合内核 `RateLimitPipeline` 使用。
 

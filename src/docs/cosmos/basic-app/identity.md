@@ -192,6 +192,7 @@ Access Token 的 Claim 主要有：`sub`/`jti`、`UserId`、`UserName`、`Sessio
 - **联系方式换绑/验证**：换邮箱/手机走"发码→确认"两步（`ProfileVerificationPurpose` 区分用途：`ChangeEmail`/`ChangePhone`/`VerifyEmail`/`VerifyPhone`/`TwoFactorEmail`/`TwoFactorPhone`），需密码确认、校验唯一性。
 - **会话/设备**：`GetSessions` 列出本人在线会话（标出当前会话）；`RevokeSession` 撤销指定设备；`RevokeOtherSessions` 一键踢掉其他所有端；`GetLoginLogs` 查本人登录历史。
 - **第三方账号**：`GetLinkedAccounts` 列出已绑定的三方账号；`UnlinkAccount` 解绑（解绑前防止失去唯一登录方式）。
+- **开发者 · API 凭证**（`SysUserApiCredential`）：`GetApiCredentials` 列出本人凭证；`CreateApiCredential`/`RotateApiCredentialSecret` 生成/滚动 `AppKey`（`ak_` 前缀，全局唯一）+ `AppSecret`（`sk_` 前缀，与账号密码同栈 `IPasswordHasher` 只存哈希，明文仅创建/滚动时返回一次）；`UpdateApiCredentialStatus`/`DeleteApiCredential` 启停/删除；每用户最多 5 个凭证，供服务端签名调用 OpenAPI，变更均触发安全通知。
 - **偏好**：通知偏好 `GetNotificationPreference`/`UpdateNotificationPreference`（渠道 × 类型开关）；UI 偏好走 `UserSettingAppService` 按场景（Scene）+ key 存取，保存后经 SignalR 广播实现**多端同步**（服务端不解释 value，仅作跨端状态载体）。
 - **账号注销**：`DeactivateAccount`（停用）/`DeleteAccount`（软删，`[HttpPost]` 显式锁定），均需密码确认并撤销全部会话。
 

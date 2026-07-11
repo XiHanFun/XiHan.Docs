@@ -133,6 +133,7 @@ await bot.SendAsync(msg, new[] { BotProviderNames.Email });
 - **未配置 = 未启用**：`GetAsync` 返回 `null`、`Enabled=false`、或 `SmtpHost`/`FromMail` 为空，都会被判为未配置并返回 `BadRequest`（不抛异常，符合 fail-closed）。
 - **认证可选**：`FromUserName` 为空时不做 SMTP 认证（适配允许匿名中继的内网 SMTP）。
 - **证书校验默认严格**：`AcceptInvalidCertificate` 默认 `false`，生产勿放开。
+- **发送异常不抛出、取消例外**：`EmailBot.SendMail` 内 SMTP 连接/认证/发送失败会被捕获并记录日志（`LogHelper.Error`），返回 `false`（由 `EmailBotProvider` 转为 `BotResult.Failed`），不会抛出异常；但调用方主动取消触发的 `OperationCanceledException` 会原样上抛，不会被吞成"发送失败"。
 
 ## 依赖模块
 

@@ -11,7 +11,7 @@
 
 XiHan.Framework.DistributedIds 用于在分布式环境下生成不重复的标识。它自研实现了三种 `IDistributedIdGenerator<TKey>` 生成器——Snowflake（雪花漂移/传统雪花，`long`）、NanoId（随机字符串，但对外仍以 `long` 键接口暴露）、SequentialGuid（时间有序 `Guid`）——并额外提供 Sqids 短码编码方案。所有算法都不依赖外部 NuGet 包，便于版本控制与定制。
 
-设计上把「生成器」与「编码器」区分开：**生成器**实现统一接口 `IDistributedIdGenerator<TKey>`（`TKey` 为 `long` 或 `Guid`），可被 DI 注入；**Sqids** 则是把一个/多个非负整数双向编解码为短字符串的 `SqidsEncoder<T>`，**不实现** `IDistributedIdGenerator<TKey>`。
+设计上把「生成器」与「编码器」区分开：**生成器**实现统一接口 `IDistributedIdGenerator<TKey>`（`TKey` 为 `long` 或 `Guid`），可被 DI 注入；**Sqids** 则是把一个/多个非负整数双向编解码为短字符串的 `SqidsEncoder<T>`，**不实现** `IDistributedIdGenerator<TKey>`。此外还有一个更基础的 **`GuidHelper`** 静态工具类，提供通用 Guid 生成/校验/格式转换能力，同样不实现生成器接口，与 `SequentialGuidGenerator` 相互独立。
 
 ## 何时使用
 
@@ -50,6 +50,7 @@ public class MyModule : XiHanModule { }
 - **工厂预置场景**：`IdGeneratorFactory` 提供低/中/高并发、短 ID、前缀、经典雪花、多种 NanoId 字符集、多种 SequentialGuid 排序等大量预置构造方法。
 - **同步/异步与批量**：接口提供 `NextId()` / `NextIdString()` / `NextIds(count)` 及对应 `...Async` 变体。
 - **数据库友好**：`SequentialGuidGenerator` 支持字符串/二进制/末尾三种排序模式以适配不同数据库索引。
+- **Guid 工具箱**：`GuidHelper`（静态）提供标准/加密安全/时间有序/确定性（SHA1、MD5）Guid 生成，以及有效性校验、N/D/B/P/X 格式转换、字节数组/Base64 互转、版本位与变体位解析等，独立于生成器接口体系，不参与 DI 注册。
 
 ## 主要 API / 类型
 
@@ -96,6 +97,29 @@ public class MyModule : XiHanModule { }
 | `SqidsEncoder<T> where T : INumber<T>` | 泛型编码器。`string Encode(params T[] numbers)` 编码、`T[] Decode(string id)` 解码。构造可传 `SqidsOptions` |
 | `SqidsEncoder`（非泛型，`: SqidsEncoder<int>`） | 面向 `int` 的便捷子类 |
 | `SqidsExtensions`（静态扩展） | `int/uint/long/ulong` 的 `ToSqid()`，以及 `string.FromSqidToInt32/…Int32Array/…Int64/…Int64Array/…UInt32/…UInt64()` |
+
+### Guid 通用工具 `GuidHelper`（静态，非生成器）
+
+`XiHan.Framework.DistributedIds.Guids.GuidHelper` 是独立于 `IDistributedIdGenerator<TKey>` 体系之外的 Guid 工具类，覆盖生成、校验、格式转换与位域解析：
+
+| 分类 | 方法 | 说明 |
+| --- | --- | --- |
+| 生成 | `NewGuid()` | 标准随机 Guid（等价 `Guid.NewGuid()`） |
+| 生成 | `NewCryptoGuid()` | 使用 `RandomNumberGenerator` 生成的加密安全随机 Guid，版本位设为 4 |
+| 生成 | `NewTimeBasedGuid()` | 基于 `DateTime.UtcNow.Ticks` + 随机字节拼装的时间有序 Guid，版本位设为 1 |
+| 生成 | `NewDeterministicGuid(string input, Guid? namespaceGuid = null)` | SHA1 命名空间确定性 Guid（版本 5），相同输入必得相同输出 |
+| 生成 | `NewDeterministicGuidMd5(string input, Guid? namespaceGuid = null)` | MD5 命名空间确定性 Guid（版本 3） |
+| 生成 | `GenerateMultiple(int count, bool useCrypto = false)` | 批量生成 `List<Guid>` |
+| 校验 | `IsValidGuid` / `IsValidStandardGuid`（带连字符）/ `IsValidGuidNoDash`（无连字符） | 格式校验 |
+| 解析 | `TryParse` / `Parse` | 包装 `Guid.TryParse` / `Guid.Parse` |
+| 格式化 | `ToString(Guid, format = "D")` / `ToUpperString` / `ToLowerString` | 支持 N/D/B/P/X 格式 |
+| 格式转换 | `ToStringNoDash` / `ToStandardFormat` / `ToNoDashFormat` | 标准格式与无连字符格式互转 |
+| 字节/Base64 | `ToByteArray` / `FromByteArray` / `ToBase64String` / `FromBase64String` | 与字节数组、Base64 字符串互转 |
+| 位域解析 | `GetVersion(Guid)` / `GetVariant(Guid)` | 提取 RFC 4122 版本号（1-5）与变体位 |
+| 判空/比较 | `IsEmpty` / `IsNotEmpty` / `AreEqual` / `GetHashCode(Guid)` | 基础判断 |
+| 诊断 | `GetFormatExamples(Guid? guid = null)` | 返回 N/D/B/P/X/Base64 六种格式示例的字典 |
+
+> `GuidHelper` 与 `SequentialGuidGenerator` 相互独立：前者是通用 Guid 工具箱（静态方法，不实现 `IDistributedIdGenerator<TKey>`，不参与 DI 注册），后者是专门产出「末尾/字符串/二进制」三种排序模式有序 Guid 的生成器实例。`GuidHelper.NewTimeBasedGuid()` 虽然也时间有序，但字节布局与算法完全不同于 `SequentialGuidGenerator`，两者生成的 Guid 不可互换、不可用同一套 `ExtractTime` 逻辑解析。
 
 ## 配置
 
@@ -224,6 +248,18 @@ long[] nums = encoder.Decode(packed);  // [10, 20, 30]
 ```
 
 > Sqids 不能编码负数（会抛 `ArgumentException`），且相同选项下编码是确定的（字母表按选项 hash 洗牌）。
+
+### Guid 通用工具（`GuidHelper`，静态，非生成器）
+
+```csharp
+Guid id = GuidHelper.NewCryptoGuid();                 // 加密安全随机 Guid
+Guid ordered = GuidHelper.NewTimeBasedGuid();          // 时间有序（与 SequentialGuidGenerator 算法不同）
+Guid stable = GuidHelper.NewDeterministicGuid("order-1024"); // 相同输入恒定输出
+
+bool ok = GuidHelper.IsValidGuid("not-a-guid");        // false
+string noDash = GuidHelper.ToStringNoDash(id);         // 32 位无连字符
+int version = GuidHelper.GetVersion(id);               // 4
+```
 
 ## 扩展点 / 自定义
 

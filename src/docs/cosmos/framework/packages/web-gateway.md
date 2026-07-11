@@ -44,7 +44,7 @@ public class MyModule : XiHanModule { }
 
 - **灰度上下文构建**：`GrayRoutingMiddleware` 从请求提取 `RequestPath` / `RequestMethod` / `ClientIpAddress`、用户 ID（`sub` 或 `userId` Claim，或 `X-User-Id` 头）、租户 ID（`ICurrentTenant`）以及全部请求 Header，组成 `GrayContext`。
 - **决策注入**：`IGrayRuleEngine.DecideAsync(grayContext, ...)` 的结果写入 `context.Items[GatewayConstants.GrayDecisionKey]`；命中灰度时记一条 `Information` 日志。后续中间件/控制器经 `GatewayContextHelper` 读取决策。
-- **追踪**：`RequestTracingMiddleware` 取 `X-Trace-Id` 头（无则用 `TraceIdentifier`），回写到响应头与 `Items`，并记录请求开始/结束与耗时。
+- **追踪**：`RequestTracingMiddleware` 获取 TraceId 优先级为「W3C `Activity.Current.TraceId`（与 Web.Api 同源）→ `X-Trace-Id` 请求头 → `TraceIdentifier`」，回写到响应头与 `Items`，并记录请求开始/结束与耗时。
 - **异常兜底**：`GatewayExceptionMiddleware` 捕获未处理异常，按类型映射状态码（`UnauthorizedAccessException`→401、`ArgumentException`→400、其余→500），以 CamelCase JSON 返回 `GatewayErrorResponse`。
 
 ## 核心能力

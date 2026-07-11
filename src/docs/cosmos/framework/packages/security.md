@@ -32,12 +32,14 @@ dotnet add package XiHan.Framework.Security
 public class MyModule : XiHanModule { }
 ```
 
-模块 `ConfigureServices` 调用 `AddXiHanSecurityServices()`，用 `TryAddScoped` 注册：
+模块 `ConfigureServices` 调用 `AddXiHanSecurityServices()`：
 
-- `IPasswordPolicyService` → `PasswordPolicyService`
-- `IPasswordHistoryStore` → `DefaultPasswordHistoryStore`（内存实现，生产需替换）
+- `Configure<PasswordHasherOptions>` / `Configure<PasswordPolicyOptions>`——绑定配置节（节名沿用历史前缀 `XiHan:Authentication:*`，但绑定逻辑已归属本包，见下方“配置”一节说明）
+- `IPasswordHasher` → `PasswordHasher`（`TryAddSingleton`）
+- `IPasswordPolicyService` → `PasswordPolicyService`（`TryAddScoped`）
+- `IPasswordHistoryStore` → `DefaultPasswordHistoryStore`（`TryAddScoped`，内存实现，生产需替换）
 
-`ICurrentUser` / `ICurrentClient` / `ICurrentPrincipalAccessor` 的实现类通过框架的**标记接口约定**自动注册（见下方“工作原理”），无需在扩展方法里手写。密码哈希器 `IPasswordHasher` 本身在此包定义，但其 DI 注册与 `Options` 绑定发生在 [Authentication](./authentication) 包（配置节前缀也归在 `XiHan:Authentication:*` 下）。
+`ICurrentUser` / `ICurrentClient` / `ICurrentPrincipalAccessor` 的实现类通过框架的**标记接口约定**自动注册（见下方“工作原理”），无需在扩展方法里手写。[Authentication](./authentication) 包 `DependsOn` 本包、先加载后消费，不再重复注册密码哈希器或绑定 `Options`，只在其之上构建登录/令牌等能力。
 
 ## 工作原理
 
@@ -50,9 +52,9 @@ using (accessor.Change(otherPrincipal))
 }   // 离开作用域自动还原
 ```
 
-框架默认实现 `ThreadCurrentPrincipalAccessor`（`ISingletonDependency`）从 `Thread.CurrentPrincipal` 取默认主体；Web 宿主通常另行提供基于 `HttpContext.User` 的实现覆盖它。
+框架默认实现 `ThreadCurrentPrincipalAccessor`（`ISingletonDependency`）从 `Thread.CurrentPrincipal` 取默认主体；Web 宿主通常另行提供基于 `HttpContext.User` 的实现覆盖它。`CurrentPrincipalAccessorBase.Principal` 在覆盖值与 `GetClaimsPrincipal()` 都为空时兜底返回一个匿名空 `ClaimsPrincipal`，保证 `Principal` 永不为 `null`，避免下游 `ICurrentUser` 在匿名请求下抛异常。`CurrentPrincipalAccessorExtensions` 还提供 `Change(Claim)` / `Change(IEnumerable<Claim>)` / `Change(ClaimsIdentity)` 三个便捷重载，内部统一包装成 `ClaimsPrincipal` 后调用 `Change`。
 
-**声明读取**：`CurrentUser` / `CurrentClient` 都只依赖 `ICurrentPrincipalAccessor`，把 `Principal.Claims` 按 `XiHanClaimTypes` 里的类型解析成强类型属性。因此“临时切换主体”会立即反映到 `ICurrentUser` 的所有属性。
+**声明读取**：`CurrentUser` / `CurrentClient` 都只依赖 `ICurrentPrincipalAccessor`，把 `Principal.Claims` 按 `XiHanClaimTypes` 里的类型解析成强类型属性（内部通过 `XiHanClaimsIdentityExtensions` 的 `FindUserId` / `FindTenantId` / `FindClientId` 等 `ClaimsPrincipal` 扩展方法完成，`UserId`/`TenantId` 解析为 `long?`，`EditionId`/模仿者用户标识解析为 `Guid?`）。这些扩展方法本身是 public 的，也可以在业务代码里直接对任意 `ClaimsPrincipal` / `IIdentity` 调用。因此“临时切换主体”会立即反映到 `ICurrentUser` 的所有属性。
 
 **密码格式**：`PasswordHasher` 输出自描述的字符串 `version:iterations:hashAlgorithm:salt:hash`（后两段 Base64）。校验时从串里解析出当时的参数重算比对，用 `CryptographicOperations.FixedTimeEquals` 做恒定时间比较防时序攻击。`NeedsRehash` 比较存储参数与当前 `Options`，参数升级后可在下次登录成功时无感重哈希。
 
@@ -79,6 +81,8 @@ using (accessor.Change(otherPrincipal))
 | `ThreadCurrentPrincipalAccessor` | 默认实现，从 `Thread.CurrentPrincipal` 取主体 |
 | `XiHanClaimTypes` | 声明类型常量集合（见下表） |
 | `CurrentUserExtensions` | `ICurrentUser` 扩展：`FindClaimValue`、`FindClaimValue<T>`、`GetUserId`、`FindImpersonator*`、`FindPicture`、`GetSessionId` / `FindSessionId` |
+| `XiHanClaimsIdentityExtensions` | `ClaimsPrincipal` / `IIdentity` 扩展：`FindUserId`、`FindTenantId`（均 `long?`）、`FindClientId`（`string?`）、`FindEditionId`、`FindImpersonatorUserId`（均 `Guid?`）、`FindImpersonatorTenantId`（`long?`）、`FindSessionId`；另有 `ClaimsIdentity` 编辑助手 `AddIfNotContains` / `RemoveAll` / `AddOrReplace` 与 `ClaimsPrincipal.AddIdentityIfNotContains` |
+| `CurrentPrincipalAccessorExtensions` | `ICurrentPrincipalAccessor` 扩展：`Change(Claim)` / `Change(IEnumerable<Claim>)` / `Change(ClaimsIdentity)` 便捷重载 |
 
 `XiHanClaimTypes` 关键常量（均为可 `set` 的静态属性，默认值如下）：
 
@@ -107,7 +111,7 @@ using (accessor.Change(otherPrincipal))
 | `IPasswordPolicyService` / `PasswordPolicyService` | `PasswordValidationResult Validate(string)`、`Task<bool> IsPasswordReusedAsync(string newPassword, long userId, int historyCount, CancellationToken)` |
 | `PasswordPolicyOptions` | 策略选项（配置节 `XiHan:Authentication:PasswordPolicy`） |
 | `PasswordValidationResult` | `IsValid`、`Score`（0–100）、`Message`、`Errors`；工厂 `Success(score)` / `Failure(...)` |
-| `IPasswordHistoryStore` / `DefaultPasswordHistoryStore` | `Task<IReadOnlyList<string>> GetRecentPasswordHashesAsync(long userId, int count, CancellationToken)`（默认内存实现） |
+| `IPasswordHistoryStore` / `DefaultPasswordHistoryStore` | 接口仅 `Task<IReadOnlyList<string>> GetRecentPasswordHashesAsync(long userId, int count, CancellationToken)`；默认实现另有 `static void RecordPassword(long userId, string passwordHash, int maxHistoryCount = 10)` 用于写入内存历史（非接口成员，框架不会自动调用，见下方“扩展点”） |
 
 ### 加密
 
@@ -118,7 +122,7 @@ using (accessor.Change(otherPrincipal))
 
 ## 配置
 
-密码哈希与策略的 `Options` 定义在本包，但**绑定到配置发生在 [Authentication](./authentication) 包**（`AddXiHanAuthentication` 里 `Configure`），配置节前缀统一为 `XiHan:Authentication:*`。
+密码哈希与策略的 `Options` 定义、DI 注册与配置绑定均在本包完成（`AddXiHanSecurityServices` 里 `Configure`）；配置节前缀沿用历史命名 `XiHan:Authentication:*`（保留该前缀是为了不破坏已部署的配置文件，并不代表绑定逻辑仍在 Authentication 包）。
 
 **`PasswordHasherOptions`（节 `XiHan:Authentication:PasswordHasher`）**
 
@@ -217,6 +221,7 @@ public class AccountService(IPasswordHasher hasher, IPasswordPolicyService polic
 
 - **主体来源**：Web 宿主一般会注册基于 `HttpContext.User` 的 `ICurrentPrincipalAccessor` 覆盖默认的 `ThreadCurrentPrincipalAccessor`。
 - **密码历史持久化**：`DefaultPasswordHistoryStore` 是**进程内存实现**（静态 `ConcurrentDictionary`），仅适合开发/测试。生产务必自实现 `IPasswordHistoryStore`（读数据库最近 N 条哈希）并在 DI 里覆盖——因扩展方法用 `TryAddScoped`，只要你先注册就会生效。
+- **默认实现是只读的**：`IPasswordHistoryStore` 接口只定义了读取方法，写入靠 `DefaultPasswordHistoryStore` 上的静态方法 `RecordPassword(userId, passwordHash, maxHistoryCount = 10)`——框架不会在密码修改成功后自动调用它，若使用默认内存实现，需应用层显式调用该静态方法落库，否则历史队列永远为空、`IsPasswordReusedAsync` 恒返回 `false`。
 - **声明类型定制**：`XiHanClaimTypes` 的常量是可 `set` 的静态属性，可在应用启动早期改写以对齐外部身份提供方的声明命名（全局生效，务必在读取任何主体前设置）。
 
 ## 注意事项与最佳实践

@@ -1,11 +1,11 @@
 # XiHan.Framework.Authentication
 
-> 认证：JWT 双令牌、OAuth2 外部登录（Google/GitHub/QQ）、TOTP 两步验证、一次性验证码
+> 认证：JWT 双令牌、OAuth2 外部登录（Google/GitHub/Gitee/QQ）、TOTP 两步验证、一次性验证码
 
 - **NuGet**：`XiHan.Framework.Authentication`
 - **模块类**：`XiHanAuthenticationModule`（`DependsOn` `XiHanSecurityModule`）
 - **所在层**：基础设施层
-- **关键依赖**：**Microsoft.AspNetCore.Authentication.JwtBearer** / **.Google**、**AspNet.Security.OAuth.GitHub** / **.QQ**、**Microsoft.Extensions.Caching.Abstractions**
+- **关键依赖**：**Microsoft.AspNetCore.Authentication.JwtBearer** / **.Google**、**AspNet.Security.OAuth.GitHub** / **.Gitee** / **.QQ**、**Microsoft.Extensions.Caching.Abstractions**
 
 ## 概述
 
@@ -16,7 +16,7 @@
 ## 何时使用
 
 - 需要基于 JWT 的登录与令牌刷新（Access + Refresh 双令牌，HMAC-SHA256 签名）
-- 需要接入 Google / GitHub / QQ 第三方登录（OAuth2 外部登录）
+- 需要接入 Google / GitHub / Gitee / QQ 第三方登录（OAuth2 外部登录）
 - 需要两步验证（TOTP，兼容 Google Authenticator 等）
 - 需要邮箱/短信一次性验证码（登录码、换绑验证等，签发一次消费即销毁）
 - 需要账号密码认证编排（复用 Security 的哈希与策略，含失败锁定）
@@ -58,7 +58,7 @@ public class MyModule : XiHanModule { }
 ## 核心能力
 
 - **JWT 双令牌** `IJwtTokenService`：签发访问令牌 + 刷新令牌、校验、提取声明、判过期、刷新轮换；HMAC-SHA256；配置节 `XiHan:Authentication:Jwt`
-- **OAuth2 外部登录**：内置 Google / GitHub / QQ，配置驱动按需注册；各家头像 JSON 字段统一映射到 `urn:xihan:avatar` Claim；`IExternalLoginStore` 映射外部身份到内部用户；配置节 `XiHan:Authentication:OAuth`
+- **OAuth2 外部登录**：内置 Google / GitHub / Gitee / QQ，配置驱动按需注册；各家头像 JSON 字段统一映射到 `urn:xihan:avatar` Claim；`IExternalLoginStore` 映射外部身份到内部用户；配置节 `XiHan:Authentication:OAuth`
 - **两步验证（TOTP/HOTP）** `IOtpService`：生成 TOTP 密钥与 `otpauth://` 二维码 URI、生成/校验动态码、HOTP 计数器变体、生成备用恢复码；配置节 `XiHan:Authentication:Otp`
 - **一次性验证码** `IOneTimeCodeService`：邮箱/短信验证码签发与一次性消费，基于 `IDistributedCache`，可携带 payload
 - **密码认证编排** `IAuthenticationService`：账号密码认证、改密/重置、2FA 启停与校验、恢复码、失败锁定，复用 Security 的哈希与策略
@@ -159,7 +159,7 @@ public class MyModule : XiHanModule { }
 }
 ```
 
-> OAuth 提供商名 `Name` 仅识别 `google` / `github` / `qq`（大小写不敏感），未知名称跳过；`Name` 同时作为 AuthenticationScheme 名。各 provider 会把自家头像字段（Google `picture`、GitHub `avatar_url`、QQ `figureurl_qq_2`）映射到统一的 `urn:xihan:avatar` Claim，回调端只读这一个。
+> OAuth 提供商名 `Name` 仅识别 `google` / `github` / `gitee` / `qq`（大小写不敏感），未知名称跳过；`Name` 同时作为 AuthenticationScheme 名。各 provider 会把自家头像字段（Google `picture`、GitHub `avatar_url`、Gitee `avatar_url`、QQ `figureurl_qq_2`）映射到统一的 `urn:xihan:avatar` Claim，回调端只读这一个。
 
 ## 使用示例
 
@@ -226,7 +226,7 @@ public class MfaService(IOtpService otp)
 - **刷新令牌存储**：`InMemoryRefreshTokenStore` 是进程内存实现，多实例部署或需要吊销时应自实现 `IRefreshTokenStore`（Redis/数据库）并在 DI 覆盖（扩展方法用 `TryAddSingleton`）。
 - **用户存储**：`DefaultUserStore` 仅供开发/测试；生产必须实现 `IUserStore`（读写真实用户表、失败次数、锁定时间）覆盖它，否则 `IAuthenticationService` 无真实数据可依。
 - **外部登录持久化**：`IExternalLoginStore` 需业务层实现，把 `(provider, providerKey)` 映射到内部用户并记录绑定。
-- **新增 OAuth 提供商**：内置分支只覆盖 google/github/qq；接入其它家需扩展 `RegisterProvider` 逻辑或另建注册路径。
+- **新增 OAuth 提供商**：内置分支只覆盖 google/github/gitee/qq；接入其它家需扩展 `RegisterProvider` 逻辑或另建注册路径。
 
 ## 注意事项与最佳实践
 
@@ -240,7 +240,7 @@ public class MfaService(IOtpService otp)
 
 - [XiHan.Framework.Core](./core)
 - [XiHan.Framework.Security](./security)（密码哈希、当前用户、`XiHanClaimTypes`）
-- 第三方核心：**Microsoft.AspNetCore.Authentication.JwtBearer** / **.Google** `10.0.9`、**AspNet.Security.OAuth.GitHub** / **.QQ** `10.0.0`、**Microsoft.Extensions.Caching.Abstractions** `10.0.9`
+- 第三方核心：**Microsoft.AspNetCore.Authentication.JwtBearer** / **.Google** `10.0.9`、**AspNet.Security.OAuth.GitHub** / **.Gitee** / **.QQ** `10.0.0`、**Microsoft.Extensions.Caching.Abstractions** `10.0.9`
 
 ## 相关模块
 

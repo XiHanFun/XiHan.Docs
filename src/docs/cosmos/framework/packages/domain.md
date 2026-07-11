@@ -55,6 +55,8 @@ ISplitTableEntity : ICreationEntity —— 分表标记（框架按 CreatedTime 
 
 对应的具体基类（可直接继承）：`EntityBase` / `` `EntityBase<TKey>` ``、`CreationEntityBase`、`ModificationEntityBase`、`DeletionEntityBase`、`FullAuditedEntityBase` / `` `FullAuditedEntityBase<TKey>` `` 及它们的 `MultiTenant*` 变体。审计字段的自动填充由基础设施/拦截层负责，本包只定义结构。
 
+配套的 `ITraceIdProvider`（`` string? GetCurrentTraceId() ``）为不依赖 ASP.NET Core 的层（领域服务、后台任务等）提供获取当前链路追踪 ID 的抽象，与 `ITraceableEntity` 搭配使用：中间件/拦截器可借此把 `TraceId` 自动写入实现了 `ITraceableEntity` 的实体。
+
 ### 主键相等性与临时实体
 
 `` `EntityBase<TKey>` `` 用 `BasicId` 做相等性判定并重载了 `== / !=`：类型不同、或任一方 `BasicId` 为默认值（临时实体）都判为不相等；`IsTransient()` 判断实体是否尚未持久化；`GetHashCode()` 对临时实体退回 `base.GetHashCode()`，对持久化实体用 `HashCode.Combine(GetType(), BasicId)`。
@@ -70,6 +72,7 @@ ISplitTableEntity : ICreationEntity —— 分表标记（框架按 CreatedTime 
 - **仓储抽象**：`IReadOnlyRepositoryBase` 提供查询/分页/规约；`IRepositoryBase` 增补增删改；另有 `ISoftDeleteRepositoryBase`（软删除/恢复/查已删）、`IAuditedRepository`（按创建/修改/删除人与时间段查）、`IAggregateRootRepository`（聚合根一致性 + 事件）
 - **领域服务**：`DomainService` 基类，内置业务规则检查、结构化日志与性能监控辅助方法
 - **领域事件**：`IDomainEvent` / `DomainEventBase`（`EventId` + `OccurredOn`）、`IDomainEventsManager` / `DomainEventsManagerBase`、`AggregateRootExtensions`（聚合事件统计/快照/批处理）
+- **审计事件**：`AuditEvent` 抽象基类（`Entity`/`EntityType`/`EntityId`/`Timestamp`）及其派生的 `EntityCreatedEvent` / `EntityModifiedEvent`（另含 `OriginalEntity`）/ `EntityDeletedEvent`，用于描述实体生命周期中的关键操作；它们不实现 `IDomainEvent`，是独立于领域事件总线的审计专用事件类型
 - **规约模式**：`` `ISpecification<T>` `` / `` `Specification<T>` ``（`And`/`Or`/`Not` + 运算符 `& | !` + 隐式转表达式）/ `` `AsyncSpecification<T>` ``（异步判定 + 短路组合）
 - **业务规则**：`IBusinessRule`（`Message` + `IsBroken()`）、`BusinessRuleExtensions`（`CheckRule`/`CheckRules`/`Validate`）、`EntityExtensions`（实体上直接 `CheckRule`）
 - **值对象**：`ValueObject`（按 `GetEqualityComponents()` 判等）与 `` `SingleValueObject<T>` ``（单值 + 隐式转基础类型）
@@ -113,6 +116,7 @@ ISplitTableEntity : ICreationEntity —— 分表标记（框架按 CreatedTime 
 | `IDomainEvent` / `DomainEventBase` | 领域事件契约与基类：`Guid EventId` + `DateTimeOffset OccurredOn`（基类构造自动填充） |
 | `IDomainEventsManager` / `DomainEventsManagerBase` | 事件管理器：本地/分布式双队列，`Add*/Get*/Clear*/HasPendingEvents/MarkEventsAsCommitted` |
 | `DomainEventRecord` | 事件记录包装：`EventData`（`IDomainEvent`）+ `EventOrder`（`long`） |
+| `AuditEvent` / `EntityCreatedEvent` / `EntityModifiedEvent` / `EntityDeletedEvent` | 审计事件基类与三个派生类：`Entity`（`object`）/ `EntityType` / `EntityId` / `Timestamp`（UTC）；`EntityModifiedEvent` 额外携带可选的 `OriginalEntity`。用于审计管道记录创建/修改/删除，独立于 `IDomainEvent` 体系 |
 | `IBusinessRule` | 业务规则契约：`string Message` + `bool IsBroken()` |
 | `BusinessRuleExtensions` | `CheckRule`/`CheckRules`（违反抛 `BusinessRuleValidationException`）/ `CheckRuleAsync`/`CheckRulesAsync` / `Validate`/`ValidateAll`（返回 `BusinessRuleValidationResult`） |
 | `EntityExtensions` | 实体上直接校验：`CheckRule`/`CheckRules`/`TryCheckRule`/`ValidateRules` |

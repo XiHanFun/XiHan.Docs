@@ -72,7 +72,7 @@ public class MyModule : XiHanModule { }
 | `IGrayRuleEngine` / `DefaultGrayRuleEngine` | 灰度规则引擎：`Task<IGrayDecision> DecideAsync(GrayContext, CancellationToken)` |
 | `IGrayMatcher` | 匹配器契约：`GrayRuleType RuleType { get; }`、`bool IsMatch(GrayContext, IGrayRule)`、`Task<bool> IsMatchAsync(...)` |
 | `PercentageGrayMatcher` / `UserIdGrayMatcher` / `TenantIdGrayMatcher` / `HeaderGrayMatcher` | 四个内置匹配器 |
-| `IGrayRuleRepository` / `InMemoryGrayRuleRepository` | 规则仓储（**只读**）：`GetEnabledRulesAsync(...)`、`GetRuleByIdAsync(id, ...)`、`RefreshAsync(...)` |
+| `IGrayRuleRepository` / `InMemoryGrayRuleRepository` | 规则仓储（**只读**）：`GetEnabledRulesAsync(...)`、`GetRuleByIdAsync(id, ...)`、`RefreshAsync(...)`；`InMemoryGrayRuleRepository` 另暴露 `AddRule` / `RemoveRule` / `Clear`（非接口成员，仅供测试直接灌规则用） |
 | `IGrayRule` / `GrayRule` | 灰度规则契约与实现（字段见下） |
 | `IGrayDecision` / `GrayDecision` | 决策结果契约与实现，工厂 `GrayDecision.Gray(...)` / `GrayDecision.NotGray(reason)` |
 | `GrayContext` | 灰度上下文（字段见下） |

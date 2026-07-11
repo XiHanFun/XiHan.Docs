@@ -67,6 +67,7 @@ public class MyModule : XiHanModule { }
 - **工作单元管理器**：`IUnitOfWorkManager` 暴露 `Current`、`Begin`、`Reserve`、`BeginReserved`、`TryBeginReserved`，支持预留式工作单元（配合中间件）。
 - **生命周期事件**：`Failed` / `Disposed` 事件，`OnCompleted` 提交后回调，以及本地/分布式事件登记（`AddOrReplaceLocalEvent` / `AddOrReplaceDistributedEvent`），用于事务提交后统一发布领域事件。
 - **数据库 / 事务 API 容器抽象**：`IDatabaseApiContainer` / `ITransactionApiContainer` 由数据层接入具体连接与事务。
+- **UoW 级键值缓存**：`IUnitOfWork.Items` 字典 + `UnitOfWorkExtensions`（`AddItem` / `GetItemOrDefault` / `GetOrAddItem` / `RemoveItem`），可选配合 `UnitOfWorkCacheItem<TValue>` 表达"已移除"语义，供仓储/服务在同一工作单元生命周期内缓存数据、避免重复查询。
 
 ## 主要 API / 类型
 
@@ -74,7 +75,7 @@ public class MyModule : XiHanModule { }
 
 | 类型 | 关键成员 |
 | --- | --- |
-| `IUnitOfWork` | `Guid Id`、`IXiHanUnitOfWorkOptions Options`、`IUnitOfWork? Outer`、`bool IsReserved/IsDisposed/IsCompleted`、`Task SaveChangesAsync(...)`、`Task CompleteAsync(...)`、`Task RollbackAsync(...)`、`void OnCompleted(Func<Task>)`、`AddOrReplaceLocalEvent(...)` / `AddOrReplaceDistributedEvent(...)`；继承 `IDatabaseApiContainer`+`ITransactionApiContainer`+`IDisposable`，含 `Failed` / `Disposed` 事件 |
+| `IUnitOfWork` | `Guid Id`、`Dictionary<string, object> Items`（跨方法/模块共享的工作单元级上下文数据）、`IXiHanUnitOfWorkOptions Options`、`IUnitOfWork? Outer`、`bool IsReserved/IsDisposed/IsCompleted`、`Task SaveChangesAsync(...)`、`Task CompleteAsync(...)`、`Task RollbackAsync(...)`、`void OnCompleted(Func<Task>)`、`AddOrReplaceLocalEvent(...)` / `AddOrReplaceDistributedEvent(...)`；继承 `IDatabaseApiContainer`+`ITransactionApiContainer`+`IDisposable`，含 `Failed` / `Disposed` 事件 |
 | `IUnitOfWorkManager` | `IUnitOfWork? Current`、`IUnitOfWork Begin(XiHanUnitOfWorkOptions options, bool requiresNew = false)`、`IUnitOfWork Reserve(string reservationName, bool requiresNew = false)`、`void BeginReserved(string, options)`、`bool TryBeginReserved(string, options)` |
 | `IAmbientUnitOfWork` / `IUnitOfWorkAccessor` | 环境（`AsyncLocal`）当前工作单元的持有与访问 |
 | `IUnitOfWorkEnabled` | 标记接口：实现它的类的所有方法自动视为工作单元方法（无需特性） |
@@ -99,6 +100,14 @@ public class MyModule : XiHanModule { }
 | `IDatabaseApiContainer` | `FindDatabaseApi(key)` / `AddDatabaseApi(key, api)` / `GetOrAddDatabaseApi(key, factory)`；继承 `IServiceProviderAccessor` |
 | `IUnitOfWorkTransactionBehaviourProvider` | 提供 `Auto` 模式的自动事务判定值（默认 `NullUnitOfWorkTransactionBehaviourProvider`） |
 | `IUnitOfWorkEventPublisher` | 提交后事件发布（默认 `NullUnitOfWorkEventPublisher`） |
+
+### 扩展方法与 UoW 级缓存
+
+| 类型 | 说明 |
+| --- | --- |
+| `UnitOfWorkExtensions` | `IUnitOfWork` 的静态扩展方法：`IsReservedFor(reservationName)` 判断是否为指定预留；`AddItem<TValue>(key, value)` / `GetItemOrDefault<TValue>(key)` / `GetOrAddItem<TValue>(key, factory)` / `RemoveItem(key)` 读写 `Items` 字典，用于在同一工作单元生命周期内缓存任意键值数据（如仓储内避免重复查询） |
+| `UnitOfWorkCacheItem<TValue>` | 工作单元缓存项包装类：`TValue? Value`、`bool IsRemoved`、`SetValue(value)` / `RemoveValue()` / `GetUnRemovedValueOrNull()`，配合 `Items` 缓存表达"值已被移除"的软删除语义，避免只用 `null` 无法区分"未缓存"与"已删除" |
+| `UnitOfWorkCacheItemExtensions` | `GetUnRemovedValueOrNull<TValue>()`：对可空 `UnitOfWorkCacheItem<TValue>?` 的扩展版本，`item` 为 `null` 或已标记移除时返回 `null` |
 
 ### 配置类型
 

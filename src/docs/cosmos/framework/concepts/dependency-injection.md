@@ -29,6 +29,51 @@ public class ConfigCache : IConfigCache, ISingletonDependency { }
 
 框架会自动把实现类注册为它实现的接口。**应用服务基类 `ApplicationServiceBase` 已经实现了 `ITransientDependency`**，所以你写的应用服务天然会被注册（见 [动态 API](./dynamic-api)）。
 
+### 精细控制：`DependencyAttribute`
+
+标记接口能覆盖大多数场景，但遇到下面这些情况，可以在类上叠加 `[Dependency(...)]` 特性做更精细的控制：
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using XiHan.Framework.Core.DependencyInjection;
+
+// 显式指定生命周期，优先级高于标记接口推断出的结果
+[Dependency(ServiceLifetime.Singleton)]
+public class ConfigCache : IConfigCache { }
+
+// 替换掉之前已注册的同接口实现（内部走 services.Replace）
+[Dependency(ServiceLifetime.Scoped, ReplaceServices = true)]
+public class OrderService : IOrderService, IScopedDependency { }
+
+// 已存在同接口注册时跳过，不重复添加（内部走 services.TryAdd）
+[Dependency(TryRegister = true)]
+public class DefaultCache : ICache, ISingletonDependency { }
+```
+
+- `Lifetime` 的优先级高于标记接口（`ITransientDependency` 等）推断出的生命周期；
+- `ReplaceServices = true` 时用 `services.Replace(...)` 覆盖同接口的既有注册；
+- `TryRegister = true` 时用 `services.TryAdd(...)`，同接口已注册就不再重复添加；
+- 想让某个类彻底跳过约定式扫描（比如打算完全手写注册），在类上加 `[DisableConventionalRegistration]` 即可。
+
+### 控制暴露的服务类型：`ExposeServicesAttribute`
+
+默认情况下，约定式注册只把实现类暴露为"类名去掉前导 `I` 后同名"的接口（例如 `OrderService : IOrderService` 会被注册为 `IOrderService`）。想额外暴露成别的接口、暴露成自身类型，或者暴露成 .NET 的键控服务（Keyed Service），用：
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using XiHan.Framework.Core.DependencyInjection;
+
+// 额外暴露为 INotifiable，同时保留默认推断出的接口
+[ExposeServices(typeof(INotifiable), IncludeDefaults = true)]
+public class OrderService : IOrderService, INotifiable, IScopedDependency { }
+
+// 键控服务：同一接口按 key 注册多个实现
+[ExposeKeyedService<IPaymentGateway>("alipay")]
+public class AlipayGateway : IPaymentGateway, ISingletonDependency { }
+```
+
+消费键控服务时用 `[FromKeyedServices("alipay")]` 构造函数参数，或 `serviceProvider.GetKeyedService<IPaymentGateway>("alipay")`。
+
 ### 方式二：手动注册
 
 需要更精细的控制时，在模块的 `ConfigureServices` 里照常手写：
@@ -62,6 +107,8 @@ public class OrderService : IOrderService, IScopedDependency
     }
 }
 ```
+
+> 极少数无法走构造函数注入的场景（比如遗留类型的属性/字段），可以用 `[AutowiredService]` 标记，再配合 `AutowiredServiceHandler.Autowired(this)` 手动触发装配。这只是兜底手段，**日常开发请优先用构造函数注入**。
 
 ## 选项模式
 
@@ -97,7 +144,8 @@ public class MyService(IOptions<MyOptions> options) : ITransientDependency
 ## 小结
 
 - 优先用**标记接口**自动注册，减少样板
-- 需要精细控制时在 `ConfigureServices` 里手写
+- 生命周期/替换/跳过等精细控制交给 `[Dependency(...)]`，暴露类型/键控服务交给 `[ExposeServices]` / `[ExposeKeyedService<T>]`
+- 需要更彻底的控制时在 `ConfigureServices` 里手写，或用 `[DisableConventionalRegistration]` 退出扫描
 - 用 `Configure<T>` 绑定选项，用 `IOptions<T>` 消费
 - 一切都建立在标准 .NET DI 之上，没有魔法黑箱
 

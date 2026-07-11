@@ -68,7 +68,7 @@ public class MyModule : XiHanModule { }
 | `services.GetHostingEnvironment()` | 取 `IWebHostEnvironment`，缺失时回退 `EmptyHostingEnvironment`。 |
 | `services.TransformXiHanClaims()` | 注册 `IClaimsTransformation` = `XiHanClaimsTransformation`（声明映射，需显式调用）。 |
 
-`ApplicationInitializationContext` 扩展（`ApplicationInitializationContextExtensions`）：`GetApplicationBuilder()` / `GetApplicationBuilderOrNull()` / `GetEnvironment()` / `GetConfiguration()` / `GetLoggerFactory()`——供模块在 `OnApplicationInitialization` 里取到 `IApplicationBuilder` 与环境。
+`ApplicationInitializationContext` 扩展（`ApplicationInitializationContextExtensions`）：`GetApplicationBuilder()` / `GetApplicationBuilderOrNull()` / `GetEnvironment()` / `GetEnvironmentOrNull()` / `GetConfiguration()` / `GetLoggerFactory()`——供模块在 `OnApplicationInitialization` 里取到 `IApplicationBuilder` 与环境。
 
 `WebApplicationBuilder` 扩展（`WebApplicationBuilderExtensions`）：`AddApplicationAsync<TStartupModule>(...)` / `AddApplicationAsync(startupModuleType, ...)`——在 `WebApplicationBuilder` 上装配模块化应用，自动接管 `Configuration` 与 `EnvironmentName`。
 
