@@ -56,7 +56,7 @@ SmsBotProvider.SendAsync(message, context)
   3. gateway.SendAsync(SmsGatewayRequest) → 客户端内按 TemplateMap 映射模板码、组织参数、调 SDK
 ```
 
-`SmsGatewayResolver` 每次 `ResolveAsync` 读 `ISmsConfigStore.GetAsync()` 当前配置，用**配置指纹**（ConfigId | Provider | AccessKeyId | AccessKeySecret | SdkAppId | SignName | Region | TemplateMap | IsEnabled）作 key 缓存已构建的客户端（`ConcurrentDictionary`）；配置变了指纹变、客户端自动重建，实现**热切换**。按 `config.Provider` 分发：`Aliyun` → `AliyunSmsGatewayClient`，`TencentCloud` → `TencentCloudSmsGatewayClient`（腾讯云缺 `SdkAppId`/`Region` 抛异常）。
+`SmsGatewayResolver` 每次 `ResolveAsync` 读 `ISmsConfigStore.GetAsync()` 当前配置，以 `ConfigId` 为键在 `ConcurrentDictionary` 中缓存已构建的客户端，并用**配置指纹**（ConfigId | Provider | AccessKeyId | AccessKeySecret | SdkAppId | SignName | Region | TemplateMap | IsEnabled）判断是否需要重建；指纹变化即重建客户端，实现**热切换**。按 `config.Provider` 分发：`Aliyun` → `AliyunSmsGatewayClient`，`TencentCloud` → `TencentCloudSmsGatewayClient`（`AccessKeySecret` 为空直接抛异常；腾讯云还须 `SdkAppId`/`Region`，缺任一同样抛异常）。
 
 ## 核心能力
 
@@ -130,6 +130,7 @@ await bot.SendAsync(msg, new[] { BotProviderNames.Sms });
 ## 注意事项与最佳实践
 
 - **未配置即不发**：`ISmsConfigStore` 默认空实现导致 `ResolveAsync` 返回 `null`，`SendAsync` 返回 `BadRequest`——这是刻意的 fail-closed，防止凭证缺失时静默误发。
+- **密钥不可为空**：`AccessKeySecret` 为空会在构建网关客户端时直接抛异常（两家服务商均如此），被 `SmsBotProvider` 折叠为 `Failed`。
 - **腾讯云需完整配置**：缺 `SdkAppId` 或 `Region` 会在解析时抛异常。
 - **模板码必须映射**：`TemplateCode` 找不到对应 `TemplateMap` 条目会抛异常（`ResolveMapping`）；腾讯云还要求 `ParamOrder` 里每个键都能在 `TemplateParams` 找到值。
 - **失败不外抛**：SDK 层错误在 provider 内转成 `BotResult.Failed`，不影响其它提供者。

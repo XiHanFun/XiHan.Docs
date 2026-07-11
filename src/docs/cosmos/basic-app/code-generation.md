@@ -21,7 +21,7 @@
 
 | 实体 | 表 | 作用 |
 | --- | --- | --- |
-| `SysCodeGenDataSource` | `Sys_CodeGen_DataSource` | 外部数据库连接（多库逆向工程），`SourceName` 全局唯一 |
+| `SysCodeGenDataSource` | `Sys_CodeGen_DataSource` | 外部数据库连接凭证 + 连通性自检，`SourceName` 全局唯一（详见下文，当前未接入扫描链路） |
 | `SysCodeGenTable` | `Sys_CodeGen_Table` | 一张目标表的生成主配置，`TableName` 全局唯一 |
 | `SysCodeGenTableColumn` | `Sys_CodeGen_TableColumn` | 列级配置（类型映射、表单控件、查询方式、字典三分） |
 | `SysCodeGenTemplate` | `Sys_CodeGen_Template` | 模板（Scriban 正文 + 文件名/路径表达式），`TemplateCode` 全局唯一 |
@@ -73,12 +73,13 @@
 
 ### 数据源
 
-`SysCodeGenDataSource` 描述一个外部数据库连接（主机/端口/库名/账号/加密密码或连接串），供跨库逆向工程。要点：
+`SysCodeGenDataSource` 是一张独立的外部数据库连接配置表（主机/端口/库名/账号/加密密码或连接串），当前定位是**连接凭证的集中管理与联通性自检**：
 
-- `DatabaseType` 决定元信息扫描的 SQL 方言，支持 `MySql` / `SqlServer` / `PostgreSql` / `Oracle` / `Sqlite`。
-- 密码/连接串**加密存储**；保存前**测试连接**必须通过（留痕 `LastTestTime` / `LastTestResult`）。
-- 删除前校验无 `SysCodeGenTable` 引用。
-- `ConnectionConfigId` 为空时使用**主库**元数据（生成器自身所在库）。
+- `DatabaseType` 标注连接方言，支持 `MySql` / `SqlServer` / `PostgreSql` / `Oracle` / `Sqlite`。
+- 密码/连接串经 `AesHelper` 固定口令**对称加密**存储（`CodeGenDataSourceDomainService` 的 `EncryptSecret`/`DecryptSecret`）；`TestConnectionAsync` 用一个独立探测用的 `SqlSugarClient` 开关一次连接，回写 `LastTestTime` / `LastTestResult` / `LastTestMessage`。
+- 保存（`CreateAsync` / `UpdateAsync`）**不强制**先测试连接通过；删除（`DeleteAsync`）当前**未校验**是否仍有 `SysCodeGenTable` 引用——这是本模块当前实现的真实行为，与实体注释里描述的意图不完全一致。
+
+> **数据源当前未接入逆向工程扫描链路**：`ListDatabaseTablesAsync` / `ImportTableAsync` 接收的 `ConnectionConfigId`，实际是框架 `ISqlSugarClientResolver.GetClient(configId)` 解析的**已注册 SqlSugar 连接 / 租户 ConfigId**（为空时走 `GetCurrentClient()`，即生成器自身所在主库），并非 `SysCodeGenDataSource.BasicId`；前端导入弹窗里的 `connectionConfigId` 是一个自由文本框，并非从数据源列表选择。也就是说，`SysCodeGenDataSource` 目前是一套独立的连接凭证 CRUD + 连通性自检面板，多库逆向工程实际靠手工填写框架已注册的 ConfigId 完成，两者尚未打通。
 
 ### 表结构导入
 
@@ -174,7 +175,7 @@ Options            扩展键（树/主从结构字段、ParentMenuId 等）
 端到端流程：
 
 ```text
-选数据源（或主库）
+填写 ConnectionConfigId（框架已注册连接，留空用主库）
   → 列出库表、导入目标表         [ImportTableAsync]
       · 扫结构 + 类型映射 → 落表/列配置
   → 调整表配置（模板类型/命名空间/模块）与列配置（控件/查询/字典三分）
@@ -203,6 +204,17 @@ Options            扩展键（树/主从结构字段、ParentMenuId 等）
 - 产物相对路径是绝对路径 / 带盘符 / 拼接后越界（`..` 逃逸）→ 拒绝。
 
 即"默认禁用 + 白名单根目录 + 路径穿越二次校验"，符合本仓 fail-closed 约定。生产要落盘须显式开启并配置白名单。
+
+## 零代码运行时（只读）
+
+`DynamicRuntimeAppService` 提供一条与"生成代码"平行的轻量路径：给定一张**已配置且启用**的 `SysCodeGenTable`，不生成/不编译任何实体代码，直接按其列配置解释执行：
+
+| 方法 | 行为 | 权限码 |
+| --- | --- | --- |
+| `GetSchemaAsync` | 按 `SysCodeGenTableColumn` 投影字段 schema（属性名、标签、`TsType`/`HtmlType`/`QueryType`、列表/查询/必填开关） | `code_gen:read` |
+| `GetPageAsync` | 用 `ISqlSugarClientResolver.GetCurrentClient()` 对表名做动态分页查询（`Queryable<Dictionary<string, object>>().AS(tableName)`） | `code_gen:read` |
+
+表名只取自已配置且启用（`Status = Enabled`）的 `SysCodeGenTable` 记录，从不直接拼接用户传入的表名字符串，因此没有 SQL 注入面；未启用的表配置访问会抛友好异常。当前只做 schema + 列表（只读），写入/DDL 未开放。前端"查看运行时数据"弹窗（表格行操作）即消费这两个接口，适合在正式生成代码前先验证列配置是否符合预期。
 
 ## 扩展与二次开发
 

@@ -76,7 +76,7 @@ public class MyModule : XiHanModule { }
 
 `ObjectExtensionManagerExtensions`（静态扩展，作用于 `ObjectExtensionManager`）：`AddOrUpdateProperty<TObject, TProperty>(name, configure?)`（及 `Type` / `Type[]` 重载）、`GetPropertyOrNull<TObject>(name)`、`GetProperties<TObject>()`、`GetPropertiesAndCheckPolicyAsync<TObject>(IServiceProvider)`（按策略过滤可见属性）。
 
-`ExtraPropertyDictionaryExtensions`：如 `T ToEnum<T>(this ExtraPropertyDictionary dict, string key) where T : Enum`。
+`ExtraPropertyDictionaryExtensions`：`T ToEnum<T>(this ExtraPropertyDictionary dict, string key) where T : Enum` 与非泛型重载 `object ToEnum(this ExtraPropertyDictionary dict, string key, Type enumType)`（值已是目标枚举类型时直接返回，否则原地 `Enum.Parse` 并写回字典）；`bool HasSameItems(this ExtraPropertyDictionary dict, ExtraPropertyDictionary other)` 按键逐一比较（值用 `ToString()` 比较），供 `HasSameExtraProperties` 内部调用。
 
 ### 验证与策略
 
@@ -89,6 +89,8 @@ public class MyModule : XiHanModule { }
 | `ExtensionPropertyPolicyConfiguration` | 策略聚合：`GlobalFeatures` / `Features` / `Permissions`（各自含名称集合 + `RequiresAll`） |
 | `ExtensionPropertyGlobalFeaturePolicyConfiguration` / `ExtensionPropertyFeaturePolicyConfiguration` / `ExtensionPropertyPermissionPolicyConfiguration` | 三类策略的具体配置 |
 | `ExtensionPropertyLookupConfiguration` | 扩展属性的查找/字典配置 |
+| `ExtensionPropertyHelper` | 静态帮助类：`GetDefaultAttributes(Type)` 按属性类型自动生成默认验证特性——非可空基元类型或枚举类型自动追加 `RequiredAttribute`，枚举类型再追加 `EnumDataTypeAttribute`；`GetDefaultValue(propertyType, defaultValueFactory, defaultValue)` 按 `defaultValueFactory > defaultValue > 类型默认值` 优先级解析。`ObjectExtensionPropertyInfo` 构造时会自动调用前者填充其 `Attributes` |
+| `ObjectExtensionPropertyInfoExtensions` | `GetValidationAttributes(this ObjectExtensionPropertyInfo)`：从 `Attributes` 中筛出 `ValidationAttribute[]`，供 `ExtensibleObjectValidator` 校验流程使用 |
 
 ## 使用示例
 
@@ -152,6 +154,7 @@ var visible = await ObjectExtensionManager.Instance
 - **`GetProperty<T>` 类型限制**：仅支持原始类型、枚举、`Guid`（内部走 `Convert.ChangeType` / `Enum.Parse` / `TypeConverter`）；复杂类型请用弱类型 `GetProperty` 再自行转换，否则抛 `XiHanException`。
 - **`SetProperty` 默认验证**：`validate=true` 会走 `ExtensibleObjectValidator.CheckValue`，未注册扩展属性或值不合规会抛错；确定跳过时显式传 `validate: false`。
 - **`ObjectExtensionManager` 是静态单例**：扩展属性定义通常在应用启动阶段一次性注册，运行期只读写值。
+- **非可空基元/枚举类型会自动挂 `[Required]`**：`AddOrUpdateProperty<TProperty>` 若 `TProperty` 是非可空基元类型（如 `int`、`bool`）或枚举，`ExtensionPropertyHelper.GetDefaultAttributes` 会自动追加 `RequiredAttribute`（枚举再加 `EnumDataTypeAttribute`）；如需允许空值，请改用可空类型（如 `int?`）或在 `configureAction` 中自行调整 `Attributes`。
 
 ## 依赖模块
 

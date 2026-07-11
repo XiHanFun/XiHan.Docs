@@ -36,7 +36,7 @@ dotnet add package XiHan.Framework.Web.Api
 dotnet add package XiHan.Framework.Web.Docs
 ```
 
-> `XiHan.Framework.Web.Api` 已经通过 `[DependsOn]` 传递依赖了 `Core`、`Web.Core`、`Application` 等底层模块，你不用单独安装它们。
+> `XiHan.Framework.Web.Api` 的 NuGet 包已经把 `Core`、`Web.Core`、`Application`、`MultiTenancy`、`Serialization`、`Auditing` 等基础库/模块作为传递依赖带上了，你不用逐个单独安装；`XiHanWebApiModule` 自身声明的 `[DependsOn]` 是 `Web.Core`、`MultiTenancy`、`Serialization`、`Auditing`。
 
 ## 第三步：定义启动模块
 
@@ -171,10 +171,11 @@ public class MyAppModule : XiHanModule { }
 | 缓存（内存 + Redis） | `XiHan.Framework.Caching` | [Caching](./packages/caching) |
 | JWT / OAuth2 认证 | `XiHan.Framework.Authentication` | [Authentication](./packages/authentication) |
 | RBAC 授权 | `XiHan.Framework.Authorization` | [Authorization](./packages/authorization) |
-| 事件总线 | `XiHan.Framework.EventBus` | [EventBus](./packages/eventbus) |
-| 定时任务 | `XiHan.Framework.Tasks` | [Tasks](./packages/tasks) |
+| 事件总线（内置内存实现，另有 RabbitMQ / Kafka / Redis Broker 可选） | `XiHan.Framework.EventBus` | [EventBus](./packages/eventbus) |
+| 定时任务 + 后台作业（Cron 调度 / 一次性任务队列） | `XiHan.Framework.Tasks` | [Tasks](./packages/tasks) |
+| 健康检查 / 指标 / 性能诊断 | `XiHan.Framework.Observability` | [Observability](./packages/observability) |
 | SignalR 实时通信 | `XiHan.Framework.Web.RealTime` | [Web.RealTime](./packages/web-realtime) |
-| AI（Semantic Kernel + MCP） | `XiHan.Framework.AI` | [AI](./packages/ai) |
+| AI（Microsoft.Extensions.AI + Agent Framework + MCP） | `XiHan.Framework.AI` | [AI](./packages/ai) |
 
 完整模块清单见 [模块总览](./packages/)。
 
@@ -185,6 +186,6 @@ public class MyAppModule : XiHanModule { }
 ## 下一步
 
 - [核心概念 · 模块系统](./concepts/modularity)：理解 `[DependsOn]` 与自动装配
-- [核心概念 · 生命周期](./concepts/lifecycle)：理解 8 个生命周期钩子
+- [核心概念 · 生命周期](./concepts/lifecycle)：理解 7 个生命周期钩子
 - [核心概念 · 依赖注入](./concepts/dependency-injection)：理解约定式服务注册
 - [核心概念 · 动态 API](./concepts/dynamic-api)：理解应用服务如何变成接口

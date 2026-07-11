@@ -150,7 +150,7 @@ Utils（零依赖）
           ├ Domain.Shared → Domain → Data(SqlSugar)
           │     └ Application.Contracts → Application
           ├ MultiTenancy.Abstractions → MultiTenancy → Tasks / Traffic / Upgrade
-          ├ Http(+Polly) → AI(SemanticKernel + MCP) → Bot(MailKit + Telegram)
+          ├ Http(+Polly) → AI(Agents.AI + MCP) → Bot(MailKit + Telegram)
           └ Web.Core → Web.Api → Web.Docs / Web.Gateway / Web.Grpc / Web.RealTime
 ```
 

@@ -67,7 +67,7 @@ XiHan.BasicApp 的消息能力横跨三块：**企业级消息中心（站内通
 
 ### 投递关系表关键字段（SysUserNotification）
 
-- `NotificationStatus`：`Unread`/`Read`/`Deleted`；用户"删除消息"是软标记（`Deleted`），物理清理由定时任务按保留策略批量执行。
+- `NotificationStatus`：`Unread`/`Read`/`Deleted`；`Deleted` 为预留状态位（查询侧已按其过滤），但当前 `UserInboxAppService`/`UserInboxDomainService` 尚未暴露"删除消息"的写入端点，也没有配套的物理清理定时任务——用户侧删除消息能力暂未接线。
 - `ReadTime` / `ConfirmTime` / `PopupShownTime`：分别记录已读、确认、弹窗已展示时间。
 - 唯一约束 `(TenantId, NotificationId, UserId)`；未读计数与消息中心列表各有覆盖索引。
 
@@ -82,8 +82,9 @@ XiHan.BasicApp 的消息能力横跨三块：**企业级消息中心（站内通
 
 ### 运营闭环（发 N 读 M / 未读人员 / 催办）
 
-- **发 N 读 M**：发布结果返回 `RecipientCount`；已读数由 `SysUserNotification` 中 `NotificationStatus=Read` 统计得出。
-- **未读人员 / 催办**：`RemindAsync(id)` 查出该通知未读用户（`NotificationStatus=Unread`），对**在线未读者**重新实时推送 `ReceiveNotification`——**不改库**，仅即时再提醒（同样受权限码 `Message.Publish` 门控）。
+- **发 N 读 M / 已确认 K**：发布结果返回 `RecipientCount`；管理侧另有专用统计接口 `NotificationQueryService.GetNotificationReadStatsAsync`，一次性给出 `RecipientCount`/`ReadCount`/`UnreadCount`/`ConfirmCount`（按 `ConfirmTime` 非空统计）+ `NeedConfirm`，供详情页展示阅读进度。
+- **未读人员**：`GetNotificationUnreadUserPageAsync` 按通知 ID 分页查询未读用户（`NotificationStatus=Unread`），带出 `UserName`/`RealName`/`ReceivedTime`，可经通用导出机制导 CSV。
+- **催办**：`RemindAsync(id)` 查出该通知未读用户（`NotificationStatus=Unread`），对**在线未读者**重新实时推送 `ReceiveNotification`——**不改库**，仅即时再提醒（同样受权限码 `Message.Publish` 门控）。
 
 ### 用户侧：收件箱 API（UserInboxAppService）
 
@@ -143,7 +144,7 @@ XiHan.BasicApp 的消息能力横跨三块：**企业级消息中心（站内通
 每用户 1:1 的通知偏好（与 `SysUser` 一对一，独立表演进），按**渠道 × 类型**两组布尔开关门控：
 
 - 渠道开关：`ChannelInApp`（默认开）、`ChannelEmail`（默认开）、`ChannelSms`（默认关）、`ChannelPush`（默认开）、`ChannelBot`（默认关，机器人需用户侧存在可达绑定才有意义）。
-- 类型开关：`TypeAnnouncement` / `TypeTask` / `TypeApproval` / `TypeSecurity`（默认开）、`TypeMarketing`（默认关，营销可随时关闭，GDPR 合规）。
+- 类型开关：`TypeAnnouncement` / `TypeTask` / `TypeApproval` / `TypeSecurity`（默认开）、`TypeMarketing`（默认关，营销可随时关闭，GDPR 合规）。个人中心（`ProfileAppService`）可读写全部五个开关，但当前 `NotificationDomainService.FilterByPreferenceAsync` 的门控只按 `NotificationType` 落到三档：`Security→TypeSecurity`、`Todo→TypeTask`，其余（`System`/`Business`/`Emergency`）一律落 `TypeAnnouncement`；`TypeApproval`/`TypeMarketing` 目前未接入任何 `NotificationType` 判定分支，是为未来业务类型预留的偏好位。
 - 首次读取无记录时由应用层按默认值惰性创建。**强制阅读 / 紧急通知一律送达，不受门控**（安全告警建议始终开启）。
 
 ### 异步投递：落库 Pending → 发件箱 → 后台消费
@@ -167,7 +168,7 @@ XiHan.BasicApp 的消息能力横跨三块：**企业级消息中心（站内通
 | `SysEmailConfig` | `EmailConfigAppService` | `SmtpHost`/`SmtpPort`/`UseSsl`/`FromEmail`/`FromName`/`UserName`/`Password` | 每租户单一 `IsDefault`，`Password` 经 Data Protection 加密存储、读取永不回显 |
 | `SysBotConfig` | `BotConfigAppService` | `Provider`（`DingTalk`/`Lark`/`WeCom`）/`WebhookUrl`/`Secret`/`Keyword` | 每 `(TenantId, Provider)` 单一 `IsDefault`，`Secret` 加密存储 |
 | Telegram | `TelegramBotAppService` | Token（经 `ITelegramBotTokenProtector` 保护） | 独立于 Webhook 机器人（长轮询模型），单列成服务 |
-| 短信 | `SmsConfigAppService` | 服务商 + `TemplateMap`（内部模板码 → 服务商模板码） | 每租户/服务商单一 `IsDefault` |
+| 短信 | `SmsConfigAppService` | 服务商 + `TemplateMap`（内部模板码 → 服务商模板码） | 每租户单一 `IsDefault`（跨服务商互斥，与邮件同范式；不同于机器人按服务商互斥） |
 
 `SetDefaultXxxAsync` 保证同租户/服务商内默认互斥；配置变更热重载。机器人族的 `ChannelBot` 与 Webhook 机器人（钉钉加签/飞书签名，企微不用 `Secret`）由框架 store 在运行时映射为各 Provider 的 Options。
 
@@ -236,9 +237,13 @@ Task Typing(string conversationId);             // 向组内其他连接广播 C
 | --- | --- |
 | 会话 | 打开单聊 / 部门群、建群、更新群信息（名/公告/头像）、转让群主、个人置顶/免打扰会话（仅推自己，多端同步） |
 | 成员 | 加/移成员、设成员角色、设禁言（治理操作自动生成系统消息） |
-| 消息 | 发送、**限时撤回（2 分钟内）**、**限时编辑（5 分钟内，仅文本）**、回复（`ReplyToMessageId` + 预览快照）、@提及（`MentionedUserIds`，发送时校验）、Pin/Unpin、表情回应（切换）、标记已读（广播已读位到全体成员，群已读回执） |
+| 消息 | 发送、**限时撤回（2 分钟内）**、**限时编辑（5 分钟内，仅文本）**、回复（`ReplyToMessageId` + 预览快照）、@提及（`MentionedUserIds`，发送时校验，单条上限 20 人）、Pin/Unpin（每会话最多置顶 10 条）、表情回应（切换）、标记已读（广播已读位到全体成员，群已读回执） |
 
 **限时窗口**在领域服务 `ChatDomainService` 中硬编码：撤回窗口 `RecallWindowMinutes = 2`、编辑窗口 `EditWindowMinutes = 5`；仅可操作自己发送的消息，已撤回不能编辑，被禁言成员不能发/编辑。
+
+### 聊天审计（第四档权限，合规查询）
+
+独立权限码 `Chat.Audit`（`saas:chat:audit`），由 `ChatAuditQueryService.GetChatMessagePageAsync` 承载：管理侧**跨会话**分页查询聊天消息（按会话/发送人/发送时间区间/关键字过滤，关键字匹配正文、发送人名、附件文件名），默认排除已撤回消息（`IncludeRecalled` 可选纳入），批量带出会话名称/类型免逐行 JOIN。菜单页 `/message/chat-audit`（`message.chat-audit`）独立于普通聊天入口，供管理员做内容合规审计，不占用 `Chat.Read`/`Chat.Send`/`Chat.Manage` 三档。
 
 **敏感词拦截**：发送/编辑文本前经 `IChatSensitiveWordGuard.EnsureAllowedAsync` 校验，命中即 fail-closed 抛业务异常拒绝。词库取自系统设置 `SysConfig` 键 `saas:chat:sensitive-words`（全局 `TenantId=0`，换行/中英文逗号/分号分隔，空=关闭），进程内缓存 60 秒，`OrdinalIgnoreCase` 包含匹配。
 
@@ -250,6 +255,8 @@ Task Typing(string conversationId);             // 向组内其他连接广播 C
 - **机器人**：Webhook 机器人（钉钉/飞书/企微）与 Telegram 已能作**通知级广播**；`ChannelBot` 的**按用户定向投递**留作未来能力（当前无用户↔机器人绑定，机器人位只广播）。
 - **聊天转发**：`ChatAppService` 未提供"转发"端点，`SysChatMessage` 也无转发字段——**转发未实现**（当前支持回复而非转发）。
 - **推送渠道 `ChannelPush`**：偏好里有 `Push` 开关，但独立的移动/浏览器推送通道未在本模块落地（实时到达仍走 SignalR）。
+- **站内信"删除消息"**：`NotificationStatus.Deleted` 状态位已定义、查询侧也已按其过滤，但 `UserInboxAppService`/`UserInboxDomainService` 目前没有把消息状态置为 `Deleted` 的写入端点，也没有对应的物理清理定时任务（不同于日志/聊天消息已有 `LogRetentionCleanupTask` 按保留期清理）——用户侧删除消息是预留能力，尚未接线。
+- **偏好类型开关 `TypeApproval`/`TypeMarketing`**：个人中心可设置，但 `NotificationDomainService.FilterByPreferenceAsync` 的门控只区分 `Security`/`Todo`/其余（落 `TypeAnnouncement`）三档，这两个开关当前不影响任何通知的送达判定，是面向未来审批/营销类型的预留位。
 
 以上以仓库源码为准；本页所述字段名/枚举/常量/窗口值均可在对应源码文件核对（`modules/XiHan.BasicApp.Saas` 下 `Domain/Entities`、`Application/AppServices/Messaging`、`Application/Services/Messaging`、`Domain/DomainServices/Messaging`、`Hubs`）。
 

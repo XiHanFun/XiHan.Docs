@@ -1,15 +1,15 @@
 # XiHan.Framework.Serialization
 
-> 序列化辅助库：System.Text.Json + Newtonsoft.Json 双引擎，核心提供一套"动态 JSON"操作体系（对标 Newtonsoft 的 JObject/JArray/JValue）与 `JsonSerializerOptions` 组合工具。
+> 序列化辅助库：核心是一套基于 `System.Text.Json` 的"动态 JSON"操作体系（API 形态对标 Newtonsoft.Json 的 JObject/JArray/JValue/JProperty）与 `JsonSerializerOptions` 组合工具；`Newtonsoft.Json` 仅作为项目文件声明的 NuGet 依赖，当前源码未实际调用。
 
 - **NuGet**：`XiHan.Framework.Serialization`
 - **模块类**：`XiHanSerializationModule`（当前不注册任何服务）
 - **所在层**：基础设施层
-- **关键依赖**：`Newtonsoft.Json`（NuGet 引用）+ .NET 内置 `System.Text.Json`
+- **关键依赖**：.NET 内置 `System.Text.Json`（唯一实际使用的序列化引擎）；`Newtonsoft.Json`（项目文件中声明的 NuGet 引用，源码未实际调用）
 
 ## 概述
 
-本包在 .NET 内置的 `System.Text.Json` 之上引入 `Newtonsoft.Json`，形成"双引擎"基础，核心交付物是一套**动态 JSON** 类型：`DynamicJsonObject` / `DynamicJsonArray` / `DynamicJsonValue` / `DynamicJsonProperty`，对标 Newtonsoft 的 `JObject`/`JArray`/`JValue`/`JProperty`，但底层用 `System.Text.Json.Nodes` 承载。它们继承自 `DynamicObject`，支持动态成员访问与索引，让你在不定义强类型 DTO 的前提下解析、构建、查询、合并 JSON。
+本包核心交付物是一套**动态 JSON** 类型：`DynamicJsonObject` / `DynamicJsonArray` / `DynamicJsonValue` / `DynamicJsonProperty`，API 形态对标 Newtonsoft.Json 的 `JObject`/`JArray`/`JValue`/`JProperty`，但底层完全基于 .NET 内置 `System.Text.Json.Nodes`（`JsonObject`/`JsonArray`/`JsonValue`）承载——项目虽通过 NuGet 声明了 `Newtonsoft.Json` 依赖，但当前源码没有任何类型实际引用或调用它（无 `using Newtonsoft.*`）。它们继承自 `DynamicObject`，支持动态成员访问与索引，让你在不定义强类型 DTO 的前提下解析、构建、查询、合并 JSON。
 
 围绕这些类型还提供了 `DynamicJsonHelper`（静态辅助：序列化/反序列化/路径查询/合并/扁平化）、`DynamicJsonFactory`（工厂 + 流式构建器）、`DynamicJsonExtensions`（快捷扩展方法）以及 `JsonSerializerOptionsHelper`（组合 `JsonSerializerOptions`）。
 
@@ -49,9 +49,9 @@ public class MyModule : XiHanModule;
 | 类型 | 说明 |
 | --- | --- |
 | `DynamicJsonObject` | 动态 JSON 对象，类似 `JObject`；继承 `DynamicObject`，支持动态成员/索引、`Properties`、`ContainsKey`、`GetValue`/`SetValue` |
-| `DynamicJsonArray` | 动态 JSON 数组，类似 `JArray`，实现 `IList<object?>` |
+| `DynamicJsonArray` | 动态 JSON 数组，类似 `JArray`，实现 `IList<object?>`；另提供 `First`/`Last`、`Values<T>()`、`Objects()`/`Arrays()`（按类型筛选子元素）、`FirstObject(predicate?)`、`SelectTokens(propertyName)` 等 LINQ 风格辅助方法 |
 | `DynamicJsonValue` | 动态 JSON 值，类似 `JValue`；继承 `DynamicObject`，实现 `IEquatable<DynamicJsonValue>`，暴露 `ValueKind`、`ToObject<T>()`、`TryGetValue<T>(out T?)`，并带大量隐式/显式转换运算符 |
-| `DynamicJsonProperty` | 动态 JSON 属性（键值对），类似 `JProperty` |
+| `DynamicJsonProperty` | 动态 JSON 属性（键值对），类似 `JProperty`；暴露 `Name`/`Value`、`DynamicValue`（转为 `DynamicJsonValue`）、`AsObject`/`AsArray`（值为对象/数组时的强类型视图） |
 | `DynamicJsonHelper` | 静态辅助：`Serialize`/`Deserialize`（+ `Async`/`Try*`/文件版本）、`FromObject`/`ToObject<T>`、`SelectToken`/`SetToken`、`DeepClone`、`Merge`、`DeepEquals`、`Flatten`/`Unflatten`、`IsValid`/`IsEmpty`/`HasProperty` 等 |
 | `DynamicJsonFactory` | 静态工厂：`CreateObject`/`CreateArray`/`CreateString`/`CreateNumber`/…、`Parse`/`TryParse`、`FromObject`，以及 `Object()`/`Array()` 返回的 `ObjectBuilder`/`ArrayBuilder` |
 | `DynamicJsonExtensions` | 扩展方法：`ToDynamic`/`ToDynamicJsonObject`/`ToDynamicJsonArray`（`string`/`object`/`JsonNode`/字典/集合）、`ToDictionary`/`ToList`、`SelectToken`/`SetToken`、`DeepMerge`、`Flatten`、`HasPath`、`IsDeepEmpty` |
@@ -71,7 +71,10 @@ public class MyModule : XiHanModule;
 | `DynamicJsonObject? Merge(DynamicJsonObject? target, DynamicJsonObject? source, bool overwrite = true)` | 递归深度合并 |
 | `bool DeepEquals(object? left, object? right)` | 结构化深度比较 |
 | `Dictionary<string, object?> Flatten(object?, string separator = ".")` / `DynamicJsonObject? Unflatten(...)` | 扁平化互转（数组用 `key[i]` 形式） |
-| `bool IsValid(...)` / `bool IsEmpty(...)` / `bool HasProperty(object?, string)` | 校验类辅助 |
+| `bool IsValid(...)` / `bool IsType<T>(object?)` / `bool IsEmpty(...)` / `bool HasProperty(object?, string)` | 校验类辅助 |
+| `string Format(object?, bool indent = true)` / `string Compress(object?)` | 借助 `JsonHelper.FormatJson` 格式化/压缩；`Compress` 等价于 `Format(json, false)`；序列化异常时回退到 `ToString()` |
+| `string GetTypeInfo(object?)` | 返回类型描述字符串（如 `DynamicJsonValue(String)`），便于日志/调试 |
+| `(int PropertyCount, int TotalSize) GetSizeInfo(object?)` | 粗粒度体积估算（非精确字节数） |
 
 `Try*` 系列（`TrySerialize` / `TryDeserialize` / `TryDeserializeAs<T>` / `TryFromObject` / `TryToObject<T>` / `TryDeserializeFromFile` / `TrySerializeToFile`）为不抛异常版本，以 `bool` + `out` 返回结果。
 
@@ -124,7 +127,7 @@ var options = JsonSerializerOptionsHelper.Create(
 ## 注意事项与最佳实践
 
 - **无 DI 注册**：模块类不注册服务，所有能力经静态类型调用；不要期望从容器解析本包的服务。
-- **底层是 `System.Text.Json.Nodes`**：动态类型基于 `JsonObject`/`JsonArray`/`JsonValue`，`DynamicJsonValue.ValueKind` 即 `JsonValueKind`。虽引入 `Newtonsoft.Json` 作"双引擎"，但动态 JSON 主体走 STJ。
+- **底层是 `System.Text.Json.Nodes`**：动态类型基于 `JsonObject`/`JsonArray`/`JsonValue`，`DynamicJsonValue.ValueKind` 即 `JsonValueKind`。项目虽通过 NuGet 声明了 `Newtonsoft.Json` 依赖，但当前源码没有任何类型实际引用它——仅 API 形态（`JObject`/`JArray`/`JValue`/`JProperty`）对标 Newtonsoft，实现完全基于 STJ。
 - **异步是包装同步**：`SerializeAsync` / `DeserializeAsync` 等以 `Task.Run` 包裹同步实现，本质是 CPU 工作转线程池，非真正的 IO 异步。
 - **`Deserialize` 的异常语义**：空字符串抛 `ArgumentException`，JSON 非法抛 `JsonException`；不想处理异常时用对应 `Try*` 版本。
 - **`SelectToken`/`SetToken` 的入参约束**：仅当根为 `DynamicJsonObject` 时生效（`SelectToken` 支持路径中出现数组下标）。
@@ -132,7 +135,7 @@ var options = JsonSerializerOptionsHelper.Create(
 ## 依赖模块
 
 - 内部依赖：仅 [XiHan.Framework.Core](./core)（另运行期复用 `XiHan.Framework.Utils` 的 `JsonHelper`）。
-- 第三方核心：`Newtonsoft.Json` + .NET 内置 `System.Text.Json`。
+- 第三方核心：.NET 内置 `System.Text.Json`（唯一实际使用的序列化引擎）；`Newtonsoft.Json` 为项目文件中声明的 NuGet 引用，当前源码未实际使用。
 
 ## 相关模块
 

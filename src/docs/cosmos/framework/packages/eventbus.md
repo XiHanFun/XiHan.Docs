@@ -51,10 +51,14 @@ public class MyModule : XiHanModule { }
 - **本地**：`PublishAsync(eventData, onUnitOfWorkComplete)` → 若有当前 UoW 且 `onUnitOfWorkComplete = true`，事件记录进 UoW（`AddOrReplaceLocalEvent`），UoW 完成后由 `UnitOfWorkEventPublisher` 发布；否则立即 `TriggerHandlersAsync`，按 `LocalEventHandlerOrderAttribute.Order` 升序调用各处理器。
 - **分布式**：`PublishAsync(eventData, onUnitOfWorkComplete, useOutbox)` → 有 UoW 则记录进 UoW（`AddOrReplaceDistributedEvent`）；否则若 `useOutbox` 则先 `AddToOutboxAsync` 落发件箱并返回，由后台服务异步投递；不走 Outbox 时直接投递并转交 `LocalEventBus`。
 
+### 发布/接收观测钩子
+
+分布式总线每次真正投递或收到事件时（直投、走发件箱、走收件箱），都会顺带把一条 `DistributedEventSent` / `DistributedEventReceived` 作为**本地事件**再发布一次（`TriggerDistributedEventSentAsync` / `TriggerDistributedEventReceivedAsync`，`onUnitOfWorkComplete: false`，异常被吞掉不影响主流程）。想做分布式事件的统一日志、审计或指标采集，实现 `ILocalEventHandler<DistributedEventSent>` / `ILocalEventHandler<DistributedEventReceived>` 订阅即可拿到 `Source`（`Direct` / `Outbox` / `Inbox`）、`EventName`、`EventData`，无需侵入每个业务处理器。
+
 ### 发件箱/收件箱后台循环
 
 - `EventBoxOutboxSenderHostedService`：循环拉取每个已启用发件箱的等待事件（`GetWaitingEventsAsync`，批量 `OutboxBatchSize`），调用 `ISupportsEventBoxes.PublishManyFromOutboxAsync` 投递，成功后 `DeleteManyAsync` 清理。
-- `EventBoxInboxProcessorHostedService`：循环拉取每个已启用收件箱的等待事件，逐个 `ProcessFromInboxAsync` 处理；成功 `MarkAsProcessedAsync`，失败进重试计数——达到 `MaxInboxRetryCount` 则 `MarkAsDiscardAsync` 丢弃，否则 `RetryLaterAsync` 延后（`InboxRetryDelaySeconds` 秒后）；每轮末尾 `DeleteOldEventsAsync` 清理过期。
+- `EventBoxInboxProcessorHostedService`：循环拉取每个已启用收件箱的等待事件，逐个 `ProcessFromInboxAsync` 处理；成功 `MarkAsProcessedAsync`，失败进重试计数——达到 `MaxInboxRetryCount` 则 `MarkAsDiscardAsync` 丢弃，否则 `RetryLaterAsync` 延后（`InboxRetryDelaySeconds` 秒后）；每轮末尾 `DeleteOldEventsAsync` 清理过期（默认实现 `InMemoryEventInbox` 只清理非等待中、且最后修改时间超过 7 天的记录）。
 - 两者轮询间隔 = `PollingIntervalMilliseconds`（下限 200ms）。
 
 ## 核心能力
@@ -81,6 +85,8 @@ public class MyModule : XiHanModule { }
 | `EventBoxProcessingOptions` | 发件箱/收件箱后台处理选项；配置节 `XiHan:EventBus:EventBoxes` |
 | `InMemoryEventOutbox` / `InMemoryEventInbox` | 默认内存事件盒实现（`ConcurrentDictionary` 存储） |
 | `EventNameAttribute` | 为分布式事件类型指定事件名；静态 `GetNameOrDefault<TEvent>()` / `GetNameOrDefault(Type)` 取名或回退 `FullName` |
+| `GenericEventNameAttribute` | 为泛型事件类型（如 `EntityCreatedEventData<TEntity>`）按其唯一泛型参数动态生成事件名，可配 `Prefix` / `Postfix`；泛型参数不唯一时抛 `XiHanException` |
+| `DistributedEventSent` / `DistributedEventReceived` | 分布式事件发送/接收的观测型本地事件（`Source` 取 `Direct`/`Outbox`/`Inbox`），发布/接收路径上自动触发，用于旁路日志、审计、指标采集 |
 | `IocEventHandlerFactory` / `TransientEventHandlerFactory` / `SingleInstanceHandlerFactory` | 三种处理器工厂 |
 | `UnitOfWorkEventPublisher` | 工作单元事件发布者 |
 

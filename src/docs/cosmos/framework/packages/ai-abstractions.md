@@ -1,6 +1,6 @@
 # XiHan.Framework.AI.Abstractions
 
-> 纯 AI 契约包：会话门面、多 provider 解析、可插拔配置源、智能体、技能、RAG、提示词库的一组接口，零框架内部依赖。
+> 纯 AI 契约包：会话门面、多 provider 解析、可插拔配置源、智能体、技能、RAG、提示词库、护栏与管道横切开关的一组接口，零框架内部依赖。
 
 - **NuGet**：`XiHan.Framework.AI.Abstractions`
 - **模块类**：—（无模块类，直接引用）
@@ -9,7 +9,7 @@
 
 ## 概述
 
-这个包只放 AI 相关的接口与契约，不含任何具体实现，也不依赖框架内部任何包。它把「一次/流式会话、按 provider 名选模型、provider 配置来源、智能体、命名技能、RAG 检索增强、提示词库」抽成一组接口，让上层代码只依赖抽象。真正的实现由 `XiHan.Framework.AI` 提供；应用层（如把 provider 配置存进数据库、把提示词做成后台可维护的版本库）也能通过实现这些接口来替换默认行为。
+这个包只放 AI 相关的接口与契约，不含任何具体实现，也不依赖框架内部任何包。它把「一次/流式会话、按 provider 名选模型、provider 配置来源、智能体、命名技能、RAG 检索增强、提示词库、输入护栏、会话管道横切开关」抽成一组接口，让上层代码只依赖抽象。真正的实现由 `XiHan.Framework.AI` 提供；应用层（如把 provider 配置存进数据库、把提示词做成后台可维护的版本库）也能通过实现这些接口来替换默认行为。
 
 设计上贯穿两条主线：其一是**薄封装**——`IXiHanAiService` / `IXiHanAgentFactory` 只在 `Microsoft.Extensions.AI` 与 Microsoft Agent Framework 之上加「按 provider 名选模型」这一层 XiHan 语义，会话、工具调用、结构化输出、`AIAgent` 全走原生类型不重造；其二是**可插拔 store**——`IAiProviderConfigStore` / `IAiPromptStore` 沿用「框架给抽象、应用给实现」的范式，默认走 Options 兜底，应用层可无缝换成 DB store。
 
@@ -37,6 +37,8 @@ dotnet add package XiHan.Framework.AI.Abstractions
 - **技能**：`IAiSkill` / `IAiSkillRegistry` 把应用注册的命名能力暴露为对话工具（`AIFunction`）与 MCP tool
 - **RAG 契约**：`IChunkingStrategy`（切片）、`IKnowledgeIngestor`（摄取）、`IKnowledgeRetriever`（检索）、`IRagPromptAugmenter`（提示增强）及配套模型 `TextChunk` / `RetrievedChunk` / `KnowledgeIngestRequest` / `RetrievalFilter` / `ChunkingOptions`
 - **提示词库**：`IAiPromptStore` / `AiPromptTemplate` 抽象可版本化的提示模板来源
+- **输入护栏**：`IAiGuardrail` 对入站消息做安全检查（敏感词/注入检测等），多护栏「全部放行」才通过，拦截即 fail-closed 拒绝；结果载体 `GuardrailResult`；配置 `AiGuardrailOptions`（配置节 `XiHan:AI:Guardrail`）
+- **管道横切开关**：`AiPipelineOptions`（配置节 `XiHan:AI:Pipeline`）统一开关护栏 / OpenTelemetry 遥测 / 响应分布式缓存，全部默认关，由部署方按需开启
 
 ## 主要 API / 类型
 
@@ -55,7 +57,7 @@ dotnet add package XiHan.Framework.AI.Abstractions
 | `IAiEmbeddingGeneratorResolver` | `IEmbeddingGenerator<string, Embedding<float>> Resolve(string? providerName = null)`；`void Invalidate(string? providerName = null)`。模型取 `AiProviderOptions.EmbeddingModel` |
 | `IAiProviderConfigStore` | provider 配置来源抽象。`Task<AiProviderOptions?> GetAsync(string? providerName = null, CancellationToken ct = default)`（null 取默认 provider，无匹配返回 null 由调用方 fail-closed）；`Task<IReadOnlyList<AiProviderOptions>> GetAllAsync(...)` |
 | `AiProviderOptions` | 单个 provider 配置：`Provider` / `ApiKey` / `BaseUrl` / `Model` / `EmbeddingModel` / `MaxOutputTokens` / `Temperature` / `TimeoutSeconds` / `ExtraJson` |
-| `XiHanAiOptions` | 根配置（绑定配置节 `SectionName = "XiHan:AI"`）：`string? DefaultProvider`；`IDictionary<string, AiProviderOptions> Providers`（键为 provider 名，大小写不敏感） |
+| `XiHanAiOptions` | 根配置（绑定配置节 `SectionName = "XiHan:AI"`）：`string? DefaultProvider`；`IDictionary<string, AiProviderOptions> Providers`（键为 provider 名，大小写不敏感）；`AiPipelineOptions Pipeline`（会话管道横切开关，非按 provider）；`IList<AiPromptTemplate> Prompts`（提示词模板 Options 兜底源） |
 
 ### 智能体（Agents）
 
@@ -91,9 +93,23 @@ dotnet add package XiHan.Framework.AI.Abstractions
 | `IAiPromptStore` | `Task<AiPromptTemplate?> GetAsync(string name, string? version = null, CancellationToken ct = default)`（version 空取当前版本）；`Task<IReadOnlyList<AiPromptTemplate>> ListAsync(...)` |
 | `AiPromptTemplate` | `Name`（唯一）/ `Content`（正文，可含占位/Scriban 变量）/ `Version`（空为当前）/ `Description` |
 
+### 护栏（Guardrails）
+
+| 类型 | 说明 |
+| --- | --- |
+| `IAiGuardrail` | 输入护栏检查 seam。`string Name`（诊断用）；`ValueTask<GuardrailResult> InspectInputAsync(IEnumerable<ChatMessage> messages, CancellationToken ct = default)`。多护栏「全部放行」才通过，拦截即 fail-closed，不下发模型 |
+| `GuardrailResult` | 检查结果（私有构造，经静态工厂构建）。`bool IsBlocked`；`string? Reason`（放行时为 null）；`static GuardrailResult Allow()`；`static GuardrailResult Block(string reason)` |
+| `AiGuardrailOptions` | 护栏配置（绑定配置节 `SectionName = "XiHan:AI:Guardrail"`）：`IList<string> BlockedKeywords`（敏感词黑名单，大小写不敏感子串匹配）；`IList<string> InjectionPatterns`（自定义注入检测正则）；`bool UseBuiltInInjectionHeuristics`（是否启用内置提示注入启发式正则，默认 `true`）；`string RefusalMessage`（拦截时的拒绝话术） |
+
+### 管道横切开关（Pipeline）
+
+| 类型 | 说明 |
+| --- | --- |
+| `AiPipelineOptions` | 会话管道横切开关（绑定配置节 `XiHan:AI:Pipeline`，全部默认关）：`bool EnableGuardrail`（管道最外层，fail-closed 拦截）；`bool EnableTelemetry`（须另接 OTel `TracerProvider`/`MeterProvider` + 导出器方可收集）；`bool EnableSensitiveTelemetry`（遥测是否记录 prompt/响应原文，默认关）；`string TelemetrySourceName`（默认 `"XiHan.AI"`）；`bool EnableResponseCache`（响应分布式缓存，慎用于创造性/高温调用） |
+
 ## 配置
 
-配置载体在本包，但绑定与实现由 `XiHan.Framework.AI` 完成。根配置节名 `XiHan:AI`（`XiHanAiOptions.SectionName`），字段见上表。示例见 [XiHan.Framework.AI](./ai) 的「配置」小节。
+配置载体在本包，但绑定与实现由 `XiHan.Framework.AI` 完成。三个配置节均定义在本包：根配置节 `XiHan:AI`（`XiHanAiOptions.SectionName`）、护栏配置节 `XiHan:AI:Guardrail`（`AiGuardrailOptions.SectionName`）；管道开关 `AiPipelineOptions` 作为 `XiHanAiOptions.Pipeline` 属性随根配置节一并绑定（对应 `XiHan:AI:Pipeline`）。字段见上表。示例见 [XiHan.Framework.AI](./ai) 的「配置」小节。
 
 ## 使用示例
 
@@ -147,6 +163,7 @@ services.AddSingleton<IAiSkill, SumSkill>();
 - **换提示词库**：实现 `IAiPromptStore`（store 化 + 版本）。
 - **换 RAG 组件**：实现 `IChunkingStrategy` / `IKnowledgeIngestor` / `IKnowledgeRetriever` / `IRagPromptAugmenter` 任一，覆盖框架默认实现。
 - **供给技能**：`AddSingleton<IAiSkill, XxxSkill>()`，注册表构造时自动收纳，随后暴露为对话工具与 MCP tool。
+- **叠加自定义护栏**：`AddSingleton<IAiGuardrail, XxxGuardrail>()` 追加检查逻辑（如接入第三方内容安全服务），与内置护栏一起「全部放行」才通过；需先在 `AiPipelineOptions.EnableGuardrail` 打开管道开关方可生效。
 
 ## 注意事项与最佳实践
 
@@ -154,6 +171,7 @@ services.AddSingleton<IAiSkill, SumSkill>();
 - **薄封装、勿重造**：会话/Agent 契约刻意贴近 `Microsoft.Extensions.AI` 与 MAF 原生类型（`ChatMessage` / `ChatResponse` / `AIAgent` / `AITool`），业务不必再包一层 DTO。
 - **嵌入模型是可选项**：`AiProviderOptions.EmbeddingModel` 为空表示该 provider 不支持嵌入；RAG 摄取/检索前须确保所选 provider 配了嵌入模型。
 - **RAG 向量库不属本抽象**：这些契约只描述「切片/摄取/检索/增强」的行为，**不涉及**具体向量数据库（Qdrant 等）——向量存储是实现包 + 应用层部署事项，见 [XiHan.Framework.AI](./ai)。
+- **管道开关全部默认关**：`AiPipelineOptions` 的护栏/遥测/缓存三项均默认 `false`——护栏是有意开启的安全策略，缓存对高温创造性调用有重放同答的语义风险，遥测在未接 OTel 导出器前是静默空操作；是否开启由部署方按需在配置中打开。
 
 ## 依赖模块
 

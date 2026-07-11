@@ -40,7 +40,7 @@ XiHan.BasicApp 是一个**企业级中后台内核**：后端基于 .NET 10 与 
 | 技术 | 说明 |
 | --- | --- |
 | .NET 10 / C# | 运行时与语言 |
-| XiHan.Framework 2.5.x | 自研模块化应用框架 |
+| XiHan.Framework 3.5.0 | 自研模块化应用框架 |
 | SqlSugar | ORM，支持 PostgreSQL / MySQL / MariaDB |
 | Redis | 分布式缓存与分布式锁 |
 | SignalR | 实时通信 |

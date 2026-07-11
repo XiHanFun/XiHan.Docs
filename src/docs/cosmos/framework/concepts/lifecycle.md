@@ -37,7 +37,7 @@
 | `OnPostApplicationInitialization` | ② | 初始化完成后的收尾工作 |
 | `OnApplicationShutdown` | ② | 应用关闭时释放资源、刷写缓冲 |
 
-**执行顺序**：同一个钩子会按[模块拓扑排序](./modularity)的顺序，在所有模块上依次调用——底层模块先执行，你的应用模块最后执行。
+**执行顺序**：同一个钩子会按[模块拓扑排序](./modularity)的顺序，在所有模块上依次调用——底层模块先执行，你的应用模块最后执行。`OnApplicationShutdown` 是唯一的例外：`ModuleManager` 关闭时按**逆序**遍历模块列表，你的应用模块先关闭、底层模块最后关闭，与其余六个钩子的正向顺序相反，使资源释放顺序与初始化顺序对称。
 
 ## 注册服务：`ConfigureServices`
 
@@ -71,7 +71,7 @@ public override void OnApplicationInitialization(ApplicationInitializationContex
 }
 ```
 
-`ApplicationInitializationContext` 还提供 `ServiceProvider`、`GetConfiguration()`、`GetEnvironment()` 等，方便你按环境/配置决定行为。
+`ApplicationInitializationContext`（`XiHan.Framework.Core`）自身只暴露一个 `ServiceProvider` 属性；`GetApplicationBuilder()`、`GetConfiguration()`、`GetEnvironment()`、`GetLoggerFactory()` 都是 `XiHan.Framework.Web.Core` 追加的扩展方法（`ApplicationInitializationContextExtensions`），随 Web 相关模块（如 `XiHan.Framework.Web.Api`）一并引入，方便你按环境/配置决定行为。
 
 ## 真实示例：Web.Api 的中间件管道
 

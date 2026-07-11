@@ -55,7 +55,7 @@ dotnet add package XiHan.Framework.Metadata
 | `License` | `string` | `"MIT"` |
 | `LicenseUrl` | `string` | 指向仓库 `LICENSE` |
 | `Description` | `string` | `"快速、轻量、高效、用心的开发框架和组件库。基于 .NET 10 构建。"` |
-| `Keywords` | `string[]` | `dotnet`、`aspnetcore`、`csharp`、`xihan`、`framework`、`modular`… |
+| `Keywords` | `string[]` | `dotnet`、`aspnetcore`、`csharp`、`web`、`webapp`、`xihan`、`framework`、`zhaifanhua`、`xihanfun`、`modular`、`extensible`（共 11 项） |
 | `SupportedFrameworks` | `string[]` | `["net10.0"]` |
 | `SupportedPlatforms` | `string[]` | `["Windows", "Linux", "MacOS"]` |
 
@@ -94,8 +94,8 @@ var details = XiHanMetadata.GetDetails();
 
 // 单独读取名称与版本
 var name = XiHanMetadata.Name;          // "XiHan.Framework"
-var version = XiHanMetadata.Version;     // 如 "1.2.3.0"
-var major = XiHanMetadata.MajorVersion;  // 如 1
+var version = XiHanMetadata.Version;     // 如 "3.5.0.0"（随框架统一版本号 version.props 更新）
+var major = XiHanMetadata.MajorVersion;  // 如 3
 
 // 读取宿主应用（入口程序集）信息
 var host = XiHanMetadata.EntryAssemblyName;

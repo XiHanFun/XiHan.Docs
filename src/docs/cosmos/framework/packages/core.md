@@ -121,6 +121,7 @@ public class MyModule : XiHanModule
 - **模块化系统**：`XiHanModule` 基类 + `[DependsOn]`，`XiHanModuleHelper` 递归发现模块（并打印目录树日志），`ModuleLoader` 建描述符并拓扑排序，`ModuleManager` 驱动生命周期。详见 [模块化](../concepts/modularity)。
 - **7 阶段生命周期**：服务注册三阶段 + 初始化三阶段 + 关机，每阶段同步/异步双版本。详见 [生命周期](../concepts/lifecycle)。
 - **应用引导**：`IServiceCollection.AddApplication<TStartupModule>()` / `AddApplicationAsync<TStartupModule>()` 从启动模块引导；`XiHanApplicationFactory` 支持"外部容器"（Web/Host）与"内部容器"（独立自建 `ServiceCollection`）两种模式。
+- **远程/集成服务标记**：`IRemoteService` 空标记接口——`XiHan.Framework.Application.Contracts` 的 `IApplicationService` 即继承自它，是动态 API 自动暴露为 REST 的判定基础（`XiHan.Framework.Web.Api` 的 `TypeHelper` 用 `IApplicationService.IsAssignableFrom(type)` 识别应用服务类型）；配套的细粒度控制特性 `RemoteServiceAttribute`（`IsEnabled` / `IsMetadataEnabled` / `Name` 分组名 + `IsExplicitlyEnabledFor` 等静态判定）、`IntegrationServiceAttribute`（标记集成服务，`IsDefinedOrInherited` 支持接口继承判定）、`ApplicationServiceTypes`（`[Flags]` 枚举：`ApplicationServices` / `IntegrationServices` / `All`）、`DisableXiHanFeaturesAttribute`（按类禁用拦截器 / 中间件 / MVC 过滤器）均定义在 Core，供上层按需读取。
 - **约定式依赖注入**：标记接口 / `[Dependency]` / `[ExposeServices]` / `[ExposeKeyedService]` / `[DisableConventionalRegistration]`，可插拔 `IConventionalRegistrar`。详见 [依赖注入](../concepts/dependency-injection)。
 - **缓存式服务提供器**：`ICachedServiceProvider`（scoped，缓存含瞬态在内的所有已解析服务）/ `ITransientCachedServiceProvider` / `IRootServiceProvider`。
 - **属性/字段注入**：`[AutowiredService]` + `AutowiredServiceHandler.Autowired(this)`（推荐构造函数注入，此为特殊情况兜底）。
@@ -129,7 +130,9 @@ public class MyModule : XiHanModule
 - **反射与类型发现**：`IAssemblyFinder` / `ITypeFinder`。
 - **简单状态检查**：`ISimpleStateChecker<TState>` / `ISimpleStateCheckerManager<TState>`（权限/特性开关等布尔判定的通用框架）。
 - **动态代理抽象**：`IXiHanInterceptor` / `IXiHanMethodInvocation` / `ProxyHelper`（Castle 代理的 `UnProxy` / `GetUnProxiedType`）。
-- **追踪**：`ICorrelationIdProvider` / `DefaultCorrelationIdProvider`（分布式关联唯一标识）。
+- **追踪**：`ICorrelationIdProvider` / `DefaultCorrelationIdProvider`（分布式关联唯一标识）；`XiHanActivitySources`（框架共享 `ActivitySource` 名与实例：`App`/`Data`/`EventBus`/`Grpc`/`Cache`/`Ai` 六个源常量 + 对应实例，`All` 数组供 `XiHan.Framework.Observability` 一次性 `AddSource` 批量注册）。
+- **横切关注点去重**：`XiHanCrossCuttingConcerns`（静态门面：`Applying`/`AddApplied`/`RemoveApplied`/`IsApplied`/`GetApplieds`）+ `IAvoidDuplicateCrossCuttingConcerns`（`AppliedCrossCuttingConcerns` 列表），用于标记某对象已应用过某横切逻辑，避免嵌套调用中重复执行（如拦截器判定"是否已处理过"）；`XiHan.Framework.Web.Api` 的 `XiHanController` 已实现该接口，为其派生控制器提供去重挂载点。
+- **异步与锁工具**：`AsyncHelper`（`RunSync` 同步等待异步方法、`UnwrapTask` 拆 `Task`/`Task<T>` 真实返回类型）、`AsyncLock`（信号量实现的异步友好独占锁，`LockAsync()`/`LockAsync(timeout)`/`Lock()`）、`SemaphoreSlimExtensions`（`SemaphoreSlim.LockAsync()`/`Lock()` 系列，返回 `IDisposable` 自动释放）、`LockExtensions`（`object.Locking(...)` 简化 `lock` 语句）、`AsyncExtensions`（`MethodInfo.IsAsync()` / `Type.IsTaskOrTaskOfT()` / `IsTaskOfT()` 反射判定）。
 - **插件源**：`FolderPlugInSource` / `FilePlugInSource` / `TypePlugInSource`，从目录、程序集或类型加载额外模块。
 
 ## 主要 API / 类型
@@ -177,6 +180,11 @@ public class MyModule : XiHanModule
 | `XiHanApplicationCreationOptions` | 见下"配置" |
 | `IApplicationInfoAccessor` | `ApplicationName` / `InstanceId`（`InstanceId` 为每次启动生成的 Guid） |
 | `IXiHanHostEnvironment` / `XiHanHostEnvironment` | `EnvironmentName`（未设置时默认回落 `Production`） |
+| `IRemoteService` | 空标记接口：标识某类型可作为远程服务 |
+| `RemoteServiceAttribute` | `[AttributeUsage(Interface\|Class\|Method)]`；`IsEnabled` / `IsMetadataEnabled` / `Name`（分组名）；`IsExplicitlyEnabledFor(Type/MethodInfo)` 等静态判定方法 |
+| `IntegrationServiceAttribute` | `[AttributeUsage(Class\|Interface)]`；`IsDefinedOrInherited<T>()` 判定类型或其接口是否标注 |
+| `ApplicationServiceTypes`（`[Flags]` 枚举） | `ApplicationServices` / `IntegrationServices` / `All` |
+| `DisableXiHanFeaturesAttribute` | `[AttributeUsage(Class)]`；`DisableInterceptors` / `DisableMiddleware` / `DisableMvcFilters`（均默认 `true`） |
 
 ### 上下文
 
@@ -205,7 +213,7 @@ public class MyModule : XiHanModule
 | `IServiceProviderAccessor` / `IClientScopeServiceProviderAccessor` | 服务提供器访问抽象 |
 | `IOnServiceRegistredContext` / `IOnServiceExposingContext` / `IOnServiceActivatedContext` | 注册/暴露/激活拦截扩展点 |
 
-### 反射 / 集合 / 状态检查 / 代理 / 追踪 / 异常
+### 反射 / 集合 / 状态检查 / 代理 / 追踪 / 横切关注点 / 异步锁 / 异常
 
 | 类型 | 说明 |
 | --- | --- |
@@ -217,6 +225,16 @@ public class MyModule : XiHanModule
 | `ProxyHelper`（static） | `IsProxy(obj)` / `UnProxy(obj)` / `GetUnProxiedType(obj)`；识别 `Castle.Proxies` 命名空间 |
 | `DynamicProxyIgnoreTypes` | 不做动态代理的类型登记 |
 | `ICorrelationIdProvider` / `DefaultCorrelationIdProvider` | `string? Get()` / `IDisposable Change(string?)`（作用域内临时切换关联唯一标识） |
+| `XiHanActivitySources`（static） | 框架共享 `ActivitySource`：`App`/`Data`/`EventBus`/`Grpc`/`Cache`/`Ai` 六个源名常量 + `AppSource`/`DataSource`/`EventBusSource`/`GrpcSource`/`CacheSource` 五个实例（`Ai` 无独立实例字段，其值须与 AI 管道的 `AiPipelineOptions.TelemetrySourceName` 一致）；`All` 汇总全部六个源名供 OTel 一次性批量 `AddSource`；置于 Core.Tracing 而非 Observability，避免 Data/EventBus/Http/Web 反向依赖 Observability |
+| `XiHanCrossCuttingConcerns`（static） | `Applying(obj, concerns)` 返回 `IDisposable`（作用域内标记+自动移除）、`AddApplied` / `RemoveApplied` / `IsApplied` / `GetApplieds` |
+| `IAvoidDuplicateCrossCuttingConcerns` | `List<string> AppliedCrossCuttingConcerns { get; }`；`XiHan.Framework.Web.Api` 的 `XiHanController` 实现此接口 |
+| `AsyncHelper`（static） | `RunSync<TResult>(Func<Task<TResult>>)` / `RunSync(Func<Task>)`（同步阻塞等待）、`UnwrapTask(Type)` |
+| `AsyncLock` | `LockAsync()` / `LockAsync(TimeSpan)`（超时抛 `TimeoutException`）/ `Lock()`，均返回释放用的 `IDisposable` |
+| `SemaphoreSlimExtensions`（static） | `SemaphoreSlim` 的 `LockAsync(...)` / `Lock(...)` 系列重载（支持超时、`CancellationToken`），返回 `IDisposable` 自动 `Release` |
+| `LockExtensions`（static） | `object.Locking(Action)` / `Locking<T>(Action<T>)` / `Locking<TResult>(Func<TResult>)` 等，封装 `lock` 语句 |
+| `AsyncExtensions`（static） | `MethodInfo.IsAsync()`、`Type.IsTaskOrTaskOfT()` / `IsTaskOfT()` |
+| `NameValue` / `NameValue<T>` | 通用名称/值对承载类型（`Timing`、`Settings` 等包用于承载时区名、设置值） |
+| `NamedTypeSelector` | `Name` + `Predicate<Type>` 组成的命名类型断言选择器 |
 | `XiHanException` | 框架根异常；构造时把消息以 `Error` 级写入 `LogHelper` |
 | `BusinessException` | 实现 `IBusinessException` / `IHasErrorCode` / `IHasErrorDetails` / `IHasLogLevel`；`Code` / `Details` / `LogLevel`（默认 `Warning`）/ `LocalizableMessage`（弱类型承载可本地化消息）/ `WithData(name, value)` |
 | `UserFriendlyException` | `BusinessException` 子类，可直接呈现给终端用户；支持 `(message, code, details, ...)` 与 `(localizableMessage, fallbackMessage, ...)` 两种构造 |

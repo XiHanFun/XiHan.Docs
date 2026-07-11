@@ -131,13 +131,18 @@ public static string GetFullNameHandlingNullableAndGenerics(Type type)
 public static object? ConvertFromString(Type targetType, string? value)
 ```
 
-**`EnumHelper`** — 枚举反射 + 元数据 + 缓存（返回下文 `Enums` 目录的 `EnumItem` / `EnumInfo`）：
+**`EnumHelper`** — 枚举反射 + 元数据 + 缓存（返回下文 `Enums` 目录的 `EnumItem` / `EnumInfo`，内部以 `ConcurrentDictionary` 缓存反射结果）：
 
 ```csharp
 public static List<EnumItem> GetEnumItems<TEnum>(bool includeHidden = false, bool ordered = true) where TEnum : struct, Enum
+public static List<EnumItem<TEnum>> GetTypedEnumItems<TEnum>(bool includeHidden = false, bool ordered = true) where TEnum : struct, Enum
 public static EnumInfo GetEnumInfo<TEnum>() where TEnum : struct, Enum
 public static TEnum Parse<TEnum>(string value, bool ignoreCase = true) where TEnum : struct, Enum
+public static bool TryParse<TEnum>(string? value, out TEnum result, bool ignoreCase = true) where TEnum : struct, Enum
 public static string GetDescription<TEnum>(TEnum value) where TEnum : struct, Enum
+public static string? GetLocalizationKey<TEnum>(TEnum value) where TEnum : struct, Enum
+public static string? GetLocalizationResourceName<TEnum>(TEnum value) where TEnum : struct, Enum
+public static void ClearCache<TEnum>() where TEnum : struct, Enum
 ```
 
 **`RandomHelper`** — 基于 `Random.Shared` 的**非加密**随机（加密安全场景请用 `RandomCoder`）：
@@ -149,7 +154,7 @@ public static T GetRandomOf<T>(params T[] objs)
 public static List<T> GenerateRandomizedList<T>(IEnumerable<T> items)   // Fisher-Yates
 ```
 
-**`RegexHelper`**（`public static partial`，源生成器编译正则）暴露 30+ 个 `partial Regex` 工厂属性，如 `EmailRegex()`、`IpRegex()`、`Ipv6Regex()`、`UrlRegex()`、`StrongPasswordRegex()`、`HexColorRegex()`、`Iso8601DateTimeRegex()`、`WindowsPathRegex()` 等，另有 `IsMatch(string input, string pattern, RegexOptions options = RegexOptions.IgnoreCase)`。
+**`RegexHelper`**（`public static partial`，源生成器编译正则）暴露 65 个 `partial Regex` 工厂属性，如 `EmailRegex()`、`IpRegex()`、`Ipv6Regex()`、`UrlRegex()`、`StrongPasswordRegex()`、`HexColorRegex()`、`Iso8601DateTimeRegex()`、`WindowsPathRegex()` 等，另有 `IsMatch(string input, string pattern, RegexOptions options = RegexOptions.IgnoreCase)`。
 
 其余：`DateTimeHelper`（工作日/年龄/友好时间/月边界）、`MathHelper`（几何/统计/质数/斐波那契）、`ArrayHelper`（`Find`/`Insert`/`Remove`/`Shuffle`）、`CloneHelper`（`DeepCopy` / `CopyProperties` / `MapObject`）、`CompareHelper`（`DeepEquals` / `GetHashCodeDeep`）、`LogicHelper`（函数式 `If`/`Switch`/`TryExecute`/`RetryAsync`）、`SystemInfoManager`（`GetSystemInfo()` 汇总硬件+运行时）。
 
@@ -498,7 +503,7 @@ public static string ExecuteScript(string scriptFilePath, string arguments = "")
 ### 二十、运行时 / 枚举元数据 / 常量 / 异常
 
 - **`OsPlatformHelper`**（`Runtime`）：`IsWindows` / `IsLinux` / `IsMacOs` / `IsUnixSystem` 判定属性、`RuntimeInfos`（带缓存）、`GetEnvironmentVariable(name, target)`；`RuntimeMonitor` 采集运行时指标。
-- **`Enums`**：`EnumItem`（record，字段 `Key` / `Value` / `Description` / `Theme` / `Icon` / `Order`，带 JSON 命名）、`EnumInfo`（枚举整体元数据 + 本地化资源信息）、`EnumAttributes`（`[EnumTheme]` / `[EnumOrder]` 特性）。这是后端枚举元数据下发前端的底层结构。
+- **`Enums`**：`EnumItem`（record，字段 `Key` / `Value` / `Description` / `Theme` / `Icon` / `Order` / `Hidden` / `Disabled` / `LocalizationKey` / `ResourceName` / `Extra`，均带 JSON 命名，另有强类型版本 `EnumItem<T>`）、`EnumInfo`（枚举整体元数据 + 本地化资源信息）、`EnumAttributes`（`[EnumTheme]` / `[EnumOrder]` 特性）。这是后端枚举元数据下发前端的底层结构。
 - **`Constants/DefaultConsts`**：字符集常量 `UppercaseLetters` / `LowercaseLetters` / `Letters` / `Digits` / `SpecialCharacters` 等。
 - **`Exceptions/CustomException`**：继承 `Exception`，构造时自动经 `LogHelper.Error(...)` 记录（注意：其消息会前置固定前缀"自定义异常。"）。
 

@@ -51,7 +51,8 @@ public class MyModule : XiHanModule { }
 - **编译缓存**：内容+选项键，命中复用，`ClearCache()` 清理，`GetStatistics()` 取命中率等。
 - **超时控制**：`TimeoutMs`（默认 30000ms）→ `ScriptTimeoutException`。
 - **静态安全校验**：黑名单命名空间/类型 + 危险关键字 + 不安全代码检测；`SecurityOptions` 提供 `Strict` / `Permissive` / `Disabled` 预设。
-- **构建与工厂**：`ScriptEngineBuilder` 流式配置引用/导入/全局变量/超时；`ScriptEngineFactory` 创建默认/命名引擎并管理生命周期与统计。
+- **构建与工厂**：`ScriptEngineBuilder` 提供 `AddReference/AddImport/AddGlobal/WithTimeout/WithOptimization/WithUnsafe/DisableCache` 链式方法；`ScriptEngineFactory` 创建默认/命名引擎并管理生命周期与统计。**已知限制**见下方「使用示例」。
+- **扩展方法**（`ScriptEngineExtensions`）：同步门面 `Execute`/`Execute<T>`/`ExecuteFile`/`ExecuteFile<T>`/`Compile`/`CreateInstance`/`Evaluate`/`Evaluate<T>`；失败即抛异常的 `ExecuteOrThrowAsync`/`ExecuteOrThrowAsync<T>`/`CompileOrThrowAsync`；批量执行 `ExecuteBatchAsync`（可选并行）；基准测试 `BenchmarkAsync`（预热 5 次后统计，返回 `PerformanceStatistics`）；`ExecuteWithTimeoutAsync`；全异常兜底 `ExecuteSafelyAsync`/`ExecuteFileSafelyAsync`（把各类 `ScriptException` 转换成失败态 `ScriptResult`，不再抛出）；启发式安全扫描 `ValidateSecurityAsync`（按危险/网络/文件关键字字符串匹配打分，返回 `SecurityValidationResult` + `SecurityRiskLevel`，与执行期反射安全校验是两套独立机制，仅供预检参考）；纯编译语法检查 `ValidateSyntaxAsync`（返回 `SyntaxValidationResult`）。
 
 ## 主要 API / 类型
 
@@ -60,18 +61,20 @@ public class MyModule : XiHanModule { }
 | `IScriptEngine` / `ScriptEngine` | 引擎接口与 Roslyn 实现。`ExecuteAsync`/`ExecuteAsync<T>`、`ExecuteFileAsync`/`ExecuteFileAsync<T>`、`CompileAsync`、`CreateInstanceAsync<T>`、`EvaluateAsync`/`EvaluateAsync<T>`、`ClearCache`、`GetStatistics` |
 | `XiHanScript`（静态门面） | `RunAsync`/`Run`、`RunAsync<T>`/`Run<T>`、`EvalAsync`/`Eval`、`EvalAsync<T>`/`Eval<T>`、`RunFileAsync`/`RunFile`、`CreateBuilder()`；`Engine` 属性为惰性默认引擎 |
 | `ScriptEngineFactory`（静态） | `CreateDefault()`、`Create(Action<ScriptOptions>?)`、`GetOrCreate(name, ...)`、`Release/ReleaseAll`、`GetStatistics/GetAllStatistics`、`ClearAllCaches/ClearCache` |
-| `ScriptEngineBuilder` | 流式：`AddReference(...)`、`AddImport(...)`、`AddGlobal(...)`、`WithTimeout(...)`、`WithOptimization()`、`WithUnsafe()`、`DisableCache()`、`Configure(...)`、`Build()` |
+| `ScriptEngineBuilder` | 流式：`AddReference(...)`、`AddImport(...)`、`AddGlobal(...)`、`WithTimeout(...)`、`WithOptimization()`、`WithUnsafe()`、`DisableCache()`、`Configure(...)`、`Build()`。**注意**：目前只有 `Configure(Action<IScriptEngine>)` 会真正作用于 `Build()` 出的引擎，其余链式方法收集的配置不会自动生效，见下方示例 |
+| `ScriptEngineExtensions`（静态扩展方法） | 同步门面 + `ExecuteOrThrowAsync`/`CompileOrThrowAsync` + `ExecuteBatchAsync` + `BenchmarkAsync` + `ExecuteWithTimeoutAsync` + `ExecuteSafelyAsync`/`ExecuteFileSafelyAsync` + `ValidateSecurityAsync`/`ValidateSyntaxAsync` |
 | `ScriptOptions` | 执行选项（见下） |
 | `CompilerOptions` | 编译选项：`LanguageVersion`（默认 Latest）、`WarningLevel`（4）、`TreatWarningsAsErrors`、`GenerateDebugInfo`、`DebugInformationFormat` 等 |
 | `SecurityOptions` | 安全选项（见下） |
 | `ScriptResult` / `ScriptResult<T>` / `CompilationResult` | 执行结果与编译结果 |
 | `ScriptType`（enum） | `Statement` / `Expression` / `Class` / `Method` / `Program` |
-| `ScriptMonitor` / `ScriptTemplateManager` | 执行监控与脚本模板管理 |
-| `ScriptException` 及子类 | `ScriptCompilationException` / `ScriptExecutionException` / `ScriptSecurityException` / `ScriptTimeoutException` / `ScriptLoadException` |
+| `ScriptMonitor` + `ScriptMonitorOptions` | 独立的执行日志/性能监控组件（见「扩展点 / 自定义」） |
+| `ScriptTemplateManager` + `ScriptTemplate` | 参数化脚本模板管理（见「扩展点 / 自定义」） |
+| `ScriptException` 及子类 | `ScriptCompilationException` / `ScriptExecutionException`（`ScriptTimeoutException` 继承自它）/ `ScriptSecurityException` / `ScriptLoadException` |
 
 ## 配置
 
-`ScriptOptions` 通过参数传入 `Execute*/Evaluate*` 或经 `ScriptEngineBuilder` 组装，**不绑定 appsettings 配置节**（无 `SectionName`）。
+`ScriptOptions` 需要显式构造（或用 `ScriptOptions.Default` + 链式方法）后作为参数传入每次 `Execute*/Evaluate*` 调用，**不绑定 appsettings 配置节**（无 `SectionName`）；参见上方「`ScriptEngineBuilder` 的已知限制」，链式配置不能只经构建器组装就指望生效。
 
 ### `ScriptOptions` 关键字段
 
@@ -80,7 +83,7 @@ public class MyModule : XiHanModule { }
 | `ScriptType` | `ScriptType` | `Statement` | 脚本形态 |
 | `Imports` | `List<string>` | System / Collections.Generic / Linq / Text / Threading.Tasks | 默认导入的命名空间 |
 | `References` / `ReferencePaths` | `List<Assembly>` / `List<string>` | 空 | 附加程序集引用 |
-| `Globals` | `Dictionary<string, object?>` | 空 | 全局变量 |
+| `Globals` | `Dictionary<string, object?>` | 空 | 全局变量——仅在反射调用入口方法时按**参数名**匹配注入实参，需配合 `ScriptType.Method` 声明同名参数；`Statement`/`Expression`/`Class` 脚本内不能以 `Globals[...]` 形式直接访问，详见下方示例 |
 | `EnableCache` / `CacheKey` | `bool` / `string?` | `true` / `null` | 编译缓存开关与自定义键 |
 | `TimeoutMs` | `int` | `30000` | 执行超时（毫秒）|
 | `AllowUnsafe` | `bool` | `false` | 允许不安全代码 |
@@ -123,16 +126,29 @@ if (result.IsSuccess)
 }
 ```
 
-### 用构建器定制引擎并注入全局变量
+### 用 `ScriptOptions` 定制超时等执行参数
+
+> **`ScriptEngineBuilder` 的已知限制**：`AddReference`/`AddImport`/`AddGlobal`/`WithTimeout`/`WithOptimization`/`WithUnsafe`/`DisableCache` 只是把配置写进构建器内部持有的一份 `ScriptOptions`，但 `Build()` 目前**不会**把这份 `ScriptOptions` 传给新建的引擎——`Build()` 内部就是 `new ScriptEngine()` 后执行通过 `Configure(Action<IScriptEngine>)` 注册的委托（而 `IScriptEngine` 本身也没有暴露可设置引用/导入/全局变量的成员）。也就是说，链式调用这些方法目前**不会**对后续的 `Execute*/Evaluate*` 生效。要让引用、导入、全局变量、超时真正生效，请直接构造/复用 `ScriptOptions` 并在每次调用时传入：
 
 ```csharp
-var engine = XiHanScript.CreateBuilder()
-    .AddImport("System.Math")
-    .AddGlobal("factor", 3)
-    .WithTimeout(5000)
-    .Build();
+var options = new ScriptOptions().WithTimeout(5000);
 
-var r = await engine.ExecuteAsync<int>("result = 10 * (int)Globals[\"factor\"];");
+var engine = XiHanScript.CreateBuilder().Build(); // 等价于 ScriptEngineFactory.CreateDefault()
+var r = await engine.ExecuteAsync<int>("result = 10 * 2;", options);
+```
+
+### 用 `ScriptType.Method` 接收全局变量
+
+`Globals` 不是脚本内可直接访问的字典，而是执行引擎在反射调用入口方法时按**参数名**匹配、逐个填充成实参。要让全局变量真正传入脚本，脚本必须是 `ScriptType.Method`，并自己声明一个名为 `Execute` 的 `public static` 方法、用参数名对应 `Globals` 的键：
+
+```csharp
+var options = new ScriptOptions()
+    .WithScriptType(ScriptType.Method)
+    .AddGlobal("factor", 3);
+
+var result = await XiHanScript.RunAsync<int>(
+    "public static object Execute(int factor) { return 10 * factor; }", options);
+// result.Value == 30
 ```
 
 ### 收紧安全策略
@@ -150,8 +166,10 @@ var res = await XiHanScript.RunAsync("result = System.Environment.MachineName;",
 
 - **命名引擎复用**：`ScriptEngineFactory.GetOrCreate("rules")` 复用同名引擎（含其编译缓存），`Release/ReleaseAll` 释放。
 - **自定义安全策略**：构造 `SecurityOptions` 或用 `Strict/Permissive/Disabled` 预设，再经 `ScriptOptions.WithSecurity(...)` 调整黑名单。
-- **附加引用/导入**：需要脚本访问业务类型时用 `AddReference(typeof(X))` / `AddImport("Your.Namespace")`。
-- **脚本模板**：`ScriptTemplateManager` + `ScriptTemplate` 管理参数化脚本模板。
+- **附加引用/导入**：需要脚本访问业务类型时用 `ScriptOptions` 的 `AddReference(typeof(X))` / `AddImport("Your.Namespace")`（注意上面「已知限制」，不要经 `ScriptEngineBuilder` 配置后误以为已生效）。
+- **脚本模板**：`ScriptTemplateManager` 构造时自动加载 3 个内置系统模板（`HelloWorld`/`MathCalculator`/`DataProcessor`，`IsSystem=true`，不可删除/覆盖保存），并从模板目录（默认 `AppDomain.CurrentDomain.BaseDirectory/Templates`，可在构造函数传入）加载 `*.json` 自定义模板；`ScriptTemplate.Code` 用 `#{参数名}` 占位符，`GenerateCode(parameters)` 做纯字符串替换（不是 Scriban/正则模板引擎），`ValidateParameters` 按 `TemplateParameter`（`Required`/`MinValue`/`MaxValue`/`Pattern`/`Options` 等）做必填、数值范围、正则、枚举取值校验。
+- **执行监控**：`ScriptMonitor`（配 `ScriptMonitorOptions`，预设 `Default`/`HighPerformance`/`Verbose`）是独立组件，**不会**被 `ScriptEngine`/`XiHanScript` 自动调用——需要调用方自己在执行后调 `monitor.LogExecution(result, scriptCode, scriptPath)` 记录；随后可用 `GetExecutionLogs`/`GetStatistics()`（`ScriptExecutionStatistics`，含成功率、缓存命中率、最近一小时执行数、最慢脚本等）/`GetPerformanceInfo()`、订阅 `ScriptExecuted`/`PerformanceWarning` 事件，或 `ExportLogsAsync` 导出 JSON/CSV/XML（`LogExportFormat`）。
+- **调试选项（预留，未接入引擎）**：`DebugOptions`（含 `Verbose()`/`Production()` 预设）、`Breakpoint`、`DebugLevel`、`HitCountCondition` 是独立的公开数据模型，当前未被 `ScriptOptions`/`ScriptEngine` 引用或消费——即设置断点/调试级别目前不会对脚本执行产生任何实际效果，不要据此设计依赖真实调试能力的功能。
 
 ## 注意事项与最佳实践
 

@@ -54,8 +54,8 @@ XiHan.BasicApp 采用**前后端分离**架构：
 
 | 端 | 关键技术 |
 | --- | --- |
-| 后端 | .NET 10 · XiHan.Framework 2.5.x · SqlSugar（PostgreSQL/MySQL/MariaDB）· Redis · SignalR · Serilog · Scalar |
-| 前端 | Vue 3.5+ · TypeScript 5.9+ · Vite 6 · Naive UI · Pinia · Tailwind CSS 4 · Tiptap · vue-i18n |
+| 后端 | .NET 10 · XiHan.Framework 3.5.0 · SqlSugar（PostgreSQL/MySQL/MariaDB）· Redis · SignalR · Serilog · Scalar |
+| 前端 | Vue 3.5+ · TypeScript 6.0+ · Vite 8 · Naive UI · Pinia · Tailwind CSS 4 · Tiptap · vue-i18n |
 
 ## 在线体验
 

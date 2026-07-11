@@ -133,10 +133,10 @@ services.AddScoped<IPositionDomainService, PositionDomainService>();
 
 #### 5. 动态 API 暴露 + 分页 `[HttpPost]`
 
-应用服务/查询服务基类打 `[Authorize]` + `[DynamicApi(Group="BasicApp.Saas", GroupName="系统SaaS服务", Tag="岗位")]`，方法即自动成为 REST 端点。约定：
+应用服务/查询服务基类 `SaasApplicationService` 已打 `[Authorize]` + `[DynamicApi(Group="BasicApp.Saas", GroupName="系统SaaS服务")]`；具体服务类（如 `PositionAppService`/`PositionQueryService`）**再重复声明一次** `[Authorize]` + `[DynamicApi(...)]` 并补上 `Tag="岗位"`（按功能命名，用于 Swagger 分组）——方法即自动成为 REST 端点。约定：
 
 - **写方法**标 `[UnitOfWork(true)]` + `[PermissionAuthorize(SaasPermissionCodes.Position.Xxx)]`。
-- **路由剥离动词前缀**：框架按方法名前缀映射 HTTP 谓词——`Get/List/Query/Search/Find/Fetch/Retrieve→GET`、`Create/Add/Insert→POST`、`Update/Edit/Modify→PUT`、`Delete/Remove/Destroy→DELETE`、`Patch→PATCH`，并剥掉前缀生成资源路由。
+- **路由剥离动词前缀**：框架按方法名前缀映射 HTTP 谓词——`Get/List/Query/Search/Find/Fetch/Retrieve→GET`、`Create/Add/Insert→POST`、`Update/Edit/Modify→PUT`、`Delete/Remove/Destroy→DELETE`、`Patch/PartialUpdate→PATCH`，并剥掉前缀生成资源路由。
 - **分页方法必须显式标 `[HttpPost]`**：否则会被识别为 GET（方法名以 `Get` 开头）。前端把整个查询对象（含 `conditions`/`filters`/`sorts`）作 body 发送。
 
 ```csharp
@@ -197,13 +197,21 @@ public class XiHanBasicAppAIModule : XiHanModule
         services.AddAIDataSeeders();     // 种子：操作→资源→权限→菜单→角色授权
         services.AddAIDomainServices();  // 领域服务：显式 AddScoped（无 DI 标记）
         services.AddAIConfigStore();     // Replace 覆盖框架默认配置源
+
         services.AddRAGDataSeeders();
         services.AddRAGDomainServices();
         services.AddRAG(configuration);
+
         services.AddAISkills();
+
+        services.AddPromptDataSeeders();     // 提示词库（M5）：种子 209–212
+        services.AddPromptDomainServices();
+        services.AddPromptStore();           // Replace 覆盖框架默认提示词库
     }
 }
 ```
+
+> `AI` 模块目前包含三段能力：Provider 库化管理、知识库 RAG、提示词库（M5 新增），三者各自「种子 + 领域服务 + `Replace` 覆盖框架默认存储」一套齐全，`AddAISkills` 单独登记对话技能。新增能力时依样追加一段，`Order` 段落不与既有三段交叠。
 
 ### 双 csproj（本地源码调试 vs 线上 NuGet）
 
@@ -240,7 +248,7 @@ public static IServiceCollection AddAIConfigStore(this IServiceCollection servic
 | --- | --- | --- |
 | Saas | 10–37 | 系统基线 10–29、演示 30–37 |
 | CodeGeneration | 100–105 | — |
-| AI | 200–208 | Provider 200–204、知识库 RAG 205–208 |
+| AI | 200–212 | Provider 200–204、知识库 RAG 205–208、提示词库 209–212 |
 
 AI 的 `AddAIDataSeeders` 实链（`AddDataSeeder<T>()` 逐个登记）：
 
@@ -251,6 +259,8 @@ services.AddDataSeeder<SysPermissionSeeder>();      // 202 资源 × 操作 → 
 services.AddDataSeeder<SysMenuSeeder>();            // 203 菜单（建即绑 ai:read）
 services.AddDataSeeder<SysRolePermissionSeeder>();  // 204 仅授超管
 ```
+
+`AddRAGDataSeeders`（205–208）与 `AddPromptDataSeeders`（209–212，提示词库）各自复用 AI 段的 `SysOperationSeeder`（200），链内只补「资源 → 权限 → 菜单 → 角色授权」四步，不重复种操作字典。
 
 > 新模块选一段未用的 `Order`（如 300–）；**操作/资源种子必须排在权限种子之前**（权限由「资源 × 操作」派生）。
 

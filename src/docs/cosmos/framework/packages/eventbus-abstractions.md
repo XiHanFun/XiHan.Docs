@@ -41,6 +41,8 @@ public class MyModule : XiHanModule { }
 - **事件盒配置**：`OutboxConfig` / `InboxConfig` 及其字典 `OutboxConfigDictionary` / `InboxConfigDictionary`，`ISupportsEventBoxes` 声明对象支持事件盒机制
 - **处理器工厂与调用**：`IEventHandlerFactory`、`IEventHandlerInvoker`、`EventTypeWithEventHandlerFactories` 等抽象，供实现层构建处理管道
 - **事件命名与租户**：`IEventNameProvider`（事件名提供器）、`IEventDataMayHaveTenantId`（事件可能携带租户）
+- **泛型参数可继承**：`IEventDataWithInheritableGenericArgument`，让 `EventData<TEntity>` 这类泛型事件在 `TEntity` 有基类时，连带触发 `EventData<TEntity 的基类>`
+- **分布式事件遥测钩子**：`DistributedEventSent` / `DistributedEventReceived`（配合 `DistributedEventSource` 来源枚举），实现包在直接发送/直接接收/走 Outbox/走 Inbox 时会把这两类"元事件"发布到本地事件总线，供观测代码订阅
 - **顺序控制**：`LocalEventHandlerOrderAttribute` 标注本地处理器执行顺序
 
 ## 主要 API / 类型
@@ -89,6 +91,7 @@ Task HandleEventAsync(TEvent eventData);
 | --- | --- |
 | `IEventHandler` | 所有处理器的间接基接口（空接口，勿直接实现） |
 | `IEventHandlerFactory` | 处理器工厂：`IEventHandlerDisposeWrapper GetHandler()` + `bool IsInFactories(List<IEventHandlerFactory>)` |
+| `IEventHandlerDisposeWrapper` | 处理器释放包装（继承 `IDisposable`）：`IEventHandler EventHandler { get; }`，`Dispose()` 负责释放该次 `GetHandler()` 取得的处理器实例 |
 | `IEventHandlerInvoker` | 处理器调用器：`Task InvokeAsync(IEventHandler eventHandler, object eventData, Type eventType)` |
 | `EventTypeWithEventHandlerFactories` | 事件类型与其处理器工厂列表的配对（`EventType` + `EventHandlerFactories`） |
 | `LocalEventHandlerOrderAttribute` | `[AttributeUsage(Class)]`，构造入参 `int order`，暴露 `Order` 属性；标注本地处理器执行顺序（小的先执行，默认 0） |
@@ -101,7 +104,7 @@ Task HandleEventAsync(TEvent eventData);
 | `IEventInbox` | `Task EnqueueAsync(IncomingEventInfo)`、`Task<List<IncomingEventInfo>> GetWaitingEventsAsync(...)`、`Task MarkAsProcessedAsync(Guid)`、`Task RetryLaterAsync(Guid id, int retryCount, DateTime? nextRetryTime)`、`Task MarkAsDiscardAsync(Guid)`、`Task<bool> ExistsByMessageIdAsync(string messageId)`、`Task DeleteOldEventsAsync()` |
 | `IOutgoingEventInfo` | 出站事件信息：`Guid Id`、`string EventName`、`byte[] EventData`、`DateTime CreatedTime`（继承 `IHasExtraProperties`） |
 | `IIncomingEventInfo` | 入站事件信息：在出站字段基础上多一个 `string MessageId`（用于去重） |
-| `OutgoingEventInfo` / `IncomingEventInfo` | 上述接口的具体实现类（框架内部与持久化实现使用） |
+| `OutgoingEventInfo` / `IncomingEventInfo` | 上述接口的具体实现类；构造函数校验事件名非空且不超过 `MaxEventNameLength`（静态属性，默认 256）；均提供 `SetCorrelationId(string)` / `GetCorrelationId()`，内部借助 `ExtraProperties` 与 `EventBusConsts.CorrelationIdHeaderName` 读写关联标识 |
 | `ISupportsEventBoxes` | 声明对象（通常是分布式事件总线）支持事件盒：`PublishFromOutboxAsync` / `PublishManyFromOutboxAsync` / `ProcessFromInboxAsync` |
 
 ### 事件盒配置
@@ -111,6 +114,22 @@ Task HandleEventAsync(TEvent eventData);
 | `OutboxConfig` | 发件箱配置：`Name`（构造入参，非空校验）、`DatabaseName`、`ImplementationType`（实现类型）、`Func<Type,bool>? Selector`（事件筛选）、`bool IsSendingEnabled = true` |
 | `InboxConfig` | 收件箱配置：`Name`、`DatabaseName`、`ImplementationType`、`Func<Type,bool>? EventSelector`、`Func<Type,bool>? HandlerSelector`、`bool IsProcessingEnabled = true` |
 | `OutboxConfigDictionary` / `InboxConfigDictionary` | 以名称为键的配置字典（`Dictionary<string, XxxConfig>`），提供 `Configure(Action<XxxConfig>)`（默认名 `"Default"`）与 `Configure(string name, Action<XxxConfig>)` 便捷方法 |
+
+### 分布式事件遥测（发送 / 接收）钩子
+
+| 类型 | 说明 |
+| --- | --- |
+| `DistributedEventSent` | 分布式事件发送信息：`DistributedEventSource Source`、`string EventName`、`object EventData` |
+| `DistributedEventReceived` | 分布式事件接收信息：字段与 `DistributedEventSent` 相同 |
+| `DistributedEventSource` | 事件来源枚举：`Direct`（直接发送/接收）、`Inbox`（经收件箱）、`Outbox`（经发件箱） |
+
+这三个类型本身只是数据载体，不含收发逻辑：`XiHan.Framework.EventBus` 实现包的 `DistributedEventBusBase` 在每次直接发送/直接接收、以及经由 Outbox/Inbox 处理事件时，会分别构造 `DistributedEventSent` / `DistributedEventReceived` 并调用 `TriggerDistributedEventSentAsync` / `TriggerDistributedEventReceivedAsync`——两者内部都是把这个"元事件"以 `onUnitOfWorkComplete: false` 发布到**本地事件总线**（并吞掉异常，不影响主流程）。因此只要在业务代码里实现 `ILocalEventHandler<DistributedEventSent>` / `ILocalEventHandler<DistributedEventReceived>`，即可零侵入地观测分布式事件的收发轨迹（写日志、打点、追踪来源是 Outbox 还是直接发送等），无需修改具体的分布式事件处理器。
+
+### 泛型可继承事件数据
+
+| 类型 | 说明 |
+| --- | --- |
+| `IEventDataWithInheritableGenericArgument` | `object[] GetConstructorArgs()`；用于形如 `EventData<TEntity>` 的单泛型参数事件类。若该泛型事件类实现此接口，当发布 `EventData<Student>`（`Student` 继承自 `Person`）时，实现包会额外用 `GetConstructorArgs()` 返回的构造参数构造并发布一份 `EventData<Person>`，从而让订阅基类事件的处理器也能收到 |
 
 ### 其它辅助契约
 

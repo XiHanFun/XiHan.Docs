@@ -52,7 +52,7 @@ await app.RunAsync();
 | [框架概述](./overview) | 设计理念、分层架构、技术栈、版本与兼容性 |
 | [快速上手](./quickstart) | 环境准备、安装、第一个 Web API、常见配置 |
 | [核心概念](./concepts/modularity) | 模块系统、生命周期、依赖注入、动态 API |
-| [模块总览](./packages/) | 全部 57 个包的分层索引，每个包一份文档 |
+| [模块总览](./packages/) | 全部 61 个包的分层索引，每个包一份文档 |
 | [更新日志](./changelog) | 各版本变更记录（新增 / 修复 / 优化 / 调整 / 升级 / 移除） |
 
 ## 分层架构一览
@@ -87,17 +87,17 @@ await app.RunAsync();
 | 类别 | 技术 | 版本 |
 | --- | --- | --- |
 | 运行时 | .NET | 10.0 |
-| ORM | SqlSugar | 5.1.4 |
+| ORM | SqlSugar | 5.1.4.216 |
 | 日志 | Serilog | 10.0.0 |
-| 缓存 | HybridCache + StackExchange.Redis | 10.5.0 |
+| 缓存 | HybridCache + StackExchange.Redis | 10.7.0 / 10.0.9 |
 | AOP | Castle DynamicProxy | 5.2.1 |
 | 加密 | BouncyCastle | 2.6.2 |
 | 序列化 | System.Text.Json + Newtonsoft.Json | 13.0.4 |
-| 模板引擎 | Scriban | 7.1.0 |
-| AI | Semantic Kernel + MCP | 1.74.0 / 1.2.0 |
-| HTTP 韧性 | Polly | 10.0.6 |
-| gRPC | Grpc.AspNetCore | 2.76.0 |
-| API 文档 | Scalar + Swashbuckle | 2.14.1 / 10.1.7 |
+| 模板引擎 | Scriban | 7.2.5 |
+| AI | Microsoft.Extensions.AI + Microsoft.Agents.AI + MCP | 10.7.0 / 1.13.0 / 1.4.1 |
+| HTTP 韧性 | Polly | 10.0.9 |
+| gRPC | Grpc.AspNetCore | 2.80.0 |
+| API 文档 | Scalar + Swashbuckle | 2.16.11 / 10.2.3 |
 
 ## 社区资源
 

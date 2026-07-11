@@ -36,7 +36,7 @@ public class MyModule : XiHanModule { }
 
 拦截器的「登记」与「织入」是分离的两步：
 
-1. **登记（各业务模块做）**：模块在 `ConfigureServices` 里调用 `services.OnRegistered(callback)` 注册一个回调。该回调对每个待检查的服务收到一个 `IOnServiceRegistredContext`（含 `ServiceType`、`ImplementationType`、可写的 `Interceptors` 列表），按需 `context.Interceptors.TryAdd<TInterceptor>()`。例如 Uow 模块：`services.OnRegistered(UnitOfWorkInterceptorRegistrar.RegisterIfNeeded)`，其内部对带 `[UnitOfWork]` 的服务 `TryAdd<UnitOfWorkInterceptor>()`。
+1. **登记（各业务模块做）**：模块在 `ConfigureServices` 里调用 `services.OnRegistered(callback)` 注册一个回调。该回调对每个待检查的服务收到一个 `IOnServiceRegistredContext`（接口暴露 `ImplementationType`、可写的 `Interceptors` 列表；本包内部构造的具体实现类 `OnServiceRegistredContext` 还额外带一个 `ServiceType` 属性，但回调签名只声明为接口类型），按需 `context.Interceptors.TryAdd<TInterceptor>()`。例如 Uow 模块：`services.OnRegistered(UnitOfWorkInterceptorRegistrar.RegisterIfNeeded)`，其内部对带 `[UnitOfWork]` 的服务 `TryAdd<UnitOfWorkInterceptor>()`。
 2. **织入（本包在 `AddCastleDynamicProxy()` 里做）**：
    - 若 `services.IsClassInterceptorsDisabled()` 为真，或没有任何登记回调，直接返回（不代理）。
    - 遍历所有服务描述符，筛选「`ServiceType` 是接口 + 有 `ImplementationType` + 不在 `DynamicProxyIgnoreTypes` 忽略名单」的项，对每项构造 `OnServiceRegistredContext` 并回放全部登记回调；只要最终 `Interceptors.Count > 0`，就记入待代理集合。

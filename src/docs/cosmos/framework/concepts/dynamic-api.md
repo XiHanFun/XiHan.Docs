@@ -32,7 +32,7 @@ public class OrderAppService : ApplicationServiceBase
 }
 ```
 
-框架启动时，动态 API 约定会扫描到这个类，为它的每个公共方法生成对应的 HTTP 端点，并纳入 [Web.Docs](./packages/web-docs) 的 Scalar / Swagger 文档。
+框架启动时，动态 API 约定会扫描到这个类，为它的每个公共方法生成对应的 HTTP 端点，并纳入 [Web.Docs](../packages/web-docs) 的 Scalar / Swagger 文档。
 
 > `ApplicationServiceBase` 实现了 `IApplicationService` 与 `ITransientDependency`，所以应用服务**同时**被自动注册进 DI 并被动态 API 识别。
 
@@ -61,15 +61,18 @@ public class ProductAppService
 | `IsEnabled` | 是否启用（任一层级为 `false` 即禁用） |
 | `RouteTemplate` | 自定义路由模板 |
 | `Name` | API 名称 |
-| `Version` | API 版本（可叠加多个） |
+| `Version` | API 版本（可叠加多个，写纯数字不带 `v` 前缀——路由拼接时框架会自动加上） |
 | `Group` / `GroupName` | 文档分组键 / 分组显示名 |
 | `Tag` | API 标签（可叠加） |
 | `Description` | API 描述 |
 | `UsePascalCaseRoutes` / `UseLowercaseRoute` | 路由大小写风格 |
 | `PreserveRoutePredicate` | 是否保留 Get/Create/Delete 等动词前缀 |
+| `VisibleInApiExplorer` | 是否在 API 浏览器/文档中显示（任一层级为 `false` 即隐藏） |
+| `Order` | 同层级多个特性的合并顺序（数值越大越晚应用、优先级越高） |
+| `CustomProperties` | 自定义键值属性，`key=value` 形式，可叠加 |
 
 ```csharp
-[DynamicApi(Group = "order", GroupName = "订单管理", Version = "v1")]
+[DynamicApi(Group = "order", GroupName = "订单管理", Version = "1")]
 public class OrderAppService : ApplicationServiceBase { }
 ```
 
@@ -90,6 +93,6 @@ public class OrderAppService : ApplicationServiceBase { }
 
 ## 下一步
 
-- [Web.Api 模块](./packages/web-api)：动态 API 的实现细节与中间件管道
-- [Web.Docs 模块](./packages/web-docs)：Scalar / Swagger 文档
-- [Application 模块](./packages/application)：应用服务与 CRUD 基类
+- [Web.Api 模块](../packages/web-api)：动态 API 的实现细节与中间件管道
+- [Web.Docs 模块](../packages/web-docs)：Scalar / Swagger 文档
+- [Application 模块](../packages/application)：应用服务与 CRUD 基类

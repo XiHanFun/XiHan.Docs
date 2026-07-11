@@ -35,14 +35,14 @@ public class MyModule : XiHanModule { }
 1. **分组发现（编译期特性扫描）**：`DynamicApiSwaggerGroupHelper.GetGroupDefinitionsFromAttributes()` 遍历已加载程序集里实现 `IApplicationService` 的类型，合并类级与方法级的 `[DynamicApi]` 特性，收集其 `Group` / `GroupName` / `Order`，跳过 `IsEnabled=false` 或 `VisibleInApiExplorer=false` 的项。系统程序集（`Microsoft.*` / `System.*` / `Serilog*` / `Newtonsoft*` 等）被排除。
 2. **多文档注册**：默认文档名 `v1`（标题 `API V1`）始终注册；每个非 `v1` 分组各 `AddOpenApi(group, ...)` 注册一份文档，并用 `ShouldInclude` 按 `ApiDescription.GroupName` 过滤只收本组接口。
 3. **两套 UI 挂载**：Scalar 与 Swagger UI 都读取 `/openapi/{documentName}.json`，先渲染默认 `v1`，再逐个追加额外分组端点。
-4. **XML 注释注入**：`DynamicApiXmlCommentsOperationTransformer` 从动态 API 生成的控制器动作上的 `OriginalMethodAttribute` 回溯到原始服务方法，读取程序集旁的 `*.xml` 文档，把 `summary` / `remarks` / `param` / `returns` 填进 OpenAPI 操作（仅在对应字段为空时填充，`[DynamicApi]` 自定义描述优先于 XML `summary`）。
+4. **XML 注释注入**：`DynamicApiXmlCommentsOperationTransformer` 从动态 API 生成的控制器动作上的 `OriginalMethodAttribute` 回溯到原始服务方法，读取程序集旁的 `*.xml` 文档，把 `summary` / `remarks` / `param` / `returns` 填进 OpenAPI 操作（仅在对应字段为空时填充，`[DynamicApi]` 自定义描述优先于 XML `summary`）。成员名匹配由 `XmlCommentsNodeNameHelper` 完成，除方法自身外还会依次尝试其**泛型类型定义**上的同名方法与 `GetBaseDefinition()` 得到的**基类/接口原始定义**（及其泛型类型定义），因此继承自泛型基类（如通用 CRUD 基类）的服务方法，只要在基类方法上写了 XML 注释，也能正确回退匹配并注入。
 
 ## 核心能力
 
 - **Scalar 文档界面**：`MapScalarApiReference((options, httpContext) => ...)`，标题 `XiHan Framework API`、`ScalarTheme.Purple` 紫色主题、默认 C# `HttpClient` 客户端示例（`ScalarTarget.CSharp` / `ScalarClient.HttpClient`）、OpenAPI 路由模式 `/openapi/{documentName}.json`，默认文档 `v1` 标记 `isDefault: true`，其余分组追加为 `AddDocument`。整个端点 `AllowAnonymous()`。在 BasicApp 中访问路径为 `/scalar`。
 - **Swagger UI 文档界面**：`UseSwaggerUI()` 于预初始化阶段注册，逐个 `SwaggerEndpoint("/openapi/{group}.json", 标题)`，先默认 `v1` 后各额外分组。
 - **动态 API 分组发现**：`DynamicApiSwaggerGroupHelper` 从 `[DynamicApi]` 特性收集分组定义与默认文档名/标题。
-- **XML 注释增强**：`DynamicApiXmlCommentsOperationTransformer` 把原始服务方法的 XML 注释注入 OpenAPI 操作。
+- **XML 注释增强**：`DynamicApiXmlCommentsOperationTransformer` 把原始服务方法的 XML 注释注入 OpenAPI 操作，并借助 `XmlCommentsNodeNameHelper` 兼容泛型基类方法与接口/基类原始定义的注释回退匹配。
 
 ## 主要 API / 类型
 
@@ -52,8 +52,9 @@ public class MyModule : XiHanModule { }
 | `AddXiHanWebDocs()` | 服务集合扩展；注册默认 `v1` 与各动态分组的 OpenAPI 文档，挂上 XML 注释转换器 |
 | `DynamicApiSwaggerGroupHelper` | `internal` 静态类；`GetGroupDefinitionsFromAttributes()` 从 `[DynamicApi]` 扫描分组，常量 `DefaultDocName="v1"` / `DefaultDocTitle="API V1"` |
 | `DynamicApiXmlCommentsOperationTransformer` | `IOpenApiOperationTransformer`；经 `OriginalMethodAttribute` 回溯原始方法并注入 XML 注释 |
+| `XmlCommentsNodeNameHelper` | `internal` 静态类；生成 XML 文档成员名（`M:`/`T:` 前缀），支持泛型类型定义、`GetBaseDefinition()` 基类/接口原始定义的多候选回退匹配 |
 
-> 说明：`DynamicApiSwaggerGroupHelper` 为 `internal`，分组发现由模块内部驱动，无需应用侧显式调用；应用侧只需在业务服务上正确标注 `[DynamicApi(Group=..., GroupName=...)]` 即可自动多文档分组。
+> 说明：`DynamicApiSwaggerGroupHelper`、`XmlCommentsNodeNameHelper` 均为 `internal`，分组发现与注释匹配由模块内部驱动，无需应用侧显式调用；应用侧只需在业务服务上正确标注 `[DynamicApi(Group=..., GroupName=...)]` 即可自动多文档分组。
 
 ## 使用示例
 

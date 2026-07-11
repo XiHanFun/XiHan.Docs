@@ -9,12 +9,14 @@
 | .NET SDK / Runtime | 10.0+ |
 | PostgreSQL | 14+（或 MySQL / MariaDB） |
 | Redis | 6.0+ |
-| Node.js（构建前端） | 20.0+ |
-| pnpm（构建前端） | 9.0+ |
+| Node.js（构建前端） | 24.0+ |
+| pnpm（构建前端） | 11.0+（`packageManager` 已锁定 `pnpm@11.7.0`） |
 
 ::: tip 部署前置
 - 准备好可连接的 **PostgreSQL** 与 **Redis**。
-- BasicApp 采用**重建数据库**策略：不做旧数据向后兼容，部署新版本时以**前向单一格式**建库。首次启动会自动建表并执行数据种子。
+- BasicApp 采用**重建数据库**策略：不做旧数据向后兼容，部署新版本时以**前向单一格式**建库。首次启动会自动建表并执行数据种子（对应 `EnableDbInitialization` / `EnableTableInitialization` / `EnableDataSeeding`，默认均为 `true`）。
+- 系统基线种子始终执行；内置的演示数据（示例组织、演示账号等）由 `Saas:Seed:EnableDemoData` 控制，默认 `true`，生产环境如不需要可显式设为 `false` 跳过。
+- 生产环境 CORS 仅放行配置中的域名（`XiHan:Web:Api:Cors:AllowedOrigins` 与网关 `XiHan:Web:Gateway:AllowedOrigins`），部署到自己的域名时务必同步修改，否则前端会被跨域拦截。
 - 若用到 AI / 知识库能力，还需准备对应的向量库（如 Qdrant）与嵌入模型配置。
 :::
 
@@ -24,36 +26,56 @@
 dotnet publish backend/src/main/XiHan.BasicApp.WebHost -c Release -o /opt/xihan-basicapp
 ```
 
-发布前在目标环境的 `appsettings.Production.json`（或环境变量）中配置好数据库连接串、Redis、以及初始超管密码等敏感项。
+发布前在目标环境的 `appsettings.Production.json`（或环境变量）中配置好数据库连接串、Redis、JWT 签名密钥、以及初始超管密码等敏感项。
 
-生产端口默认 **`9709`**。
+应用监听地址与端口由配置项 `Hosting:Urls` 决定（`Program.cs` 启动时读取该值并调用 `UseUrls`）；仓库自带的 `appsettings.Production.json` 默认配置为 `http://127.0.0.1:9708`，可按需调整。对外暴露时建议在前面加一层反向代理（Nginx / Caddy 等）做 TLS 终止与静态资源分流。
 
-## 后端：Linux（systemd）
+## 后端：Linux（Supervisor）
+
+仓库自带的进程守护配置是 **Supervisor**（`backend/scripts/service/XiHan.BasicApp.ini`），并非 systemd unit：
+
+```ini
+[program:XiHanBasicApp]
+command=/usr/bin/dotnet /home/basicappapi/XiHan.BasicApp.WebHost.dll
+directory=/home/basicappapi
+autorestart=true
+startsecs=5
+startretries=5
+stdout_logfile=/home/basicappapi/logs/run.log
+stderr_logfile=/home/basicappapi/logs/run.log
+environment=ASPNETCORE_ENVIRONMENT=Production,DOTNET_CLI_HOME=/tmp
+```
 
 ```bash
-# 发布
-dotnet publish backend/src/main/XiHan.BasicApp.WebHost -c Release -o /opt/xihan-basicapp
+# 发布到 .ini 中约定的目录（换用其他路径需同步改 command / directory）
+dotnet publish backend/src/main/XiHan.BasicApp.WebHost -c Release -o /home/basicappapi
 
-# 安装并启动服务
-sudo cp backend/scripts/service/XiHan.BasicApp.service /etc/systemd/system/
-sudo systemctl enable XiHan.BasicApp
-sudo systemctl start XiHan.BasicApp
+# 安装 Supervisor 程序配置并启动（程序名取自 [program:XiHanBasicApp]）
+sudo mkdir -p /home/basicappapi/logs
+sudo cp backend/scripts/service/XiHan.BasicApp.ini /etc/supervisor/conf.d/XiHan.BasicApp.conf
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start XiHanBasicApp
 ```
 
 查看运行状态与日志：
 
 ```bash
-sudo systemctl status XiHan.BasicApp
-journalctl -u XiHan.BasicApp -f
+sudo supervisorctl status XiHanBasicApp
+tail -f /home/basicappapi/logs/run.log
 ```
+
+> 若偏好用 systemd 管理进程，可参照上面的发布命令自行编写 unit 文件；仓库当前未随附对应的 `.service` 文件。
 
 ## 后端：Windows
 
-使用仓库内的批处理脚本启动：
+仓库内提供的是一个**注册 Windows 服务**的批处理脚本：
 
 ```text
 backend/scripts/service/XiHan.BasicApp.bat
 ```
+
+该脚本以管理员权限运行，内部调用 `sc create` 把可执行文件注册为自动启动的 Windows 服务（服务名 `XiHan.BasicApp`）并立即 `Net Start`。`binPath` 是按脚本自身所在目录拼接 `XiHan.BasicApp.exe` 得到的，因此需要把该 `.bat` 复制到发布产物目录下再执行；发布产物的程序集名实际是 `XiHan.BasicApp.WebHost`，如生成的可执行文件名与脚本不一致，需重命名或调整脚本后再运行。后续可用 `sc stop XiHan.BasicApp` / `sc delete XiHan.BasicApp` 或系统「服务」管理器管理该服务。
 
 ## 前端：构建与部署
 

@@ -209,15 +209,18 @@ function onAction(payload: SchemaActionPayload) {
 
 前端在**页面 / 字段 / 操作**三级按权限码过滤，权限码格式 `module:resource:action`（如 `saas:user:read`），超管用字面通配 `*`（权限码真源在后端 `SaasPermissionDefinitions`）。
 
-### 权限判定 hook 与组件
+### 权限判定 hook
 
-- `usePermission()`（`~/hooks/usePermission.ts`）：`hasPermission(code | code[])` / `hasRole` / `hasAnyPermission`，命中用户或访问码即通过。
-- `AccessControl`（`~/components/rbac/AccessControl.vue`）：包裹式组件，`codes`/`roles` 满足其一（`mode: 'one-of'`）或都需满足（`'all-of'`）才渲染默认插槽，否则整块不渲染。
+- `usePermission()`（`~/hooks/usePermission.ts`）：`hasPermission(code | code[])` / `hasRole(role | role[])` / `hasAnyPermission(codes[])`，命中用户角色/权限或访问码集合即通过。
+- 没有独立的包裹式权限组件：页面按钮/区块级权限门控统一是「`usePermission()` 派生 computed 布尔值 + 模板 `v-if`」这一种写法，直接写在业务视图里。
+
+```ts
+const { hasPermission } = usePermission()
+const canGrantPermission = computed(() => hasPermission('saas:tenant-edition-permission:grant'))
+```
 
 ```vue
-<AccessControl :codes="['saas:user:create']">
-  <NButton>新建用户</NButton>
-</AccessControl>
+<NButton v-if="canGrantPermission">新建用户</NButton>
 ```
 
 Schema 页内则**自动**按权限过滤：字段 `permission` 无权 → 该列/搜索项不渲染（`selectors.ts` 的 `isFieldPermitted`）；操作 `permission` 无权 → 按钮不出现；`exportPermission` 等在 `SchemaPage` 里精准门控按钮显隐。
@@ -356,10 +359,10 @@ Tailwind v4 用 `@tailwindcss/vite` + **CSS-first `@theme`**（入口 `src/style
 
 ### 图标：Iconify 离线模式
 
-图标走 Iconify **离线模式**（`~/iconify/offline.ts`），运行期只**预加载 lucide / tabler / mdi**（`IconPicker` 可按需懒加载 carbon/ep/heroicons）。用法 `<Icon icon="lucide:eye" />`。
+图标走 Iconify **离线模式**（`~/iconify/offline.ts`），运行期**预加载 lucide / tabler / mdi / simple-icons**（`simple-icons` 用于第三方登录品牌 logo，如 Gitee 的 `simple-icons:gitee`）；`IconPicker` 可按需懒加载 carbon/ep/heroicons。用法 `<Icon icon="lucide:eye" />`。
 
 ::: warning 离线图标可用集
-运行期直接渲染只保证 **lucide / tabler / mdi**；未预加载的图标集（如 logos/simple-icons）在页面里直接用会渲染为空。品牌图标优先用 `tabler:brand-*`。以仓库预加载配置为准。
+运行期直接渲染只保证 **lucide / tabler / mdi / simple-icons** 这四个已预加载集；未预加载的图标集（如 carbon/ep/heroicons）在页面里直接用会渲染为空（离线 `Icon` 对已挂载组件不会因后加载而重渲染）。品牌图标优先用 `simple-icons:*` 或 `tabler:brand-*`。以仓库预加载配置（`PRELOAD_ICON_PACKAGES`）为准。
 :::
 
 ## 路由：后端菜单驱动

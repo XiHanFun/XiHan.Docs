@@ -147,7 +147,7 @@ public class MyModule : XiHanModule { }
 
 每个自定义客户端 `HttpClientConfiguration`：`BaseAddress`、`TimeoutSeconds?`、`Headers`、`EnableRetry`（默认 `true`）、`EnableCircuitBreaker`（默认 `true`）、`IgnoreSslErrors?`。
 
-代理池配置节 `XiHan:Http:ProxyPool`（`XiHanProxyPoolOptions`）：`Enabled`(默认 false)、`SelectionStrategy`、`Proxies`、`EnableHealthCheck`(默认 true)、`HealthCheckIntervalSeconds`(60)、`HealthCheckUrl`、`FailureThreshold`(5)、`RecoveryTimeSeconds`(300)、`ValidateOnStartup`(true)、`AutoRemoveFailedProxy`(false) 等。仅当 `Enabled && EnableHealthCheck` 时才注册后台健康检查服务。
+代理池配置节 `XiHan:Http:ProxyPool`（`XiHanProxyPoolOptions`）：`Enabled`(默认 false)、`SelectionStrategy`、`Proxies`、`EnableHealthCheck`(默认 true)、`HealthCheckIntervalSeconds`(60)、`HealthCheckTimeoutSeconds`(10)、`HealthCheckUrl`(默认 `https://www.google.com`)、`MaxRetryCount`(3)、`FailureThreshold`(5)、`RecoveryTimeSeconds`(300)、`ValidateOnStartup`(true)、`AutoRemoveFailedProxy`(false)、`StatisticsRetentionSeconds`(86400) 等。仅当 `Enabled && EnableHealthCheck` 时才注册后台健康检查服务。
 
 ### 示例 appsettings.json
 

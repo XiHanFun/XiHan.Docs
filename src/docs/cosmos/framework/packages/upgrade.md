@@ -39,7 +39,7 @@ public class MyModule : XiHanModule { }
 | `IUpgradeVersionStore` | `InMemoryUpgradeVersionStore` | Scoped | **需替换为数据库实现** |
 | `IUpgradeLockProvider` | `InMemoryUpgradeLockProvider` | Singleton | **需替换为分布式锁（进程内锁多节点无效）** |
 | `IUpgradeMigrationExecutor` | `DefaultUpgradeMigrationExecutor` | Singleton | **必须替换**（默认直接抛异常，见下） |
-| `IUpgradeTenantProvider` | `DefaultUpgradeTenantProvider` | Scoped | 视多租户需求替换 |
+| `IUpgradeTenantProvider` | `DefaultUpgradeTenantProvider` | Scoped | 视多租户需求替换（默认只返回当前 `ICurrentTenant`，不会遍历租户库） |
 | `IUpgradeStatusService` | `UpgradeStatusService` | Scoped | 可用 |
 | `IUpgradeEngine` | `UpgradeEngine` | Scoped | 可用（编排核心） |
 | `IUpgradeCoordinator` | `UpgradeCoordinator` | Singleton | 可用 |
@@ -61,7 +61,7 @@ public class MyModule : XiHanModule { }
 4. **抢锁**：`TryAcquireLockAsync(resourceKey, expiry, nodeName)` 抢占带过期时间的资源锁；抢不到返回「升级锁已被占用」。多租户下锁键带 `:Tenant_{id}` 后缀。
 5. **执行升级**（锁作用域内，`IAsyncDisposable` 保证释放）：`SetUpgradingAsync` → 可选进维护模式 → `ExecuteMigrationsAsync` 迁移 → `SetUpgradeCompletedAsync` 回写版本 → 可选替换文件 → 退出维护模式 → 释放锁 → 可选滚动重启。
 6. **迁移执行**：脚本按版本分组、`SemanticVersion` 排序，同版本内按脚本名有序；逐条 `HasMigrationHistoryAsync` 去重（已执行则跳过，保证**幂等**），读文件内容交 `IUpgradeMigrationExecutor.ExecuteAsync(sql)` 执行，成功 / 失败都写 `UpgradeMigrationHistory`；任一脚本失败即抛出并 `SetUpgradeFailedAsync`。
-7. **多租户隔离**：`EnableMultiTenantIsolation=true` 时，遍历 `IUpgradeTenantProvider.GetTenants()`，逐租户 `ICurrentTenant.Change(...)` 后执行升级，任一租户失败即中止。
+7. **多租户隔离**：`EnableMultiTenantIsolation=true` 时，遍历 `IUpgradeTenantProvider.GetTenants()`，逐租户 `ICurrentTenant.Change(...)` 后执行升级，任一租户失败即中止。**注意**：默认 `DefaultUpgradeTenantProvider` 只返回当前 `ICurrentTenant`（单个租户 / 宿主），并不会遍历租户库中的全部租户——要做「逐全体租户」批量升级需自行实现 `IUpgradeTenantProvider`，从租户仓储读取全部租户列表。
 
 版本解析：`AppVersion` 优先取选项，否则从入口程序集版本（`ReflectionHelper.GetEntryAssemblyVersion`）；`NodeName` 优先取选项，否则 `机器名-实例Id`。
 
@@ -99,7 +99,7 @@ migrations/
 | 类型 | 关键成员 / 说明 |
 | --- | --- |
 | `IUpgradeEngine` / `UpgradeEngine` | 升级引擎（编排核心）：`Task<UpgradeStartResult> ExecuteAsync(CancellationToken)` |
-| `IUpgradeCoordinator` / `UpgradeCoordinator` | 升级协调器（后台启动）：`Task<UpgradeStartResult> StartAsync()` |
+| `IUpgradeCoordinator` / `UpgradeCoordinator` | 升级协调器（后台启动）：`Task<UpgradeStartResult> StartAsync()`；内部用 `AsyncLock` 防重入，若上一次任务尚未完成，再次调用直接返回 `Started=false`、`Status=Upgrading` 而不会并发再起一个任务 |
 | `IUpgradeStatusService` / `UpgradeStatusService` | 状态服务：`EnsureInitializedAsync()`、`GetVersionSnapshotAsync(clientVersion?, ...)`、`GetUpgradeStatusAsync(...)` |
 | `IUpgradeVersionStore` | 版本 / 状态存储、迁移历史：`EnsureTablesAsync`、`GetOrCreateAsync`、`GetLatestHistoryAsync`、`SetUpgradingAsync`、`SetUpgradeCompletedAsync`、`SetUpgradeFailedAsync`、`UpdateDbVersionAsync`、`AddMigrationHistoryAsync`、`HasMigrationHistoryAsync` |
 | `IUpgradeMigrationExecutor` | 迁移脚本执行器（内部保证事务）：`Task ExecuteAsync(string sql, CancellationToken)` |
@@ -194,6 +194,7 @@ public async Task<UpgradeStartResult> TriggerUpgrade(IUpgradeCoordinator coordin
 
 - **默认 `IUpgradeMigrationExecutor` 会直接抛异常**（"未配置 IUpgradeMigrationExecutor 实现"），未替换就启用数据库升级必失败——务必由应用层注册真实执行器。
 - **默认锁是进程内内存锁**，多节点部署下形同虚设，无法保证「集群内单节点升级」——生产必须换成 Redis 等分布式锁。
+- **默认 `InMemoryUpgradeVersionStore` 虽注册为 Scoped，但内部用 `static` 字典（按租户键分区）保存版本状态与迁移历史**，本质是进程级共享存储：同进程内跨请求 / 跨 Scope 均可见，但进程重启即丢失——这也是为什么它「生产环境必须换成数据库实现」。
 - 迁移**幂等**依赖 `HasMigrationHistoryAsync` 去重，去重键是 `(version, scriptName)`——**不要在已发布版本目录里改动已执行脚本的内容**（内容变了但脚本名没变会被判为已执行而跳过）。
 - 迁移脚本失败即中止并置失败状态，历史记录会留下 `ErrorMessage`；单版本内多脚本非全事务，注意脚本自身的可回滚 / 可重入设计。
 - 单节点升级：不配 `PrimaryNodeName` 时每个节点都视为主节点，靠分布式锁串行化；配了则仅指定节点执行。
