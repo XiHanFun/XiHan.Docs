@@ -204,6 +204,7 @@ const basicAppSidebar: DefaultTheme.SidebarItem[] = [
     items: [
       { text: "应用简介", link: "/cosmos/basic-app/" },
       { text: "系统概述", link: "/cosmos/basic-app/overview" },
+      { text: "开发环境", link: "/cosmos/basic-app/dev-environment" },
       { text: "快速开始", link: "/cosmos/basic-app/getting-started" },
     ],
   },
