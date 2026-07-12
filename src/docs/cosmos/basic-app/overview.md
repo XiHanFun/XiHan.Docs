@@ -62,6 +62,7 @@ XiHan.BasicApp 是一个**企业级中后台内核**：后端基于 .NET 10 与 
 
 ## 下一步
 
+- [开发环境](./dev-environment)：用 Docker 命令行准备数据库与 Redis 等本地依赖
 - [快速开始](./getting-started)：在本地把系统跑起来
 - [系统架构](./architecture)：理解后端模块与前后端协作
 - [权限模型](./permissions)：RBAC + ABAC 与多租户隔离
