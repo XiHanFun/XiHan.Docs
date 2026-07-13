@@ -32,7 +32,30 @@ dotnet publish backend/src/main/XiHan.BasicApp.WebHost -c Release -o /opt/xihan-
 
 ## 后端：Linux（Supervisor）
 
-仓库自带的进程守护配置是 **Supervisor**（`backend/scripts/service/XiHan.BasicApp.ini`），并非 systemd unit：
+仓库自带的进程守护配置是 **Supervisor**（`backend/src/main/XiHan.BasicApp.WebHost/ServiceScripts/XiHan.BasicApp.ini`），并非 systemd unit。下面以 **CentOS / RHEL 系**（CentOS Stream 9、Rocky、Alma 等）为例。
+
+### 1. 安装并启用 Supervisor
+
+CentOS Stream 9 默认仓库即含 supervisor 包，直接用 dnf 安装：
+
+```bash
+sudo dnf install supervisor -y
+
+# 开机自启并启动（⚠ 服务名是 supervisord，不是 supervisor）
+sudo systemctl enable supervisord
+sudo systemctl start supervisord
+sudo systemctl status supervisord
+```
+
+### 2. 发布后端
+
+```bash
+# 发布到 .ini 中约定的目录（换用其他路径需同步改 command / directory）
+dotnet publish backend/src/main/XiHan.BasicApp.WebHost -c Release -o /home/basicappapi
+sudo mkdir -p /home/basicappapi/logs
+```
+
+仓库自带的 `XiHan.BasicApp.ini` 内容如下（程序名取自 `[program:XiHanBasicApp]`）：
 
 ```ini
 [program:XiHanBasicApp]
@@ -43,28 +66,62 @@ startsecs=5
 startretries=5
 stdout_logfile=/home/basicappapi/logs/run.log
 stderr_logfile=/home/basicappapi/logs/run.log
+stdout_logfile_maxbytes=5MB
+stderr_logfile_maxbytes=5MB
+stdout_logfile_backups=5
+stderr_logfile_backups=5
+user=root
+priority=999
+numprocs=1
 environment=ASPNETCORE_ENVIRONMENT=Production,DOTNET_CLI_HOME=/tmp
 ```
 
-```bash
-# 发布到 .ini 中约定的目录（换用其他路径需同步改 command / directory）
-dotnet publish backend/src/main/XiHan.BasicApp.WebHost -c Release -o /home/basicappapi
+### 3. 添加服务监听
 
-# 安装 Supervisor 程序配置并启动（程序名取自 [program:XiHanBasicApp]）
-sudo mkdir -p /home/basicappapi/logs
-sudo cp backend/scripts/service/XiHan.BasicApp.ini /etc/supervisor/conf.d/XiHan.BasicApp.conf
+CentOS 上 Supervisor 的包含目录是 **`/etc/supervisord.d/*.ini`**（`/etc/supervisord.conf` 里 `files = /etc/supervisord.d/*.ini`），与 Debian 的 `/etc/supervisor/conf.d/*.conf` **不同**。因此配置文件必须放到 `/etc/supervisord.d/` 且**保留 `.ini` 后缀**，否则不会被加载（这也是「服务监听不生效」最常见的坑）。
+
+```bash
+sudo mkdir -p /etc/supervisord.d
+```
+
+**方法一：软链接（推荐，`.ini` 随发布产物更新，改动免拷贝）**
+
+`dotnet publish` 会把 `ServiceScripts/` 一并输出到发布目录（WebHost 工程 csproj 中已设 `CopyToOutputDirectory=Always`），因此 `.ini` 已随产物落到 `/home/basicappapi/ServiceScripts/`，直接软链接即可：
+
+```bash
+sudo ln -s /home/basicappapi/ServiceScripts/XiHan.BasicApp.ini /etc/supervisord.d/XiHan.BasicApp.ini
+```
+
+**方法二：直接从仓库复制**
+
+```bash
+sudo cp backend/src/main/XiHan.BasicApp.WebHost/ServiceScripts/XiHan.BasicApp.ini /etc/supervisord.d/XiHan.BasicApp.ini
+```
+
+### 4. 重载配置并启动
+
+```bash
 sudo supervisorctl reread
 sudo supervisorctl update
+sudo supervisorctl avail            # 验证配置已被识别
 sudo supervisorctl start XiHanBasicApp
 ```
 
-查看运行状态与日志：
+### 5. 管理与日志
 
 ```bash
+# 状态（单个 / 全部）
 sudo supervisorctl status XiHanBasicApp
-tail -f /home/basicappapi/logs/run.log
+sudo supervisorctl status
+# 停止 / 重启
+sudo supervisorctl stop XiHanBasicApp
+sudo supervisorctl restart XiHanBasicApp
+# 日志
+sudo tail -f /home/basicappapi/logs/run.log
 ```
 
+> **Debian / Ubuntu** 布局不同：包名与服务名均为 `supervisor`，包含目录是 `/etc/supervisor/conf.d/*.conf`（放 `.conf`）。此时把上面的目标路径换成 `/etc/supervisor/conf.d/XiHan.BasicApp.conf`、服务名用 `supervisor` 即可，其余命令一致。
+>
 > 若偏好用 systemd 管理进程，可参照上面的发布命令自行编写 unit 文件；仓库当前未随附对应的 `.service` 文件。
 
 ## 后端：Windows
@@ -72,10 +129,10 @@ tail -f /home/basicappapi/logs/run.log
 仓库内提供的是一个**注册 Windows 服务**的批处理脚本：
 
 ```text
-backend/scripts/service/XiHan.BasicApp.bat
+backend/src/main/XiHan.BasicApp.WebHost/ServiceScripts/XiHan.BasicApp.bat
 ```
 
-该脚本以管理员权限运行，内部调用 `sc create` 把可执行文件注册为自动启动的 Windows 服务（服务名 `XiHan.BasicApp`）并立即 `Net Start`。`binPath` 是按脚本自身所在目录拼接 `XiHan.BasicApp.exe` 得到的，因此需要把该 `.bat` 复制到发布产物目录下再执行；发布产物的程序集名实际是 `XiHan.BasicApp.WebHost`，如生成的可执行文件名与脚本不一致，需重命名或调整脚本后再运行。后续可用 `sc stop XiHan.BasicApp` / `sc delete XiHan.BasicApp` 或系统「服务」管理器管理该服务。
+该脚本以管理员权限运行，内部调用 `sc create` 把可执行文件注册为自动启动的 Windows 服务（服务名 `XiHan.BasicApp`）并立即 `Net Start`。`binPath` 是按脚本自身所在目录拼接 `XiHan.BasicApp.exe` 得到的：`dotnet publish` 已把该 `.bat` 一并输出到发布目录的 `ServiceScripts\` 子目录，但**运行前需把它移到与 `.exe` 同级的发布根目录**（否则拼出的 `binPath` 指向 `ServiceScripts\` 里并不存在的 exe）。此外发布产物的程序集名实际是 `XiHan.BasicApp.WebHost`，如生成的可执行文件名与脚本引用的 `XiHan.BasicApp.exe` 不一致，需重命名或调整脚本后再运行。后续可用 `sc stop XiHan.BasicApp` / `sc delete XiHan.BasicApp` 或系统「服务」管理器管理该服务。
 
 ## 前端：构建与部署
 
