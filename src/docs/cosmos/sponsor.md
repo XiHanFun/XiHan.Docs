@@ -40,6 +40,6 @@
 | 麦兜** | https://github.com/wangjunjx8868   | 微信   | 捐了                                                      | 2026-07-10 |
 | A 喵** | https://github.com/reiasesessesses | 微信   | 小小红包，赶紧领了吧。买几盒好*                           | 2026-07-10 |
 | 男*    | https://github.com/zgrjhwei        | 微信   | 9块九可以喝一周呢                                         | 2026-07-10 |
-|        |                                    |        |                                                           |            |
+| 兮*    | 匿名                               | 支付宝 | -                                                         | 2026-07-13 |
 |        |                                    |        |                                                           |            |
 |        |                                    |        |                                                           |            |
