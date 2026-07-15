@@ -77,11 +77,7 @@ docker exec -it redis redis-cli -u redis://redis:redis@127.0.0.1:6379 ping
 
 ```bash
 docker rm -f postgres
-docker run -d --name postgres -p 5432:5432 -v pg-data:/var/lib/postgresql/data \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=XiHanBasicApp \
-  postgres:latest
+docker run -d --name postgres -p 5432:5432 -v pg-data:/var/lib/postgresql/data -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres:latest
 ```
 
 对应连接串：
@@ -89,7 +85,7 @@ docker run -d --name postgres -p 5432:5432 -v pg-data:/var/lib/postgresql/data \
 ```json
 {
   "DbType": "PostgreSQL",
-  "ConnectionString": "Server=127.0.0.1;Port=5432;Database=XiHanBasicApp;Username=postgres;Password=postgres;"
+  "ConnectionString": "Server=127.0.0.1;Port=5432;Database=XiHanBasicApp;Username=postgres;Password=postgres;rustServerCertificate=true;"
 }
 ```
 
@@ -103,10 +99,7 @@ docker exec -it postgres psql -U postgres -d XiHanBasicApp -c "select version();
 
 ```bash
 docker rm -f mysql
-docker run -d --name mysql -p 3306:3306 -v mysql-data:/var/lib/mysql \
-  -e MYSQL_ROOT_PASSWORD=mysql \
-  -e MYSQL_DATABASE=XiHanBasicApp \
-  mysql:latest
+docker run -d --name mysql -p 3306:3306 -v mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=mysql -e MYSQL_USER=mysql mysql:latest
 ```
 
 对应连接串（SqlSugar 的 MySql 类型）：
@@ -114,7 +107,7 @@ docker run -d --name mysql -p 3306:3306 -v mysql-data:/var/lib/mysql \
 ```json
 {
   "DbType": "MySql",
-  "ConnectionString": "Server=127.0.0.1;Port=3306;Database=XiHanBasicApp;Uid=root;Pwd=mysql;AllowLoadLocalInfile=true;"
+  "ConnectionString": "Server=127.0.0.1;Port=3306;Database=XiHanBasicApp;Uid=root;Pwd=mysql;"
 }
 ```
 
@@ -130,10 +123,7 @@ MariaDB 与 MySQL 协议兼容，SqlSugar 仍用 `MySql` 类型。
 
 ```bash
 docker rm -f mariadb
-docker run -d --name mariadb -p 3306:3306 -v mariadb-data:/var/lib/mysql \
-  -e MARIADB_ROOT_PASSWORD=mariadb \
-  -e MARIADB_DATABASE=XiHanBasicApp \
-  mariadb:latest
+docker run -d --name mariadb -p 3306:3306 -v mariadb-data:/var/lib/mysql -e MARIADB_ROOT_PASSWORD=mariadb -e MARIADB_USER=mariadb mariadb:latest
 ```
 
 ```json
@@ -149,10 +139,7 @@ SQL Server 对 SA 密码有强度要求（≥8 位，含大小写、数字、符
 
 ```bash
 docker rm -f mssql
-docker run -d --name mssql -p 1433:1433 -v mssql-data:/var/opt/mssql \
-  -e ACCEPT_EULA=Y \
-  -e MSSQL_SA_PASSWORD=XiHan@2026 \
-  mcr.microsoft.com/mssql/server:2022-latest
+docker run -d --name mssql -p 1433:1433 -v mssql-data:/var/opt/mssql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=XiHan@2026 mcr.microsoft.com/mssql/server:2022-latest
 ```
 
 对应连接串（数据库 `XiHanBasicApp` 会由后端首启时自动创建）：
@@ -170,17 +157,13 @@ docker run -d --name mssql -p 1433:1433 -v mssql-data:/var/opt/mssql \
 docker exec -it mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'XiHan@2026' -C -Q "select @@version"
 ```
 
-### Oracle（可选 / 进阶）
+### Oracle（框架支持但不建议）
 
 用社区维护的 `gvenzl/oracle-free` 镜像（Oracle Database 23ai Free）。Oracle 没有「新建数据库」概念，改为用 `APP_USER` 建一个业务 schema。首次启动较慢（需初始化实例）。
 
 ```bash
 docker rm -f oracle
-docker run -d --name oracle -p 1521:1521 -v oracle-data:/opt/oracle/oradata \
-  -e ORACLE_PASSWORD=oracle \
-  -e APP_USER=xihan \
-  -e APP_USER_PASSWORD=xihan \
-  gvenzl/oracle-free:latest
+docker run -d --name oracle -p 1521:1521 -v oracle-data:/opt/oracle/oradata -e ORACLE_PASSWORD=oracle -e APP_USER=xihan -e APP_USER_PASSWORD=xihan gvenzl/oracle-free:latest
 ```
 
 ```json
