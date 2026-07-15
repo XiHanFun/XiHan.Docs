@@ -28,16 +28,13 @@
 
 ---
 
-## Redis（必需）
+## Redis 8.8+（必需）
 
 用于分布式缓存、分布式锁与延迟/流式队列。仓库默认连接串用的是 **ACL 用户** `user=redis,password=redis`，所以要在容器里建好同名 ACL 用户（官方 `redis` 镜像默认既无密码、也没有名为 `redis` 的用户，直接连会报 `WRONGPASS`）。
 
 ```bash
 docker rm -f redis
-docker run -d --name redis -p 6379:6379 -v redis-data:/data redis:latest \
-  redis-server --appendonly yes \
-  --user default off \
-  --user redis on '>redis' '~*' '&*' '+@all'
+docker run -d --name redis -p 6379:6379 -v redis-data:/data redis:latest redis-server --appendonly yes --user default off --user redis on '>redis' '~*' '&*' '+@all'
 ```
 
 - `--user redis on '>redis' '~*' '&*' '+@all'`：建用户 `redis`、密码 `redis`，授予全部键（`~*`）、全部频道（`&*`，本项目用到发布订阅/Streams，必须给）、全部命令（`+@all`）。
@@ -73,11 +70,11 @@ docker exec -it redis redis-cli -u redis://redis:redis@127.0.0.1:6379 ping
 
 ## 关系型数据库（按需选一种）
 
-### PostgreSQL（默认，推荐）
+### PostgreSQL 18+（默认，推荐）
 
 ```bash
 docker rm -f postgres
-docker run -d --name postgres -p 5432:5432 -v pg-data:/var/lib/postgresql/data -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres:latest
+docker run -d --name postgres -p 5432:5432 -v pg-data:/var/lib/postgresql -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres:latest
 ```
 
 对应连接串：
@@ -95,7 +92,7 @@ docker run -d --name postgres -p 5432:5432 -v pg-data:/var/lib/postgresql/data -
 docker exec -it postgres psql -U postgres -d XiHanBasicApp -c "select version();"
 ```
 
-### MySQL
+### MySQL 9.7+
 
 ```bash
 docker rm -f mysql
@@ -117,7 +114,7 @@ docker run -d --name mysql -p 3306:3306 -v mysql-data:/var/lib/mysql -e MYSQL_RO
 docker exec -it mysql mysql -uroot -pmysql -e "select version();"
 ```
 
-### MariaDB
+### MariaDB 11.8+
 
 MariaDB 与 MySQL 协议兼容，SqlSugar 仍用 `MySql` 类型。
 
@@ -133,13 +130,13 @@ docker run -d --name mariadb -p 3306:3306 -v mariadb-data:/var/lib/mysql -e MARI
 }
 ```
 
-### SQL Server
+### SQL Server 2025+
 
 SQL Server 对 SA 密码有强度要求（≥8 位，含大小写、数字、符号）。
 
 ```bash
 docker rm -f mssql
-docker run -d --name mssql -p 1433:1433 -v mssql-data:/var/opt/mssql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=XiHan@2026 mcr.microsoft.com/mssql/server:2022-latest
+docker run -d --name mssql -p 1433:1433 -v mssql-data:/var/opt/mssql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=XiHan@2026 mcr.microsoft.com/mssql/server:2025-latest
 ```
 
 对应连接串（数据库 `XiHanBasicApp` 会由后端首启时自动创建）：
@@ -185,8 +182,7 @@ SqlSugar 同样支持这些国产库（`DbType` 取 `Dm` / `Kdbndp` / `PostgreSQ
 
 ```bash
 docker rm -f qdrant
-docker run -d --name qdrant -p 6333:6333 -p 6334:6334 -v qdrant-data:/qdrant/storage \
-  qdrant/qdrant:latest
+docker run -d --name qdrant -p 6333:6333 -p 6334:6334 -v qdrant-data:/qdrant/storage qdrant/qdrant:latest
 ```
 
 - `6333` 为 HTTP/REST 与管理面板（浏览器访问 `http://127.0.0.1:6333/dashboard`），`6334` 为 gRPC。
