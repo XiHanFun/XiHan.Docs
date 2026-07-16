@@ -179,7 +179,7 @@ public class MyModule : XiHanModule { }
 | `EnableSoftDeleteFilter` | `bool` | `true` | 启用软删除过滤器 |
 | `EnableAutoUpdateQueryFilter` | `bool` | `true` | 更新时自动附加查询过滤条件 |
 | `EnableAutoDeleteQueryFilter` | `bool` | `true` | 删除时自动附加查询过滤条件 |
-| `GlobalFilters` | `Dictionary<Type,Func<object,bool>>` | `{}` | 额外全局过滤器 |
+| `GlobalFilters` | `Dictionary<Type,LambdaExpression>` | `{}` | 额外全局过滤器（仅代码注册，推荐 `AddGlobalFilter<TEntity>`） |
 | `ConfigureDbAction` | `Action<ISqlSugarClient>?` | `null` | 客户端自定义配置钩子 |
 | `EnableSqlLog` | `bool` | `false` | SQL 执行日志 |
 | `EnableSqlErrorLog` | `bool` | `true` | SQL 异常日志 |
@@ -217,8 +217,7 @@ public class MyModule : XiHanModule { }
         "SlowSqlThresholdMilliseconds": 10000,
         "EnableDbInitialization": true,
         "EnableTableInitialization": true,
-        "EnableDataSeeding": true,
-        "GlobalFilters": {}
+        "EnableDataSeeding": true
       }
     }
   }
@@ -369,7 +368,7 @@ services.AddDataSeeder<RoleSeeder>();
 - **差异日志落库**：启用 `EnableDiffLog` 后注册真实 `IEntityDiffLogWriter`（默认 `Null` 不产生记录）。
 - **租户库隔离**：注册 `ISqlSugarTenantConnectionProvider`，`Resolve` 返回租户独立连接描述符即启用库级隔离；返回 `null` 退化为 `ConfigId`（行/字段）隔离。
 - **自定义连接解析**：设置 `Options.ResolveConnectionConfigId` 委托，或用 `TenantConfigIdPrefix`/`DefaultConfigId` 约定映射。
-- **额外全局过滤器**：向 `Options.GlobalFilters` 注入 `Type → Func<object,bool>`。
+- **额外全局过滤器**：调用 `Options.AddGlobalFilter<TEntity>(expr)` 注册表达式树（须可翻译为 SQL 的成员访问/标量比较，勿调用外部方法；构建期 fail-fast 校验，非法表达式启动即报错）。
 - **客户端级配置**：`Options.ConfigureDbAction` 钩子拿到 `ISqlSugarClient` 做自定义装配。
 
 ## 注意事项与最佳实践
