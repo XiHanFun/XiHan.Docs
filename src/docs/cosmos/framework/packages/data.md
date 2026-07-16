@@ -184,7 +184,8 @@ public class MyModule : XiHanModule { }
 | `EnableSqlLog` | `bool` | `false` | SQL 执行日志 |
 | `EnableSqlErrorLog` | `bool` | `true` | SQL 异常日志 |
 | `EnableSlowSqlLog` | `bool` | `true` | 慢 SQL 日志 |
-| `SlowSqlThresholdMilliseconds` | `int` | `10000` | 慢 SQL 阈值（毫秒）；同时决定 `CommandTimeOut`（除以 1000 秒） |
+| `SlowSqlThresholdMilliseconds` | `int` | `10000` | 慢 SQL 阈值（毫秒），纯观测用途、不影响语句执行 |
+| `CommandTimeoutSeconds` | `int` | `300` | ADO 命令执行超时（秒）；0/负值不覆盖，沿用 SqlSugar 默认 300 秒 |
 | `EnableDiffLog` | `bool` | `false` | 实体差异日志（需实现 `IEntityDiffLogWriter`/`IEntityAuditContextProvider`） |
 | `EnableDbInitialization` | `bool` | `false` | 启动自动建库总开关 |
 | `EnableTableInitialization` | `bool` | `false` | `CodeFirst` 建表 |
@@ -380,7 +381,7 @@ services.AddDataSeeder<RoleSeeder>();
 - **`TenantId=0` 是全局模板**：多租户实体的 `TenantId` 非空，`0` 表示平台/全局记录，对所有租户可见（配合 `UNIQUE(TenantId, Code)` 复合唯一索引对全局记录生效）。
 - **审计字段勿手填**：`TenantId`、创建/修改/删除时间与操作人由 `DataExecuting` AOP 注入，业务侧手填会被覆盖或引发不一致。
 - **雪花主键**：主键由 `IDistributedIdGenerator<long>` 通过 `StaticConfig.CustomSnowFlakeFunc` 全局生成；实体基类的 `BasicId` 映射为非自增主键。
-- **慢 SQL 阈值同时是超时**：`SlowSqlThresholdMilliseconds` 除以 1000 作为 `CommandTimeOut`（秒），默认 10s。
+- **慢 SQL 阈值与命令超时相互独立**：`SlowSqlThresholdMilliseconds` 只用于慢 SQL 日志判定；命令执行超时由 `CommandTimeoutSeconds` 单独配置（默认 300s），且应明显大于慢 SQL 阈值，否则慢 SQL 会先被驱动杀掉、慢日志记不到。
 
 ## 依赖模块
 
