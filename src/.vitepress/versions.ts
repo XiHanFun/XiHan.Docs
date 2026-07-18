@@ -45,16 +45,16 @@ export interface NavBadge {
 /**
  * 各产品的发布状态。
  *
- * 三者是独立发版的仓库，framework 与 basicApp 当前恰好同为 3.6.0，
+ * 三者是独立发版的仓库，framework 与 basicApp 当前恰好同为 3.7.0，
  * 不要合并成一个常量，也不要复用文档站自身 package.json 的版本号。真源分别是：
  *   framework → XiHan.Framework/framework/props/version.props
  *   ui        → XiHan.UI/ui/packages/xihan-ui/package.json
  *   basicApp  → XiHan.BasicApp/backend/props/version.props
  */
 export const releases = {
-  framework: { version: "3.6.0", stage: ReleaseStage.Release },
+  framework: { version: "3.7.0", stage: ReleaseStage.Release },
   ui: { version: "0.9.8", stage: ReleaseStage.Alpha },
-  basicApp: { version: "3.6.0", stage: ReleaseStage.Release },
+  basicApp: { version: "3.7.0", stage: ReleaseStage.Release },
 } satisfies Record<string, ProductRelease>;
 
 /** 阶段 → 版本后缀与徽章配色 */
