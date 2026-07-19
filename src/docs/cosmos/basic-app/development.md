@@ -167,17 +167,17 @@ public async Task<PageResultDtoBase<PositionListItemDto>> GetPositionPageAsync(
 
 ## 配方 B：加一个独立一等模块（像 AI / CodeGeneration）
 
-以 `XiHan.BasicApp.AI` 为样板。独立模块 = 自成项目 + 独立权限/种子命名空间 + 双 csproj + 双 slnx + WebHost 接线。
+以 `XiHan.BasicApp.AI` 为样板。独立模块 = 自成项目 + 独立权限/种子命名空间 + 一个 csproj + slnx 登记 + WebHost 接线。
 
 ### 新增/接线一览
 
 | # | 项 | 做法 |
 | --- | --- | --- |
 | 1 | **模块类** | `modules/XiHan.BasicApp.<Name>/XiHanBasicApp<Name>Module.cs`，继承 `XiHanModule`，`[DependsOn(typeof(XiHanBasicAppSaasModule))]`；`ConfigureServices` 调用自己的扩展方法 |
-| 2 | **双 csproj** | `XiHan.BasicApp.<Name>.csproj` + `.Local.csproj`（见下） |
+| 2 | **csproj** | `XiHan.BasicApp.<Name>.csproj`，只引 `..\XiHan.BasicApp.Saas\XiHan.BasicApp.Saas.csproj`（框架经 Saas → Core 传递，别重复加框架引用） |
 | 3 | **`ServiceCollectionExtensions`** | `Extensions/ServiceCollectionExtensions.cs`：`AddXxxDataSeeders` / `AddXxxDomainServices` / 必要的 `Replace` 覆盖 |
 | 4 | **WebHost 接线** | 把 `typeof(XiHanBasicApp<Name>Module)` 加进 `XiHanBasicAppWebHostModule` 的 `[DependsOn(...)]` |
-| 5 | **双 slnx** | 在 `XiHan.BasicApp.slnx`（正式）与 `XiHan.BasicApp.Local.slnx`（本地）各加一个模块文件夹，分别指向 `.csproj` / `.Local.csproj` |
+| 5 | **slnx 登记** | 在 `backend/XiHan.BasicApp.slnx` 加一个模块文件夹指向该 csproj；若你在 XiHanFun 工作区开发，仓库根的 `XiHanFun.Local.slnx` 也加一条 |
 | 6 | 权限/菜单/种子 | 模块自带独立 `Order` 段（见下）与独立权限命名空间 |
 | 7 | 前端页 | 同配方 C |
 
@@ -213,19 +213,20 @@ public class XiHanBasicAppAIModule : XiHanModule
 
 > `AI` 模块目前包含三段能力：Provider 库化管理、知识库 RAG、提示词库（M5 新增），三者各自「种子 + 领域服务 + `Replace` 覆盖框架默认存储」一套齐全，`AddAISkills` 单独登记对话技能。新增能力时依样追加一段，`Order` 段落不与既有三段交叠。
 
-### 双 csproj（本地源码调试 vs 线上 NuGet）
+### 模块 csproj（一份就够）
 
-模块的两个 csproj **只差一行**——引用 Saas 的哪个变体：
+模块 csproj 只引 Saas，框架经 `Saas → Core` 传递依赖，**不要重复加框架引用**：
 
 ```xml
-<!-- XiHan.BasicApp.AI.csproj（正式：走 Saas 正式 csproj，进而走框架 NuGet） -->
 <ProjectReference Include="..\XiHan.BasicApp.Saas\XiHan.BasicApp.Saas.csproj" />
-
-<!-- XiHan.BasicApp.AI.Local.csproj（本地：走 Saas.Local，进而走框架源码 ProjectReference） -->
-<ProjectReference Include="..\XiHan.BasicApp.Saas\XiHan.BasicApp.Saas.Local.csproj" />
 ```
 
-框架「源码 vs NuGet」的真正切换点在基座 `XiHan.BasicApp.Core`：`Core.csproj` 用 `PackageReference` 引 `XiHan.Framework.*`（版本统一在 `props/version.props`）；`Core.Local.csproj` 用 `ProjectReference` 指向同级 `XiHan.Framework/framework/src/*`（本地源码调试）。`.Local` 链一路传递（`Core.Local → Web.Core.Local → Saas.Local → <你的模块>.Local → WebHost.Local`）。详见[本地调试](#本地调试)。
+框架「源码 vs NuGet」的切换点只在基座 `XiHan.BasicApp.Core` 与 `XiHan.BasicApp.Web.Core`，由 `backend/props/framework.props` 的 `UseXiHanFrameworkSource` 决定，两组 `ItemGroup` 二选一：
+
+- **未设置**（默认）：探测同级是否存在 `XiHan.Framework/framework/src`。有 → `ProjectReference` 走源码；无 → `PackageReference` 走 NuGet（版本统一在 `props/version.props`）。
+- **显式指定**：`dotnet build -p:UseXiHanFrameworkSource=true|false`。
+
+也就是说单独 clone `XiHan.BasicApp` 就能编译发布，把框架并列检出即自动进入源码调试，模块作者无需为此改任何东西。详见[本地调试](#本地调试)。
 
 ### 用 `Replace` 而非 `TryAdd` 覆盖框架默认
 
@@ -327,14 +328,18 @@ export const positionApi = {
 
 ## 本地调试
 
-后端并存两套 slnx / csproj，供不同调试场景切换：
+后端**只有一套 csproj**，框架引用方式由 `backend/props/framework.props` 的 `UseXiHanFrameworkSource` 决定，按检出布局自动判定：
 
-| 方案 | slnx | 引用方式 | 用途 |
+| 场景 | 目录布局 | 框架引用 | 打开哪个解决方案 |
 | --- | --- | --- | --- |
-| **正式** | `backend/XiHan.BasicApp.slnx` | 各 `*.csproj` → 框架走 NuGet（`XiHan.Framework.*`，版本统一在 `props/version.props`） | 常规开发、发布 |
-| **本地源码** | `backend/XiHan.BasicApp.Local.slnx` | 各 `*.Local.csproj` → 框架走同级 `XiHan.Framework` 源码 `ProjectReference` | 需要连框架源码断点/改框架时 |
+| **常规开发 / 发布** | 单独 clone `XiHan.BasicApp` | `PackageReference` → NuGet（版本统一在 `props/version.props`） | `backend/XiHan.BasicApp.slnx` |
+| **连框架源码调试** | `XiHan.BasicApp` 与 `XiHan.Framework` 并列检出（XiHanFun 工作区） | `ProjectReference` → 同级框架源码 | 仓库根 `XiHanFun.Local.slnx` |
 
-两套 slnx 的项目槽位一一对应，只是分别指向 `.csproj` / `.Local.csproj`。新增独立模块（配方 B）时，**两套 slnx 都要加**对应的 csproj 变体。框架源码不是作为 slnx 节点加入，而是经 `.Local.csproj` 的 `ProjectReference` 引入。
+强制指定：`dotnet build -p:UseXiHanFrameworkSource=true|false`。
+
+新增独立模块（配方 B）时只加一个 csproj，并在 `XiHan.BasicApp.slnx`（以及工作区的 `XiHanFun.Local.slnx`）登记。
+
+> 源码模式下 VS 要求被 `ProjectReference` 的工程也是解决方案成员，否则设计时报 `NU1105`（命令行不受影响）。所以工作区里请开 `XiHanFun.Local.slnx`（已登记全部框架工程），而不是 `XiHan.BasicApp.slnx`。
 
 > 后端由用户在 Linux 服务器 build / 部署；本地运行中的应用会锁 DLL，`dotnet build` 改动需部署后生效，诊断以加日志为主。
 
