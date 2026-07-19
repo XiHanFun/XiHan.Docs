@@ -223,10 +223,10 @@ public class XiHanBasicAppAIModule : XiHanModule
 
 框架「源码 vs NuGet」的切换点只在基座 `XiHan.BasicApp.Core` 与 `XiHan.BasicApp.Web.Core`，由 `backend/props/framework.props` 的 `UseXiHanFrameworkSource` 决定，两组 `ItemGroup` 二选一：
 
-- **未设置**（默认）：探测同级是否存在 `XiHan.Framework/framework/src`。有 → `ProjectReference` 走源码；无 → `PackageReference` 走 NuGet（版本统一在 `props/version.props`）。
+- **未设置**（默认）：构建仓库根 `XiHanFun*.slnx` 且框架源码在位 → `ProjectReference` 走源码；其余（含 `XiHan.BasicApp.slnx`、单工程构建）→ `PackageReference` 走 NuGet。
 - **显式指定**：`dotnet build -p:UseXiHanFrameworkSource=true|false`。
 
-也就是说单独 clone `XiHan.BasicApp` 就能编译发布，把框架并列检出即自动进入源码调试，模块作者无需为此改任何东西。详见[本地调试](#本地调试)。
+也就是说单独 clone `XiHan.BasicApp` 就能编译发布，工作区里用根解决方案打开即进入源码调试，模块作者无需为此改任何东西。详见[本地调试](#本地调试)。
 
 ### 用 `Replace` 而非 `TryAdd` 覆盖框架默认
 
@@ -328,18 +328,18 @@ export const positionApi = {
 
 ## 本地调试
 
-后端**只有一套 csproj**，框架引用方式由 `backend/props/framework.props` 的 `UseXiHanFrameworkSource` 决定，按检出布局自动判定：
+后端**只有一套 csproj**，框架引用方式由 `backend/props/framework.props` 的 `UseXiHanFrameworkSource` 决定，**看你打开/构建的是哪个解决方案**：
 
-| 场景 | 目录布局 | 框架引用 | 打开哪个解决方案 |
-| --- | --- | --- | --- |
-| **常规开发 / 发布** | 单独 clone `XiHan.BasicApp` | `PackageReference` → NuGet（版本统一在 `props/version.props`） | `backend/XiHan.BasicApp.slnx` |
-| **连框架源码调试** | `XiHan.BasicApp` 与 `XiHan.Framework` 并列检出（XiHanFun 工作区） | `ProjectReference` → 同级框架源码 | 仓库根 `XiHanFun.Local.slnx` |
+| 解决方案 | 框架引用 | 场景 |
+| --- | --- | --- |
+| `backend/XiHan.BasicApp.slnx` | `PackageReference` → NuGet（版本写在 Core / Web.Core 两个基座里） | 常规开发、发布、外部克隆 |
+| 仓库根 `XiHanFun.slnx` / `XiHanFun.Local.slnx` | `ProjectReference` → 同级框架源码 | 连框架源码调试 |
 
-强制指定：`dotnet build -p:UseXiHanFrameworkSource=true|false`。
+判定条件是 `$(SolutionName)` 以 `XiHanFun` 开头**且**框架源码在位；直接 `dotnet build` 单个 csproj（无解决方案上下文）走 NuGet。强制指定：`dotnet build -p:UseXiHanFrameworkSource=true|false`。
 
-新增独立模块（配方 B）时只加一个 csproj，并在 `XiHan.BasicApp.slnx`（以及工作区的 `XiHanFun.Local.slnx`）登记。
+> **为什么以解决方案为准而不是探测目录**：源码模式下 VS 要求被 `ProjectReference` 的工程也是解决方案成员，否则设计时报 `NU1105`。`XiHan.BasicApp.slnx` 里没有、也不该有框架工程（它要能被单独克隆的人打开），所以它必须始终走 NuGet。早先版本按「旁边有没有框架源码」自动探测，结果在工作区里打开 `XiHan.BasicApp.slnx` 会被切成源码模式、NU1105 刷屏。
 
-> 源码模式下 VS 要求被 `ProjectReference` 的工程也是解决方案成员，否则设计时报 `NU1105`（命令行不受影响）。所以工作区里请开 `XiHanFun.Local.slnx`（已登记全部框架工程），而不是 `XiHan.BasicApp.slnx`。
+新增独立模块（配方 B）时只加一个 csproj，并在 `XiHan.BasicApp.slnx` 与仓库根的 `XiHanFun*.slnx` 登记。
 
 > 后端由用户在 Linux 服务器 build / 部署；本地运行中的应用会锁 DLL，`dotnet build` 改动需部署后生效，诊断以加日志为主。
 
