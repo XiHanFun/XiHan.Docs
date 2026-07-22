@@ -4,9 +4,7 @@
   "type": "module",
   "description": "XiHan document repository. Fast, lightweight, efficient, and dedicated development framework and component library.Built on DotNet and Vue.",
   "author": {
-    "name": "ZhaiFanhua",
-    "email": "zhaifanhua@foxmail.com",
-    "url": "https://www.zhaifanhua.com"
+    "name": "XiHanFun"
   },
   "license": "MIT",
   "homepage": "https://docs.xihanfun.com",
