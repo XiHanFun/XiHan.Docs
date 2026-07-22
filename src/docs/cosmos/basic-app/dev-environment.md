@@ -96,7 +96,7 @@ docker exec -it postgres psql -U postgres -d XiHanBasicApp -c "select version();
 
 ```bash
 docker rm -f mysql
-docker run -d --name mysql -p 3306:3306 -v mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=mysql -e MYSQL_USER=mysql mysql:latest
+docker run -d --name mysql -p 3306:3306 -v mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=mysql -e MYSQL_USER=mysql -e MYSQL_ROOT_PASSWORD=mysql mysql:latest
 ```
 
 对应连接串（SqlSugar 的 MySql 类型）：
