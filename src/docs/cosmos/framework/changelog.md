@@ -6,6 +6,15 @@
 本页同步自仓库根目录的 [CHANGELOG.md](https://github.com/XiHanFun/XiHan.Framework/blob/main/CHANGELOG.md)，以其为准。
 :::
 
+## v3.8.0 (2026-07-23)
+
+- **新增** 新增动态连接注册器，支持运行期登记外部数据库连接并按 ConfigId 解析
+- **调整** 数据库元数据读取显式指定连接时改为直连连接作用域，不再登记进当前工作单元
+- **调整** LICENSE 与 NuGet 包元数据署名统一为 XiHanFun and contributors
+- **修复** 动态连接注册器改注入单例 SqlSugarScope，修复启动期依赖注入生命周期校验崩溃
+- **优化** 统一文件头
+- **升级** 升级依赖，发布 v3.8.0
+
 ## v3.7.0 (2026-07-18)
 
 - **新增** 新增工作流引擎，含契约包 Workflow.Abstractions 与实现包 Workflow，配套 62 项测试
