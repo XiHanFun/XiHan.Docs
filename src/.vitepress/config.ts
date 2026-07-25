@@ -3,10 +3,10 @@ import { releases, withNavBadge } from "./versions";
 
 const title: string = "曦寒官方文档";
 const description: string = "开发框架和组件库";
-const keywords: string = "曦寒,曦寒懿,开发框架,组件库,官方文档,开源,摘繁华";
+const keywords: string = "曦寒,曦寒懿,开发框架,组件库,官方文档,开源,XiHanFun";
 const logo: string = "/images/logo.png";
 const head: HeadConfig[] = [
-  ["meta", { name: "author", content: "ZhaiFanhua" }],
+  ["meta", { name: "author", content: "XiHanFun" }],
   [
     "meta",
     {
@@ -544,7 +544,7 @@ export default defineConfig({
       message:
         "Released under The <a href='https://opensource.org/license/MIT' target='_blank'>MIT</a> License",
       copyright:
-        "Copyright ©2021-Present <a href='https://www.xihanfun.com' target='_blank'>XiHanFun</a> and <a href='https://www.zhaifanhua.com' target='_blank'>ZhaiFanhua</a>",
+        "Copyright ©2021-Present <a href='https://www.xihanfun.com' target='_blank'>XiHanFun</a> and contributors.",
     },
   },
 });

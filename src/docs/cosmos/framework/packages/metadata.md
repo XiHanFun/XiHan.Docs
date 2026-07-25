@@ -28,7 +28,7 @@ dotnet add package XiHan.Framework.Metadata
 
 ## 核心能力
 
-- 集中维护框架身份常量：`Name`、`DisplayName`、`Copyright`、`Author`、`AuthorEmail`、`Organization`、`OrganizationUrl`、`RepositoryUrl`、`DocumentationUrl`、`License`、`LicenseUrl`、`Description`。
+- 集中维护框架身份常量：`Name`、`DisplayName`、`Copyright`、`Author`、`Organization`、`OrganizationUrl`、`RepositoryUrl`、`DocumentationUrl`、`License`、`LicenseUrl`、`Description`。
 - 数组型元信息：`Keywords`、`SupportedFrameworks`（当前 `net10.0`）、`SupportedPlatforms`（`Windows` / `Linux` / `MacOS`）。
 - 版本信息（从 `XiHanMetadata` 所在程序集读取）：`Version`、`FullVersion`、`MajorVersion`、`MinorVersion`、`PatchVersion`。
 - 运行时入口信息（从入口程序集读取）：`EntryAssemblyName`、`EntryAssemblyVersion`。
@@ -45,9 +45,8 @@ dotnet add package XiHan.Framework.Metadata
 | --- | --- | --- |
 | `Name` | `string` | `"XiHan.Framework"` |
 | `DisplayName` | `string` | `"曦寒框架"` |
-| `Copyright` | `string` | `"Copyright ©2021-Present ZhaiFanhua All Rights Reserved."` |
-| `Author` | `string` | `"ZhaiFanhua"` |
-| `AuthorEmail` | `string` | `"me@zhaifanhua.com"` |
+| `Copyright` | `string` | `"Copyright (c) 2021-Present XiHanFun and contributors."` |
+| `Author` | `string` | `"XiHanFun"` |
 | `Organization` | `string` | `"XiHanFun"` |
 | `OrganizationUrl` | `string` | `https://github.com/XiHanFun` |
 | `RepositoryUrl` | `string` | `https://github.com/XiHanFun/XiHan.Framework` |
