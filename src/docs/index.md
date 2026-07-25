@@ -61,7 +61,7 @@ features:
     linkText: "了解 XiHanFun"
 
 footer:
-  message: 基于 MIT 许可发布 | Copyright ©2021-Present XiHanFun and ZhaiFanhua
+  message: 基于 MIT 许可发布 | Copyright ©2021-Present XiHanFun and contributors.
   links:
     - text: 快速上手
       link: cosmos/getstart

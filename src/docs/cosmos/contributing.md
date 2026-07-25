@@ -18,19 +18,8 @@
 - `若有新功能开发`，请添加文件头，这在后续修改代码文件或多人合作项目时有莫大的好处。如下为我的示例：
 
 ```csharp
-#region <<版权版本注释>>
-
-// ----------------------------------------------------------------
-// Copyright ©2024 ZhaiFanhua All Rights Reserved.
+// Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
-// FileName:ChatHub
-// Guid:ee669dee-30c7-4d21-8eb4-f24d8dc0f44c
-// Author:zhaifanhua
-// Email:me@zhaifanhua.com
-// CreatedTime:2024-04-16 上午 03:59:25
-// ----------------------------------------------------------------
-
-#endregion <<版权版本注释>>
 ```
 
 下面就来说说怎么创建并修改默认模板。
@@ -44,19 +33,8 @@
 Class.cs
 
 ```csharp
-#region <<版权版本注释>>
-
-// ----------------------------------------------------------------
-// Copyright ©$year$ ZhaiFanhua All Rights Reserved.
+// Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
-// FileName:$safeitemname$
-// Guid:$guid1$
-// Author:$username$
-// Email:me@zhaifanhua.com
-// CreateTime:$time$
-// ----------------------------------------------------------------
-
-#endregion <<版权版本注释>>
 
 namespace $rootnamespace$;
 
@@ -71,19 +49,8 @@ public class $safeitemrootname$
 Controller.cs `这里仅为ApiController`
 
 ```csharp
-#region <<版权版本注释>>
-
-// ----------------------------------------------------------------
-// Copyright ©$year$ ZhaiFanhua All Rights Reserved.
+// Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
-// FileName:$safeitemname$
-// Guid:$guid1$
-// Author:$username$
-// Email:me@zhaifanhua.com
-// CreateTime:$time$
-// ----------------------------------------------------------------
-
-#endregion <<版权版本注释>>
 
 namespace $rootnamespace$;
 
@@ -100,19 +67,8 @@ public class $safeitemname$ : ControllerBase
 Interface.cs
 
 ```csharp
-#region <<版权版本注释>>
-
-// ----------------------------------------------------------------
-// Copyright ©$year$ ZhaiFanhua All Rights Reserved.
+// Copyright (c) 2021-Present XiHanFun and contributors.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
-// FileName:$safeitemname$
-// Guid:$guid1$
-// Author:$username$
-// Email:me@zhaifanhua.com
-// CreateTime:$time$
-// ----------------------------------------------------------------
-
-#endregion <<版权版本注释>>
 
 namespace $rootnamespace$;
 
