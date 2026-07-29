@@ -130,10 +130,6 @@ pnpm run preview
 
 官方赞助页 https://docs.xihanfun.com/cosmos/sponsor
 
-## 关注动态
-
-![weixinmp](./assets/weixinmp.png)
-
 ## 版权&授权
 
 Copyright (c) 2021-Present XiHanFun and contributors.
