@@ -33,7 +33,7 @@ XiHan.BasicApp 是一套基于 [XiHan.Framework](../framework/index) 构建的�
 | `XiHan.BasicApp.Saas` | 业务模块 | 核心业务：身份/角色/权限/菜单/部门/岗位/租户/版本/配置/字典/文件/消息/日志/任务/审批/OAuth/聊天 |
 | `XiHan.BasicApp.CodeGeneration` | 业务模块 | 代码生成：数据源管理 / 表结构导入 / 模板配置 / 全栈生成 / 动态运行时 |
 | `XiHan.BasicApp.AI` | 业务模块 | AI Provider 库化管理（`SysAiProvider`）/ 知识库 RAG（Qdrant 向量库）/ 提示词库（`SysAiPrompt`）/ AI 技能 |
-| `XiHan.BasicApp.WebHost` | 主机 | 启动入口，聚合三个业务模块 + 可观测性模块；健康检查、MCP Server、Telegram Webhook、`/health` 端点、OpenTelemetry 装配（默认关） |
+| `XiHan.BasicApp.WebHost` | 主机 | 启动入口，聚合三个业务模块 + 可观测性模块 + MCP 服务端模块；健康检查、Telegram Webhook、`/health` 端点、OpenTelemetry 装配（默认关） |
 
 `Saas`、`CodeGeneration`、`AI` 都是**一等业务模块**，各自独立成项目、经 `[DependsOn]` 挂到 `WebHost`。这也是新增一个大功能域时的推荐范式：**新建独立模块项目，而非往 `Saas` 里塞切片**。CodeGeneration 与 AI 都 `[DependsOn(typeof(XiHanBasicAppSaasModule))]`，从而复用 Saas 的 RBAC 表、`SaasRepository`、Data Protection 密文前缀等基础设施。
 
@@ -62,9 +62,9 @@ XiHan.BasicApp/
 启动逻辑集中在 `main/XiHan.BasicApp.WebHost`：
 
 - **`Program.cs`**：`WebApplication.CreateBuilder(args)` → 读 `Hosting:Urls` 配置监听地址 → `builder.AddApplicationAsync<XiHanBasicAppWebHostModule>()`（框架据模块依赖图完成服务注册）→ `app.InitializeApplicationAsync()`（按阶段执行各模块初始化）→ `app.RunAsync()`。全程 `try/catch/finally` 包裹并接 Serilog 日志。
-- **`XiHanBasicAppWebHostModule`**：依赖图的根模块。`[DependsOn]` 列三个业务模块 + `XiHanObservabilityModule`（可观测性）——三个业务模块之外的框架能力经 `Saas → Web.Core → Core → XiHan.Framework.*` 一路传递，无需在此重复声明。它额外负责：
+- **`XiHanBasicAppWebHostModule`**：依赖图的根模块。`[DependsOn]` 列三个业务模块 + `XiHanObservabilityModule`（可观测性）+ `XiHanWebMcpModule`（MCP Server）——三个业务模块之外的框架能力经 `Saas → Web.Core → Core → XiHan.Framework.*` 一路传递，无需在此重复声明。它额外负责：
   - **健康检查**：`AddHealthChecks().AddCheck<DatabaseHealthCheck>("database").AddCheck<RedisHealthCheck>("redis")`；`/health` 端点匿名暴露，只回总状态 + 各检查项名（不外泄连接串/异常）。
-  - **MCP Server**（可选）：读 `XiHanMcpOptions`，启用且配了密钥时把 AI 技能暴露为 MCP tools，端点由 `McpApiKeyEndpointFilter` 按应用管理 key 守门（fail-closed）。
+  - **MCP Server**（`XiHanWebMcpModule`，可选）：读 `XiHanMcpOptions`，启用且配了密钥时把 AI 技能暴露为 MCP tools，端点由 `McpApiKeyEndpointFilter` 按应用管理 key 守门（fail-closed）。装配与端点映射都在框架包内，应用侧只声明依赖。
   - **Telegram Webhook**：在 `OnPreApplicationInitialization` 注册 `UseTelegramBotWebhook()`，位于鉴权中间件**之前**，自带 `secret_token` 强校验。
   - **可观测性**（`XiHanObservabilityModule`）：由 `XiHan:Observability` 配置节门控，`Enabled` 默认 `false`（装配即孤儿、零运行时开销）；开启后经 `AddOpenTelemetry` 装配链路追踪（W3C Activity，`XiHanTraceIdMiddleware`/`HttpTraceIdProvider` 优先取其 32-hex TraceId，与日志/审计/事件总线统一同源）、可选指标与日志导出，支持 `OtlpEndpoint`（如 Jaeger/Tempo）与控制台导出器、`SamplingRatio` 采样率。
 
