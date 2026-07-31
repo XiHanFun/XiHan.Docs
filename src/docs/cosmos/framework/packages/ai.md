@@ -41,7 +41,7 @@ public class MyModule : XiHanModule { }
 - **`AddXiHanAI()`**：绑定 `XiHanAiOptions`（配置节 `XiHan:AI`）与 `AiGuardrailOptions`（配置节 `XiHan:AI:Guardrail`）；`IAiProviderConfigStore → OptionsAiProviderConfigStore`；默认护栏 `IAiGuardrail → KeywordBlocklistGuardrail`（`TryAddEnumerable`，应用层可再 `AddSingleton<IAiGuardrail, X>()` 追加）；`OpenAiCompatibleChatClientFactory` + `IAiChatClientResolver → AiChatClientResolver`；`OpenAiEmbeddingGeneratorFactory` + `IAiEmbeddingGeneratorResolver → AiEmbeddingGeneratorResolver`；`IXiHanAiService → XiHanAiService`；`IAiPromptStore → OptionsAiPromptStore`；`IAiSkillRegistry → DefaultAiSkillRegistry`；`IXiHanAgentFactory → XiHanAgentFactory`。
 - **`AddXiHanRAG()`**：`IChunkingStrategy → FixedWindowChunkingStrategy`；`IKnowledgeIngestor → DefaultKnowledgeIngestor`；`IKnowledgeRetriever → DefaultKnowledgeRetriever`；`IRagPromptAugmenter → DefaultRagPromptAugmenter`。
 
-MCP 工具桥接 `AddXiHanMcpServerTools()` 不在模块内自动调用，须由 WebHost 显式调用并配合官方 `AddMcpServer()`（见「MCP 工具桥接」）。
+MCP 工具桥接 `AddXiHanMcpServerTools()` 不在模块内自动调用，须配合官方 `AddMcpServer()` 使用；HTTP 传输与端点暴露由 [XiHan.Framework.Web.Mcp](./web-mcp) 负责（见「MCP 工具桥接」）。
 
 ## 工作原理
 
@@ -108,7 +108,7 @@ MCP 工具桥接 `AddXiHanMcpServerTools()` 不在模块内自动调用，须由
 | --- | --- |
 | `IServiceCollection.AddXiHanAI()` | 注册会话/嵌入/护栏/提示词库/Agent/技能全套（模块自动调用） |
 | `IServiceCollection.AddXiHanRAG()` | 注册 RAG 切片/摄取/检索/增强默认实现（模块自动调用） |
-| `IServiceCollection.AddXiHanMcpServerTools()` | 把技能注册表投影为 MCP server tools（须 WebHost 显式调用 + 配合官方 `AddMcpServer()`） |
+| `IServiceCollection.AddXiHanMcpServerTools()` | 把技能注册表投影为 MCP server tools（须配合官方 `AddMcpServer()`；Web.Mcp 模块已代为调用） |
 
 ### VectorStoreKnowledgeRecord 约定
 
@@ -284,7 +284,7 @@ public sealed class AgentSample(IXiHanAgentFactory factory, IAiSkillRegistry ski
 - **摄取 / 检索**：`IKnowledgeIngestor` / `IKnowledgeRetriever` → 自定义向量库交互
 - **提示增强**：`IRagPromptAugmenter` → 自定义模板
 - **技能供给**：`AddSingleton<IAiSkill, XxxSkill>()`，注册表构造时自动收纳
-- **MCP 工具**：WebHost 中 `AddMcpServer().WithHttpTransport()` 后调 `AddXiHanMcpServerTools()`，技能即成为 MCP tool（HTTP 传输与端点映射由 WebHost 负责）
+- **MCP 工具**：依赖 [XiHan.Framework.Web.Mcp](./web-mcp) 的 `XiHanWebMcpModule`，技能即成为 MCP tool（HTTP 传输、端点映射与 key 鉴权都在该包内）
 
 ## 注意事项与最佳实践
 

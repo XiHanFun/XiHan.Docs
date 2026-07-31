@@ -169,6 +169,7 @@ const frameworkSidebar: DefaultTheme.SidebarItem[] = [
           pkg("Web.Gateway 网关", "web-gateway"),
           pkg("Web.Grpc gRPC", "web-grpc"),
           pkg("Web.RealTime 实时通信", "web-realtime"),
+          pkg("Web.Mcp MCP 服务端", "web-mcp"),
         ],
       },
     ],

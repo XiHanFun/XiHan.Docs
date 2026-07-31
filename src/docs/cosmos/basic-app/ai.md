@@ -224,7 +224,7 @@ BasicApp 通过框架把知识检索能力对外暴露为标准工具，两条�
 
 ### MCP Server（应用管理 key，fail-closed）
 
-MCP Server 的启用与暴露由 WebHost 负责，配置节 `XiHan:AI:Mcp`（`XiHanMcpOptions`）：
+MCP Server 的启用与暴露由框架包 [XiHan.Framework.Web.Mcp](../framework/packages/web-mcp) 负责，WebHost 只 `[DependsOn(typeof(XiHanWebMcpModule))]`。配置节 `XiHan:AI:Mcp`（`XiHanMcpOptions`）：
 
 | 字段 | 默认 | 说明 |
 | --- | --- | --- |
