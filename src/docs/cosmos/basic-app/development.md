@@ -12,7 +12,7 @@
 | **配方 B：独立一等模块** | 加一个完整功能域（代码生成、AI…），自成项目、独立种子/权限命名空间 | `modules/XiHan.BasicApp.<Name>` 新建工程 + 双边接线 | `XiHan.BasicApp.AI` / `CodeGeneration` |
 | **配方 C：仅前端页面** | 后端已有接口，只补一个视图 | `frontend/src/views/**` + `PageRegistry` | 见下 |
 
-**判断准则**：功能是否共享 Saas 的 RBAC 表、`SaasRepository`、Data Protection 密文前缀？是且体量小 → 配方 A；是独立大域、想要独立的权限/种子 `Order` 段与项目边界 → 配方 B。三个业务模块彼此不直接依赖，均以 Saas 为共享基座。
+**判断准则**：功能是否共享 Saas 的 RBAC 表、`SaasRepository`、Data Protection 密文前缀？是且体量小 → 配方 A；是独立大域、想要独立的权限/种子 `Order` 段与项目边界 → 配方 B。四个业务模块彼此不直接依赖，均以 Saas 为共享基座。
 
 ## DDD 分层与命名约定
 
@@ -55,7 +55,7 @@
 | 11 | `Application/AppServices/Organization/PositionAppService.cs` | 写侧实现（`Create`/`Update`/`UpdateStatus`/`Delete`） |
 | 12 | `Application/QueryServices/Organization/PositionQueryService.cs` | 读侧实现（`GetPositionPageAsync` 标 `[HttpPost]`、`GetPositionDetailAsync`） |
 
-前端另加 3 个文件，见[配方 C](#配方-c加一个前端页面)。
+前端另加 3 个文件，见[配方 C](#配方-c-加一个前端页面)。
 
 > **应用服务 / 查询服务无需手写 DI**：它们实现 `IApplicationService`，由框架约定自动注册（瞬时）。仓储实现 `IScopedDependency`（经 `SaasRepository` 基类），也自动注册。**只有领域服务要手写登记**（见接线点 2）。
 
@@ -150,7 +150,7 @@ public async Task<PageResultDtoBase<PositionListItemDto>> GetPositionPageAsync(
 
 #### 6. 前端页面
 
-见[配方 C](#配方-c加一个前端页面)。
+见[配方 C](#配方-c-加一个前端页面)。
 
 ### 接线检查清单（速查）
 
@@ -250,6 +250,7 @@ public static IServiceCollection AddAIConfigStore(this IServiceCollection servic
 | Saas | 10–37 | 系统基线 10–29、演示 30–37 |
 | CodeGeneration | 100–105 | — |
 | AI | 200–212 | Provider 200–204、知识库 RAG 205–208、提示词库 209–212 |
+| Workflow | 300–304 | 操作 300 → 资源 301 → 权限 302 → 菜单 303 → 角色授权 304 |
 
 AI 的 `AddAIDataSeeders` 实链（`AddDataSeeder<T>()` 逐个登记）：
 
@@ -263,7 +264,9 @@ services.AddDataSeeder<SysRolePermissionSeeder>();  // 204 仅授超管
 
 `AddRAGDataSeeders`（205–208）与 `AddPromptDataSeeders`（209–212，提示词库）各自复用 AI 段的 `SysOperationSeeder`（200），链内只补「资源 → 权限 → 菜单 → 角色授权」四步，不重复种操作字典。
 
-> 新模块选一段未用的 `Order`（如 300–）；**操作/资源种子必须排在权限种子之前**（权限由「资源 × 操作」派生）。
+> 新模块选一段未用的 `Order`（如 400–）；**操作/资源种子必须排在权限种子之前**（权限由「资源 × 操作」派生）。
+
+`XiHan.BasicApp.Workflow` 是最新、也最干净的一个独立模块样板：`ConfigureServices` 只有三行（`AddWorkflowStores` 用 `Replace` 把框架工作流的内存存储换成 SqlSugar 持久化、`AddWorkflowDataSeeders` 走完整的五步种子链、`AddWorkflowEventHandlers` 登记三个本地事件处理器），仓储与应用服务全部交给约定注册。要照着做一个新模块，读它比读 AI 模块更省力。
 
 ### 动态 API 动词/路由映射
 
@@ -303,7 +306,7 @@ const coreComponentMap: Record<string, () => Promise<unknown>> = {
 
 ### API 客户端：动态 API 动词前缀剥离
 
-前端用 `createDynamicApiClient` 按服务名建客户端，方法名前缀（`Position` / `PositionQuery`）在拼路由时被剥离；分页走 `post`：
+前端用 `createDynamicApiClient(控制器名)` 建客户端，URL 拼成 `/api/{控制器名}/{动作名}`；动作名是后端方法名**剥离动词前缀**后的结果（`CreatePositionAsync` → `Position`、`GetPositionPageAsync` → `PositionPage`）：
 
 ```ts
 const positionQueryApi = createDynamicApiClient('PositionQuery')
@@ -313,10 +316,14 @@ export const positionApi = {
   create: (input) => positionCommandApi.post('Position', input),
   update: (input) => positionCommandApi.put('Position', input),
   updateStatus: (input) => positionCommandApi.put('PositionStatus', input),
-  delete: (id) => positionCommandApi.delete(`Position/${formatDynamicApiRouteValue(id)}`),
+  delete: (id) => positionCommandApi.delete('Position', { id }),   // id 走查询串，不是路径段
   page: (input) => positionQueryApi.post('PositionPage', input),   // 分页 POST
 }
 ```
+
+::: warning id 不要拼成路径段
+动态 API 的**路由段只由显式 `[FromRoute]` 参数产生**，普通参数一律落到查询串或请求体。写成 `` delete(`Position/${id}`) `` 会 404。标准 CRUD 直接用 `defineResource({ query: 'PositionQuery', command: 'Position' })` 工厂，一次生成 `page` / `detail` / `create` / `update` / `remove`，不用手拼。
+:::
 
 ### i18n 键
 

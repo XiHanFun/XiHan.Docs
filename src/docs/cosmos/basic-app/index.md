@@ -23,32 +23,46 @@ XiHan.BasicApp 采用**前后端分离**架构：
 
 ## 文档地图
 
-**开始**
+**入门**
 
-- [系统概述](./overview) —— 定位、技术栈、能力全景
-- [快速开始](./getting-started) —— 环境要求、后端 / 前端 / 数据库启动、默认账号
+- [系统概述](./overview) —— 定位、技术栈、能力全景、**按角色的阅读路线**
+- [开发环境](./dev-environment) —— Docker 起数据库与 Redis
+- [快速开始](./getting-started) —— 跑起来并调通第一个接口
+- [目录结构与代码地图](./project-structure) —— **「我要改 X 该去哪个文件」**
 
-**架构与二次开发**
+**架构**
 
-- [系统架构](./architecture) —— 分层、模块（Saas / CodeGeneration / AI）、动态 API、菜单单一事实源、缓存
-- [前端指南](./frontend) —— Schema 驱动列表页、三级权限、国际化 / 时区、实时通信
+- [架构总览](./architecture) —— 全景、四条贯穿全局的设计、数据流
+- [后端架构](./architecture/backend) —— 分层、模块装配、DDD、DI 约定、种子
+- [前端架构](./architecture/frontend) —— 五层结构、启动引导、请求时序
+- [请求生命周期](./architecture/request-lifecycle) —— 中间件管道逐段、401/403/423、UoW 收尾
+- [数据模型](./architecture/data-model) —— 实体基类、审计与软删、多租户列、全表清单
+- [缓存与异步](./architecture/caching-async) —— 缓存条目、精准失效、队列消费
+
+**身份与访问**
+
+- [身份与认证](./identity) —— 多种登录、JWT 双令牌、会话、2FA
+- [权限模型](./permissions) —— RBAC + ABAC、权限码、数据范围、字段脱敏
+- [组织架构](./organization) —— 部门树与闭包表、岗位、用户归属
+- [多租户与版本](./multi-tenancy) —— 字段级隔离、租户切换、版本门控
+
+**业务功能**
+
+- [消息中心](./messaging) · [工作流](./workflow) · [审批与约束规则](./approval)
+- [文件与存储](./file-storage) · [任务调度](./scheduling) · [系统设置](./system-settings)
+- [开放能力](./open-platform) · [审计日志](./audit-log) · [代码生成](./code-generation) · [AI 能力](./ai)
+
+**前端开发**
+
+- [前端开发指南](./frontend) —— 技术栈、api 层、SignalR、常用组件
+- [Schema 驱动页面](./frontend/schema-page) · [路由与菜单](./frontend/routing) · [权限与脱敏](./frontend/permission) · [主题与国际化](./frontend/theming-i18n)
+
+**二次开发与参考**
+
 - [二次开发](./development) —— 加功能纵切片 / 加独立模块 / 加前端页
-
-**核心能力**
-
-- [身份与认证](./identity) —— 用户 / 角色 / 部门 / 菜单、多种登录、JWT 双令牌、2FA
-- [权限模型](./permissions) —— RBAC + ABAC、权限码、数据范围、字段脱敏、版本门控
-- [多租户与版本](./multi-tenancy) —— 字段级隔离、租户切换、版本（Edition）门控
-- [消息中心](./messaging) —— 五类消息、模板、四渠道扇出、SignalR 通知与聊天
-- [审计日志](./audit-log) —— 六类日志、自动脱敏、实体变更留痕
-- [代码生成](./code-generation) —— 单表 / 树形 / 主从、全栈一键生成
-- [AI 能力](./ai) —— Provider 库化管理、RAG 知识库、Agent / MCP
-
-**参考**
-
-- [功能清单](./features) —— 完整能力清单
-- [部署](./deployment) —— Linux systemd / Windows 部署
-- [更新日志](./changelog) —— 各版本变更记录
+- [接口对接指南](./api-guide) —— 响应信封、业务码、**怎么获取 token**、分页协议
+- [配置参考](./configuration) —— `appsettings` 全量配置节
+- [功能清单](./features) · [常见问题](./faq) · [部署](./deployment) · [更新日志](./changelog)
 
 ## 技术栈速览
 
