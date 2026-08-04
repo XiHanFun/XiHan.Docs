@@ -63,7 +63,9 @@ RBAC 的核心实体都落在 `Saas` 模块的 `Domain/Entities` 下，均为 `s
 
 登录入口是 `AuthAppService`（`[DynamicApi(RouteTemplate = "api/Auth")]`）。核心设计是**先登录后选租户**：登录页不选租户，统一在**平台态**（`TenantId=null`）完成身份认证，认证通过后再按成员关系决定落点（见下文"登录落点"）。
 
-前端先调 `GET /api/Auth/GetLoginConfig` 拿到 `LoginConfigDto`（`LoginMethods` + `OAuthProviders`），据此决定展示哪些登录按钮——**支持的方式以该配置为准**。
+前端先调 `GET /api/Auth/LoginConfig` 拿到 `LoginConfigDto`（`loginMethods` + `oAuthProviders`），据此决定展示哪些登录按钮——**支持的方式以该配置为准**。
+
+> 路由是方法名 `GetLoginConfigAsync` **剥离动词前缀 `Get` 并去掉 `Async`** 后的结果。全部认证端点的方法与 URL 对照表见 [接口对接指南](./api-guide#端点总表)。
 
 ### 账号密码
 

@@ -1,24 +1,28 @@
 # XiHan.Framework.SearchEngines
 
-> 搜索引擎接入（规划中）：预留围绕 Elasticsearch 的索引构建与全文检索能力。**当前为占位/骨架模块。**
+> 搜索引擎默认实现包：提供**进程内**的 `ISearchEngine` 实现作为兜底。接入真实搜索引擎请引用对应的实现包。
 
 - **NuGet**：`XiHan.Framework.SearchEngines`
 - **模块类**：`XiHanSearchEnginesModule`
 - **所在层**：基础设施层
-- **关键依赖**：`Elastic.Clients.Elasticsearch`（v9，Elasticsearch 官方 .NET 客户端，仅作依赖预埋）；框架内部依赖 `XiHan.Framework.Core`
+- **关键依赖**：`XiHan.Framework.Core`、`XiHan.Framework.SearchEngines.Abstractions`。**无第三方依赖**
 
 ## 概述
 
-XiHan.Framework.SearchEngines 规划为框架统一接入搜索引擎（Elasticsearch）的基础设施包，用于承载索引构建与全文检索能力。
+本包做两件事：
 
-需要提前说明：**当前该包只是占位/骨架**。除模块类 `XiHanSearchEnginesModule` 外没有任何公开 API，其 `ConfigureServices` 仅取了一下 `Services` 与 `Configuration`、**未注册任何服务**，也还没有索引构建、检索或客户端封装相关的具体类型。csproj 已引入 Elasticsearch 官方客户端 `Elastic.Clients.Elasticsearch`（版本 `9.4.2`），但包内并未对其做任何封装，仅作为后续开发的依赖预埋。
+1. 注册 `InMemorySearchEngine` 作为 `ISearchEngine` 的**默认兜底实现**——开发期不装 Elasticsearch 也能跑通检索链路，测试里不需要真实引擎。
+2. 让契约始终有**第二个实现**来校验自己——只有一个实现的抽象无法证明自己没有泄漏该实现的概念。
+
+::: warning 进程内实现的定位
+`InMemorySearchEngine` 面向**单机开发与自动化测试**：数据只存在于当前进程，**重启即丢**，且**不做分词与相关度模型**。生产环境必须引用具体搜索引擎的实现包。
+:::
 
 ## 何时使用
 
-- 关注框架的搜索引擎接入方向，了解后续会围绕 Elasticsearch 展开。
-- 需要在自己的模块里预留对该模块的 `DependsOn`，等待其能力补齐。
-
-当前阶段本包**尚不提供可直接调用的检索能力**。若现在就需要全文检索，请直接使用 `Elastic.Clients.Elasticsearch` 客户端自行实现。
+- 开发/测试环境想跑通检索链路又不想起一个 Elasticsearch。
+- 作为兜底注册，让业务代码可以无条件注入 `ISearchEngine`。
+- 需要 `ISearchEngine` 的契约测试基线。
 
 ## 安装与启用
 
@@ -31,20 +35,82 @@ dotnet add package XiHan.Framework.SearchEngines
 public class MyModule : XiHanModule { }
 ```
 
-> 注意：`XiHanSearchEnginesModule.ConfigureServices` 当前为空实现，`[DependsOn]` 之后不会向容器注入任何搜索相关服务。
+模块的 `ConfigureServices` 只做两行注册（**`TryAdd` 语义**）：
+
+```csharp
+context.Services.TryAddSingleton<InMemorySearchEngine>();
+context.Services.TryAddSingleton<ISearchEngine>(sp => sp.GetRequiredService<InMemorySearchEngine>());
+```
+
+接入真实引擎时，由实现包（或你自己）以 **`Replace`** 覆盖 `ISearchEngine` 的注册——`TryAdd` 一个新实现会被静默忽略。
 
 ## 主要 API / 类型
 
 | 类型 | 说明 |
 | --- | --- |
-| `XiHanSearchEnginesModule` | 模块入口，参与模块化生命周期；当前为空骨架，`ConfigureServices` 无注册 |
+| `XiHanSearchEnginesModule` | 模块入口，注册进程内实现作为兜底 |
+| `InMemorySearchEngine` | 进程内 `ISearchEngine` 实现（`ISingletonDependency`），索引状态存于并发字典 |
+
+检索契约本身（`ISearchEngine`、`SearchRequest`、`SearchFilter`、`SearchIndexDefinition` 等）在 [Abstractions 包](./search-engines-abstractions)。
+
+## 使用示例
+
+```csharp
+using XiHan.Framework.SearchEngines;
+using XiHan.Framework.SearchEngines.Documents;
+using XiHan.Framework.SearchEngines.Indexing;
+using XiHan.Framework.SearchEngines.Querying;
+
+public class ArticleSearchService(ISearchEngine search)
+{
+    private const string Index = "articles";
+
+    public async Task EnsureIndexAsync()
+    {
+        // 幂等：已存在时返回 false，不做任何事
+        await search.CreateIndexAsync(new SearchIndexDefinition(Index,
+        [
+            new SearchFieldDefinition("title",   SearchFieldType.Text,    Searchable: true),
+            new SearchFieldDefinition("tag",     SearchFieldType.Keyword, Sortable: true),
+            new SearchFieldDefinition("views",   SearchFieldType.Integer, Sortable: true),
+        ]) { Language = "zh" });
+    }
+
+    public async Task IndexAsync(Article article)
+    {
+        // 标识已存在时整体覆盖
+        await search.IndexAsync(Index, new SearchDocument<Article>(article.Id.ToString(), article));
+        // 需要写入立即可见时刷新
+        await search.RefreshAsync(Index);
+    }
+
+    public Task<SearchResult<Article>> SearchAsync(string keyword)
+    {
+        return search.SearchAsync<Article>(new SearchRequest(Index)
+        {
+            Keyword = keyword,
+            Fields = ["title"],
+            Filters = [new SearchFilter("tag", SearchFilterOperator.In, values: ["dotnet", "vue"])],
+            Sorts = [SearchSort.ByScore],
+            HighlightFields = ["title"],
+            Take = 20,
+        });
+    }
+}
+```
+
+## 注意事项
+
+- 进程内实现**不分词**：关键字检索是计数式匹配，相关度与真实引擎不同。用它验证链路，不要用它验证搜索效果。
+- 多实例部署下每个进程各有一份索引，互不可见。
+- 切换到真实引擎时业务代码**一行不用改**——这正是契约设计的目的。
 
 ## 依赖模块
 
-- [XiHan.Framework.Core](./core) — 模块化与依赖注入基础，唯一的框架内部依赖。
-- 第三方：`Elastic.Clients.Elasticsearch`（v9），已在 csproj 中引用，作为后续检索能力的依赖预埋。
+- [XiHan.Framework.SearchEngines.Abstractions](./search-engines-abstractions) — 检索契约。
+- [XiHan.Framework.Core](./core) — 模块化与依赖注入基础。
 
 ## 相关模块
 
-- [XiHan.Framework.Data](./data) — 数据访问基础设施，与搜索/索引通常配合使用。
-- [XiHan.Framework.Caching](./caching) — 同为基础设施层的数据侧能力。
+- [XiHan.Framework.SearchEngines.Elasticsearch](./search-engines-elasticsearch) — 生产用的 Elasticsearch 实现。
+- [XiHan.Framework.Data](./data) — 数据访问基础设施，通常与索引同步配合使用。

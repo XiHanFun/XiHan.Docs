@@ -46,6 +46,14 @@ const frameworkSidebar: DefaultTheme.SidebarItem[] = [
     ],
   },
   {
+    text: "进阶",
+    collapsed: false,
+    items: [
+      { text: "扩展与二次开发", link: "/cosmos/framework/extending" },
+      { text: "常见问题", link: "/cosmos/framework/faq" },
+    ],
+  },
+  {
     text: "模块总览",
     link: "/cosmos/framework/packages/",
     collapsed: false,
@@ -139,7 +147,11 @@ const frameworkSidebar: DefaultTheme.SidebarItem[] = [
           pkg("Traffic 流量治理", "traffic"),
           pkg("Upgrade 升级引擎", "upgrade"),
           pkg("Script 脚本引擎", "script"),
+          pkg("Workflow.Abstractions", "workflow-abstractions"),
+          pkg("Workflow 工作流", "workflow"),
+          pkg("SearchEngines.Abstractions", "search-engines-abstractions"),
           pkg("SearchEngines 搜索", "search-engines"),
+          pkg("SearchEngines.Elasticsearch", "search-engines-elasticsearch"),
           pkg("Observability 可观测性", "observability"),
           pkg("DevTools 开发工具", "devtools"),
         ],
@@ -200,46 +212,92 @@ const uiNavConst: DefaultTheme.NavItemWithLink[] = [
 ];
 const basicAppSidebar: DefaultTheme.SidebarItem[] = [
   {
-    text: "开始",
+    text: "入门",
     collapsed: false,
     items: [
       { text: "应用简介", link: "/cosmos/basic-app/" },
       { text: "系统概述", link: "/cosmos/basic-app/overview" },
       { text: "开发环境", link: "/cosmos/basic-app/dev-environment" },
       { text: "快速开始", link: "/cosmos/basic-app/getting-started" },
+      { text: "目录结构与代码地图", link: "/cosmos/basic-app/project-structure" },
     ],
   },
   {
     text: "架构",
+    link: "/cosmos/basic-app/architecture",
     collapsed: false,
-    items: [{ text: "系统架构", link: "/cosmos/basic-app/architecture" }],
+    items: [
+      { text: "后端架构", link: "/cosmos/basic-app/architecture/backend" },
+      { text: "前端架构", link: "/cosmos/basic-app/architecture/frontend" },
+      {
+        text: "请求生命周期",
+        link: "/cosmos/basic-app/architecture/request-lifecycle",
+      },
+      { text: "数据模型", link: "/cosmos/basic-app/architecture/data-model" },
+      {
+        text: "缓存与异步",
+        link: "/cosmos/basic-app/architecture/caching-async",
+      },
+    ],
   },
   {
-    text: "核心能力",
+    text: "身份与访问",
     collapsed: false,
     items: [
       { text: "身份与认证", link: "/cosmos/basic-app/identity" },
       { text: "权限模型", link: "/cosmos/basic-app/permissions" },
+      { text: "组织架构", link: "/cosmos/basic-app/organization" },
       { text: "多租户与版本", link: "/cosmos/basic-app/multi-tenancy" },
+    ],
+  },
+  {
+    text: "业务功能",
+    collapsed: false,
+    items: [
       { text: "消息中心", link: "/cosmos/basic-app/messaging" },
+      { text: "工作流", link: "/cosmos/basic-app/workflow" },
+      { text: "审批与约束规则", link: "/cosmos/basic-app/approval" },
+      { text: "文件与存储", link: "/cosmos/basic-app/file-storage" },
+      { text: "任务调度", link: "/cosmos/basic-app/scheduling" },
+      { text: "系统设置", link: "/cosmos/basic-app/system-settings" },
+      { text: "开放能力", link: "/cosmos/basic-app/open-platform" },
       { text: "审计日志", link: "/cosmos/basic-app/audit-log" },
       { text: "代码生成", link: "/cosmos/basic-app/code-generation" },
       { text: "AI 能力", link: "/cosmos/basic-app/ai" },
     ],
   },
   {
-    text: "前端与二次开发",
+    text: "前端开发",
+    link: "/cosmos/basic-app/frontend",
     collapsed: false,
     items: [
-      { text: "前端指南", link: "/cosmos/basic-app/frontend" },
-      { text: "二次开发", link: "/cosmos/basic-app/development" },
+      {
+        text: "Schema 驱动页面",
+        link: "/cosmos/basic-app/frontend/schema-page",
+      },
+      { text: "路由与菜单", link: "/cosmos/basic-app/frontend/routing" },
+      { text: "权限与脱敏", link: "/cosmos/basic-app/frontend/permission" },
+      {
+        text: "主题与国际化",
+        link: "/cosmos/basic-app/frontend/theming-i18n",
+      },
+    ],
+  },
+  {
+    text: "二次开发",
+    collapsed: false,
+    items: [
+      { text: "二次开发指南", link: "/cosmos/basic-app/development" },
+      { text: "接口对接指南", link: "/cosmos/basic-app/api-guide" },
     ],
   },
   {
     text: "参考",
     collapsed: false,
     items: [
+      { text: "配置参考", link: "/cosmos/basic-app/configuration" },
       { text: "功能清单", link: "/cosmos/basic-app/features" },
+      { text: "常见问题", link: "/cosmos/basic-app/faq" },
       { text: "部署", link: "/cosmos/basic-app/deployment" },
       { text: "更新日志", link: "/cosmos/basic-app/changelog" },
     ],

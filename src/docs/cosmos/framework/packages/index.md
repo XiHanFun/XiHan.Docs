@@ -1,6 +1,6 @@
 # 模块总览
 
-XiHan.Framework 由 **61 个 NuGet 包**组成，按分层组织。每个包都有独立文档——下面的表格按层分组，点击即可查阅。
+XiHan.Framework 由 **66 个 NuGet 包**组成，按分层组织。每个包都有独立文档——下面的表格按层分组，点击即可查阅。
 
 > 命名约定：`XiHan.Framework.[模块名]` 为通用类库，`XiHan.Framework.Web.[模块名]` 为 Web 功能。安装即 `dotnet add package <包名>`。
 
@@ -101,7 +101,11 @@ DDD 分层与应用服务契约。
 | [Traffic](./traffic) | 流量治理：灰度路由（百分比/用户/租户/请求头）、限流与熔断策略接口 |
 | [Upgrade](./upgrade) | 升级引擎：版本存储、迁移执行、分布式锁、启动自动检查 |
 | [Script](./script) | 脚本引擎：基于 Roslyn 的 C# 动态脚本、编译校验与超时 |
-| [SearchEngines](./search-engines) | 搜索引擎：Elasticsearch 集成占位（预留依赖，尚未封装 API） |
+| [Workflow.Abstractions](./workflow-abstractions) | 工作流抽象：流程定义模型、活动契约、书签与存储端口 |
+| [Workflow](./workflow) | 工作流引擎：图执行、17 个内置活动、人工任务（审批）、表达式、定时器 |
+| [SearchEngines.Abstractions](./search-engines-abstractions) | 搜索抽象：索引/文档/检索契约，零第三方依赖 |
+| [SearchEngines](./search-engines) | 搜索默认实现：进程内引擎（开发与测试兜底） |
+| [SearchEngines.Elasticsearch](./search-engines-elasticsearch) | 搜索实现：Elasticsearch（生产推荐） |
 | [Observability](./observability) | 可观测性：指标采集、性能监控、诊断（部分健康检查为占位） |
 | [DevTools](./devtools) | 开发工具：自研命令行（CLI）框架，开发期辅助 |
 
@@ -150,6 +154,8 @@ Utils（零依赖）
           ├ Domain.Shared → Domain → Data(SqlSugar)
           │     └ Application.Contracts → Application
           ├ MultiTenancy.Abstractions → MultiTenancy → Tasks / Traffic / Upgrade
+          │     └ Workflow.Abstractions → Workflow(+Caching/EventBus/Script/Timing)
+          ├ SearchEngines.Abstractions → SearchEngines → SearchEngines.Elasticsearch
           ├ Http(+Polly) → AI(Agents.AI + MCP) → Bot(MailKit + Telegram)
           └ Web.Core → Web.Api → Web.Docs / Web.Gateway / Web.Grpc / Web.RealTime
 ```

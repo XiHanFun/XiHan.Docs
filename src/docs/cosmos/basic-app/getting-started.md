@@ -85,15 +85,31 @@ pnpm dev
 生产环境**务必**覆盖初始密码，并在首次登录后立即修改。
 :::
 
+## 六、调通第一个接口
+
+登录页背后就是 `POST /api/Auth/Login`。想脱离前端直接对接（Postman / curl / 自己的客户端），从这里开始：
+
+```bash
+curl -X POST http://127.0.0.1:9708/api/Auth/Login \
+  -H "Content-Type: application/json" \
+  -d '{ "username": "superadmin", "password": "SuperAdmin@123" }'
+```
+
+`data.token.accessToken` 就是后续所有请求要带的 `Authorization: Bearer <token>`。完整的响应信封、业务码、请求头与分页协议见 [接口对接指南](./api-guide)。
+
 ## 常见问题
 
-- **启动报连不上数据库/Redis**：先确认两者已启动、连接串正确、防火墙放通端口。
+- **启动报连不上数据库/Redis**：先确认两者已启动、连接串正确、防火墙放通端口。Redis 报 `WRONGPASS` 见 [开发环境](./dev-environment#redis-8-8-必需)。
 - **表没建 / 登录不了**：首次启动会自动建表与种子，若中途失败，排查数据库权限后重启。BasicApp 的部署策略是**重建数据库、前向单一格式**，不做旧数据兼容，遇异常态 fail-closed。
-- **端口被占用**：Development 默认 `9708`，可在 launch profile 或配置中调整。
+- **端口被占用**：后端 Development 默认 `9708`，前端 dev server 默认 `9800`；改后端端口要同步改 `frontend/.env.development` 的 `VITE_DEV_PROXY_TARGET`。
+
+> 更多故障速查见 [常见问题](./faq)。
 
 ## 下一步
 
+- [接口对接指南](./api-guide)：怎么获取 token、统一响应信封、分页协议
 - [系统架构](./architecture)：理解后端模块与前后端如何协作
 - [权限模型](./permissions)：RBAC + ABAC、数据范围、多租户
+- [常见问题](./faq)：高频故障速查
 - [功能清单](./features)：系统都有哪些能力
 - [部署](./deployment)：发布到 Linux / Windows

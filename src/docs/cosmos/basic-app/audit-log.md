@@ -181,7 +181,7 @@ services.AddScoped<IEntityAuditContextProvider, SaasEntityDiffContextProvider>()
 | 异常日志 | `/log/exception` | `log/exception/index` | `lucide:triangle-alert` |
 | 数据变更 | `/log/diff` | `log/diff/index` | `lucide:file-diff` |
 
-> 同一分组下还有"链路追踪"（`/log/trace`）与"权限变更"（`/log/permission-change`）两个页面，见下文[相关能力](#相关能力权限变更日志与链路追踪查询)。
+> 同一分组下还有"链路追踪"（`/log/trace`）与"权限变更"（`/log/permission-change`）两个页面，见下文[相关能力](#相关能力-权限变更日志与链路追踪查询)。
 
 每页是一个查询表格（时间区间 + 多维过滤 + 多字段排序 + 导出按钮），点行进共享的详情抽屉 `_components/LogDetailDrawer.vue` 查看完整字段——实体变更页在详情里渲染 `BeforeData`/`AfterData`/`ChangedFields` 的前后对比。导出按钮受 `saas:xxx-log:export` 权限码控制（无权限不渲染）。
 
