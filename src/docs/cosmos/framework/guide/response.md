@@ -17,7 +17,7 @@
 
 ```json
 {
-  "code": "Success",
+  "code": 200,
   "message": "请求成功",
   "data": { "basicId": "1863928374", "name": "示例商品" },
   "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
@@ -30,7 +30,7 @@
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `code` | `string` | 业务码，序列化为**枚举成员名**（如 `"Success"`）。见下方说明 |
+| `code` | `int` | 业务码，**恒为数字**。见下方说明 |
 | `message` | `string` | 面向用户的提示，默认取业务码的 `DescriptionAttribute` |
 | `data` | `any` | 成功时是业务数据；失败时承载错误明细 |
 | `traceId` | `string?` | 请求追踪 ID，与响应头 `X-Trace-Id` 同源 |
@@ -39,29 +39,27 @@
 
 `ApiResponse<T>` 用 `new T? Data` 遮蔽父类的 `object? Data`，给客户端代码生成和 OpenAPI 一个精确的数据形状。
 
-::: danger `code` 输出的是成员名字符串，不是数字
-`ApiResponseCodes` 类型上虽然标了 `[JsonConverter(typeof(NumericEnumConverter<ApiResponseCodes>))]`，但它**不生效**。
+::: tip `code` 为什么标在属性上而不是枚举上
+`ApiResponse.Code` **属性**上标了 `[JsonConverter(typeof(NumericEnumConverter<ApiResponseCodes>))]`，而不是只在 `ApiResponseCodes` 枚举类型上标。
 
-System.Text.Json 的转换器优先级是「属性特性 > `Converters` 集合 > **类型特性**」，而 `XiHanWebCoreMvcOptions.ConfigureJsonOptionsDefault()` 把 `JsonStringEnumConverter` 加进了 `Converters` 集合，并由 `AddXiHanWebApiMvc` 整份复制进 MVC 的 `JsonSerializerOptions`——集合胜出。
+原因是 System.Text.Json 的转换器优先级：
 
-所以经 Web 接口返回时：
-
-```json
-{ "code": "Success" }      // 实际输出
-{ "code": 200 }            // 类型特性单独生效时才会是这样
+```text
+属性特性  >  JsonSerializerOptions.Converters 集合  >  类型特性
 ```
 
-**客户端不要按数字比较 `code`。**
+Web 管道会把 `JsonStringEnumConverter` 加进 `Converters` 集合（全局枚举转成员名），**只标在枚举类型上会被集合压过**，`code` 就变成 `"Success"` 这样的字符串了。标在属性上优先级最高，才能保证无论管道怎么配 `code` 恒为数字。
+
+自己定义信封、或在 DTO 里暴露枚举又希望它输出数字时，照这个位置标。
 :::
 
 ::: warning 判定成功一律用 `isSuccess`
-三条理由：
+两条理由：
 
-1. `code` 是成员名字符串，按数字比较必然落空；
-2. 不要用「有没有 `data` 字段」判断——序列化开了 `WhenWritingNull`，`data` 为 null 时字段整个不出现；
-3. 成功不止 `Success` 一个码，`Created` / `Accepted` / `NoContent` 同样是成功（`isSuccess` 已经按 `[200, 300)` 算好）。
+1. 不要用「有没有 `data` 字段」判断——序列化开了 `WhenWritingNull`，`data` 为 null 时字段整个不出现；
+2. 成功不止 `200` 一个码，`201` / `202` / `204` 同样是成功（`isSuccess` 已经按 `[200, 300)` 算好）。
 
-需要区分具体情形时，把 `code` 当**字符串枚举**匹配（如 `code === "LoginExpired"`）。
+需要区分具体情形时再比 `code` 的数值。
 :::
 
 ## 安装与启用

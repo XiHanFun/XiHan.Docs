@@ -145,7 +145,9 @@ public interface ICrudApplicationService<TEntityDto, TKey, TCreateDto, TUpdateDt
 
 枚举 `ApiResponseCodes` 的每个成员带 `DescriptionAttribute` 中文描述，`Message` 默认即取自该描述。
 
-类型上虽标了 `[JsonConverter(typeof(NumericEnumConverter<ApiResponseCodes>))]`，但 Web 管道把 `JsonStringEnumConverter` 加进了 `JsonSerializerOptions.Converters` 集合，而**集合的优先级高于类型特性**——所以经 Web 接口输出时 `code` 实际是**枚举成员名字符串**（如 `"Success"`）。客户端判定成功请用 `isSuccess`。
+`ApiResponse.Code` **属性**上标了 `[JsonConverter(typeof(NumericEnumConverter<ApiResponseCodes>))]`（枚举类型上也标了同一个转换器），**强制序列化为 int**——即使 Web 管道全局启用了 `JsonStringEnumConverter`，`code` 仍输出数字，方便前端统一判断。
+
+转换器标在属性上是必需的：System.Text.Json 的优先级为「属性特性 > `Converters` 集合 > 类型特性」，只标类型会被管道加进集合的 `JsonStringEnumConverter` 压过。
 
 分两个区段：
 
@@ -237,7 +239,7 @@ var fail = ApiResponse.Failure(ApiResponseCodes.PermissionDenied, "缺少 produc
 ## 注意事项与最佳实践
 
 - 创建/更新用**分离的 DTO**（`TCreateDto` / `TUpdateDto`），不要复用同一个 DTO——创建时不含主键，更新时 `BasicId` 必填，语义不同。
-- `ApiResponse.Code` 经 Web 接口输出时是**枚举成员名字符串**（如 `"Success"`），不是数字——前端判定成功请用 `IsSuccess`，不要按数字比较 `Code`。
+- `ApiResponse.Code` 永远是 int（属性级 `NumericEnumConverter` 保证），前端按数字判断即可；判定成功优先用 `IsSuccess`，它已按 `[200, 300)` 算好。
 - 判断成功用 `IsSuccess`（2xx 区段），而非 `Code == 200` 单值——`Created`(201) 等也应视为成功。
 - 业务失败优先用 10000+ 业务码而非直接套用 HTTP 4xx，以携带更明确的业务语义。
 
