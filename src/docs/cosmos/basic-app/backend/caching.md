@@ -117,7 +117,7 @@ IRedisDelayQueue<T>.Enqueue  ───────►  拉取 → 原子领取�
 | 周期性/定时触发（每天凌晨跑报表） | 框架 [Tasks](../../framework/packages/tasks) 的调度器 + `Sys_Task` 配置 |
 | 一次性 fire-and-forget，入队即返回 | 框架 `IBackgroundJobManager.EnqueueAsync` |
 | **持续拉队列消费，且要业务表做状态机** | **`XiHanBackgroundServiceBase<T>` + `IRedisDelayQueue<T>`（BasicApp 的两条链路都是这种）** |
-| 等人审批的长流程 | [工作流](../workflow) |
+| 等人审批的长流程 | [工作流](./workflow) |
 
 ## 事件
 
@@ -147,5 +147,5 @@ BasicApp 的写路径大量使用本地事件解耦（如授权变更 → 写权
 
 - [请求生命周期](./request-lifecycle)：收尾顺序的完整时序
 - [数据模型](./data-model)：事实源表的结构
-- [消息中心](../messaging)：邮件/短信/通知的业务设计
+- [消息中心](./messaging)：邮件/短信/通知的业务设计
 - [Caching 包](../../framework/packages/caching) / [Tasks 包](../../framework/packages/tasks)：框架侧实现

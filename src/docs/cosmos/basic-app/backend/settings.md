@@ -14,7 +14,7 @@
 **新增/修改菜单要改 `PageRegistry` 并重新播种**，在页面上手改会在下次播种时被覆盖或产生漂移。菜单管理页的定位是查看结构、调整排序与显隐，不是维护入口。
 :::
 
-关键机制见 [后端架构 · 菜单](./architecture/backend#菜单-后端单一事实源)。
+关键机制见 [后端架构 · 菜单](./introduction#菜单-后端单一事实源)。
 
 ## 数据字典（`/setting/dict`）
 
@@ -96,7 +96,7 @@
 - **应急**：确认是失效逻辑漏了，可以手工清一次先恢复业务，再回头修代码。
 
 ::: danger 手工清缓存是应急手段
-手工清完问题消失，说明**写侧漏调了失效方法**——这是需要修的 bug，不是一次性故障。正确做法见 [缓存与异步](./architecture/caching-async#加一个新缓存的清单)。
+手工清完问题消失，说明**写侧漏调了失效方法**——这是需要修的 bug，不是一次性故障。正确做法见 [缓存与异步](./caching#加一个新缓存的清单)。
 :::
 
 缓存键的命名规则、条目清单与失效器方法同样在那一页。
@@ -117,7 +117,7 @@
 | `MinSupportVersion` | 允许升级的最低来源版本 |
 | `IsUpgrading` / `UpgradeNode` / `UpgradeStartTime` | 升级中标记、执行节点、开始时间（多节点协调用） |
 
-升级行为由配置节 `XiHan:Upgrade` 控制（分布式锁、主节点、维护模式等），见 [配置参考](./configuration#xihan-upgrade)。
+升级行为由配置节 `XiHan:Upgrade` 控制（分布式锁、主节点、维护模式等），见 [配置参考](../configuration#xihan-upgrade)。
 
 ::: warning 本项目不做数据迁移
 部署策略是**重建数据库、前向单一格式、遇异常态 fail-closed**。升级引擎在这里主要用于版本记录与多节点协调，而不是承载 schema 迁移脚本。给既有实体加字段后必须重建库或手工 `ALTER`——`DbInitializer` 表存在就跳过、从不补列。
@@ -140,7 +140,7 @@
 
 ## 相关页面
 
-- [缓存与异步](./architecture/caching-async)：缓存条目与失效器
-- [配置参考](./configuration)：`appsettings` 全量配置节
+- [缓存与异步](./caching)：缓存条目与失效器
+- [配置参考](../configuration)：`appsettings` 全量配置节
 - [消息中心](./messaging)：模板与四通道发送
-- [数据模型](./architecture/data-model#系统设置)：相关表结构
+- [数据模型](./data-model#系统设置)：相关表结构

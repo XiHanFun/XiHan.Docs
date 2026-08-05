@@ -1,6 +1,6 @@
 # 权限与脱敏（前端）
 
-前端在**页面 / 字段 / 操作**三个层级按权限码过滤，并在服务端脱敏的基础上做只读与标识提示。本页讲前端这一侧怎么写；判定规则本身（权限码、数据范围、ABAC、约束规则）见 [权限模型](../permissions)。
+前端在**页面 / 字段 / 操作**三个层级按权限码过滤，并在服务端脱敏的基础上做只读与标识提示。本页讲前端这一侧怎么写；判定规则本身（权限码、数据范围、ABAC、约束规则）见 [权限模型](../backend/permission)。
 
 ## 前提：前端过滤是体验，不是安全边界
 
@@ -115,7 +115,7 @@ const canGrant = computed(() => hasPermission('saas:tenant-edition-permission:gr
 | 租户切换 | 调 `POST /api/Auth/SwitchTenant`（`tenantId` 传 `null` 回平台态），**换发令牌但不产生新登录/新设备** |
 | 平台态判断 | `UserInfo.isPlatform`（当前是否平台运维态）、`canAccessPlatform`（能否进入） |
 
-切换后要重新拉取权限与菜单——租户不同，可用的功能也不同（受[租户版本门控](../multi-tenancy)影响）。
+切换后要重新拉取权限与菜单——租户不同，可用的功能也不同（受[租户版本门控](../backend/multi-tenancy)影响）。
 
 ## 排查
 
@@ -130,7 +130,7 @@ const canGrant = computed(() => hasPermission('saas:tenant-edition-permission:gr
 
 ## 相关页面
 
-- [权限模型](../permissions)：权限码、RBAC 继承、数据范围、ABAC、约束规则
+- [权限模型](../backend/permission)：权限码、RBAC 继承、数据范围、ABAC、约束规则
 - [Schema 驱动页面](./schema-page)：字段与操作的权限声明位置
 - [路由与菜单](./routing)：页面级门控
-- [多租户与版本](../multi-tenancy)：版本门控与租户切换
+- [多租户与版本](../backend/multi-tenancy)：版本门控与租户切换

@@ -18,7 +18,7 @@ XiHan.BasicApp 内置了中后台系统所需的完整能力。以下按领域�
 - 权限委托（委托人 → 被委托人 → 权限或角色范围 → 生效 / 到期时间窗，可随时撤销）
 - 权限申请审批与变更留痕
 
-> 权限模型的完整说明见 [权限模型](./permissions)。
+> 权限模型的完整说明见 [权限模型](./backend/permission)。
 
 ## 多租户
 
@@ -79,8 +79,8 @@ XiHan.BasicApp 内置了中后台系统所需的完整能力。以下按领域�
 
 ## 下一步
 
-- [权限模型](./permissions)：RBAC + ABAC 深入
-- [系统架构](./architecture)：模块划分与数据流
+- [权限模型](./backend/permission)：RBAC + ABAC 深入
+- [系统架构](./backend/introduction)：模块划分与数据流
 - [接口对接指南](./api-guide)：响应信封、业务码、获取 token、分页协议
 - [常见问题](./faq)：高频故障速查
 - [快速开始](./getting-started)：本地跑起来

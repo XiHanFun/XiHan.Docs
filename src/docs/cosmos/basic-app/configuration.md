@@ -267,7 +267,7 @@ Development 默认 `9708`、Production 默认 `9709`。改了要同步改前端�
 | `Local.RootPath` | `wwwroot/uploads` | 文件落盘根目录 |
 | `Local.UrlPrefix` | `/uploads` | 对外访问 URL 前缀（**根相对路径**，跨源时前端拼 API origin） |
 
-对象存储的其余后端（S3/OSS/COS/MinIO）**配置落库**在 `SysStorageConfig`，不写 `appsettings`。见 [文件与存储](./file-storage#存储配置-file-storage)。
+对象存储的其余后端（S3/OSS/COS/MinIO）**配置落库**在 `SysStorageConfig`，不写 `appsettings`。见 [文件与存储](./backend/file#存储配置-file-storage)。
 
 ## `XiHan:VirtualFileSystem`
 
@@ -311,11 +311,11 @@ Development 默认 `9708`、Production 默认 `9709`。改了要同步改前端�
 | 机器人 | `SysBotConfig` / `SysTelegramBot` | `/setting/bot-config`、`/setting/telegram-bot` |
 | AI Provider / 提示词 | `SysAiProvider` / `SysAiPrompt` | `/develop/ai-provider`、`/develop/ai-prompt` |
 
-它们通过 `services.Replace(...)` 覆盖框架默认的配置源实现。判断标准见 [系统设置](./system-settings#参数配置-setting-config)。
+它们通过 `services.Replace(...)` 覆盖框架默认的配置源实现。判断标准见 [系统设置](./backend/settings#参数配置-setting-config)。
 
 ## 相关页面
 
 - [开发环境](./dev-environment)：Docker 起依赖并对齐连接串
 - [部署](./deployment)：生产部署与环境变量注入
 - [常见问题](./faq)：配置类故障速查
-- [系统设置](./system-settings)：落库配置的管理页面
+- [系统设置](./backend/settings)：落库配置的管理页面

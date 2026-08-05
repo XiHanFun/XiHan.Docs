@@ -1,6 +1,6 @@
 # 任务调度
 
-页面 `/setting/job`，实体 `SysTask` + `SysTaskLog`（按月分表）。它是框架 [Tasks 调度引擎](../framework/packages/tasks) 的**管理面**：把任务定义落库、在页面上启停与手动触发，执行仍由框架的调度器完成。
+页面 `/setting/job`，实体 `SysTask` + `SysTaskLog`（按月分表）。它是框架 [Tasks 调度引擎](../../framework/packages/tasks) 的**管理面**：把任务定义落库、在页面上启停与手动触发，执行仍由框架的调度器完成。
 
 ## 数据模型
 
@@ -85,6 +85,6 @@ Saas 模块在 `OnPostApplicationInitialization`（**所有模块都就绪之后
 
 ## 相关页面
 
-- [框架 · Tasks](../framework/packages/tasks)：调度引擎、中间件管道、声明式特性
-- [缓存与异步](./architecture/caching-async)：另外两条异步链路
-- [数据模型](./architecture/data-model#文件与任务)：表结构
+- [框架 · Tasks](../../framework/packages/tasks)：调度引擎、中间件管道、声明式特性
+- [缓存与异步](./caching)：另外两条异步链路
+- [数据模型](./data-model#文件与任务)：表结构

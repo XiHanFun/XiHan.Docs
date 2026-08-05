@@ -1,8 +1,53 @@
-# 后端架构
+# 1. 框架简介
 
-本页讲后端的**组织方式**：项目怎么分层、模块怎么装配、每个模块内部怎么切 DDD、服务注册有哪些必须遵守的约定、种子数据怎么排序。动手改代码前读这页，能避开一整类「静默失效」的坑。
+XiHan.BasicApp 后端是一套基于 [XiHan.Framework](../../framework/index) 的多租户中后台内核。本页讲**组织方式**：整体全景、项目怎么分层、模块怎么装配、每个模块内部怎么切 DDD、服务注册有哪些必须遵守的约定、种子数据怎么排序。
 
-> 架构总览与前后端全景见 [架构总览](../architecture)；请求在管道里的流转见 [请求生命周期](./request-lifecycle)。
+动手改代码前读这页，能避开一整类「静默失效」的坑。
+
+## 全景
+
+```text
+┌──────────────────────────────────────────────────────────────────────────┐
+│                        XiHan.BasicApp.WebHost                             │
+│        启动入口 Program.cs + 聚合模块 XiHanBasicAppWebHostModule           │
+│  [DependsOn] Saas / CodeGeneration / AI / Workflow / Observability / Mcp  │
+│        健康检查 / MCP Server / Telegram Webhook / /health 端点            │
+├───────────────┬──────────────────┬───────────────┬───────────────────────┤
+│ BasicApp.Saas │ BasicApp.        │ BasicApp.AI   │ BasicApp.Workflow     │
+│ 身份/权限/租户 │  CodeGeneration  │ Provider 库化 │ 流程定义/实例/待办     │
+│ 消息/文件/日志 │ 数据源/表结构/   │ 知识库 RAG /  │ SqlSugar 持久化存储    │
+│ 任务/审批/聊天 │ 模板/全栈生成    │ 提示词库      │ 待办站内通知           │
+├───────────────┴──────────────────┴───────────────┴───────────────────────┤
+│                        XiHan.BasicApp.Web.Core                            │
+│      Web 能力聚合：动态 API / Scalar 文档 / SignalR / 网关灰度             │
+├──────────────────────────────────────────────────────────────────────────┤
+│                          XiHan.BasicApp.Core                              │
+│  基座抽象：实体/DTO 基类（多租户审计）、查询服务标记接口、聚合框架能力模块    │
+├──────────────────────────────────────────────────────────────────────────┤
+│                            XiHan.Framework.*                              │
+│ 认证 / 授权 / 数据(SqlSugar) / 缓存 / 事件总线 / 多租户 / 工作流 / AI / Bot │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+## 四条贯穿全局的设计
+
+理解这四条，大部分「为什么这么写」的疑问就解开了。
+
+### 一、一切皆模块
+
+能力以 `XiHanModule` + `[DependsOn]` 为装配单元，框架按依赖图拓扑排序、逐阶段初始化。加一块能力就是加一行 `[DependsOn]`，减一块就是删一行。
+
+### 二、后端驱动前端
+
+菜单、路由、组件路径、权限码、国际化键、枚举标签、字段脱敏规则，**事实源全部在后端**。前端只提供视图组件与文案。新增页面的主要工作因此落在后端 `PageRegistry` 与权限定义上。
+
+### 三、没有 Controller
+
+应用服务打 `[DynamicApi]` 即成 REST 接口，路由由方法名推导。两个必须记住的约定：**分页方法要显式标 `[HttpPost]`**、**路由段只由显式 `[FromRoute]` 参数产生**。
+
+### 四、读缓存、写失效、耗时异步
+
+热点读走 Redis 分布式缓存，写路径精准失效（且必须排队到事务提交之后）；耗时动作入队由后台服务消费，数据库表是事实源、队列只承载待办工作。
 
 ## 项目分层
 
@@ -200,10 +245,27 @@ services.Replace(ServiceDescriptor.Scoped<ISessionStateGate, SaasSessionStateGat
 源码模式下 VS 要求被 `ProjectReference` 的工程也是解决方案成员，否则设计时报 `NU1105`。而 `XiHan.BasicApp.slnx` 里没有、也不该有框架工程（它要能被单独克隆的人打开），所以它必须始终走 NuGet。早先按「旁边有没有框架源码」自动探测，结果在工作区里打开 `XiHan.BasicApp.slnx` 会被切成源码模式、NU1105 刷屏。
 :::
 
-## 相关页面
+## 前后端协作数据流
 
-- [请求生命周期](./request-lifecycle)：中间件管道与收尾时序
-- [数据模型](./data-model)：实体基类与表约定
-- [缓存与异步](./caching-async)：缓存条目与后台队列
-- [二次开发](../development)：新增功能的完整接线清单
+```text
+Vue 页面（Schema 驱动列表页）
+   │  分页走 POST，body = { conditions, page }；附 X-Language / X-Timezone 头
+   ▼
+动态 API（*AppService / *QueryService，[DynamicApi] 暴露，无 Controller）
+   │  中间件管道：转发头 → TraceId → 请求文化 → 路由 → CORS → 认证
+   │                → 租户解析 → 会话闸门(401/423) → 授权(授权快照)
+   ▼
+应用服务（写侧 [UnitOfWork]） / 查询服务（读侧投影 + 缓存 + FLS 门控）
+   │  → 领域服务（业务规则） → 仓储（SqlSugar，自动挂租户/软删过滤） → 数据库
+   ▼
+UoW 收尾：本地事件(提交前) → 提交 → 分布式事件(提交后) → 精准失效缓存 → 队列入队
+   ▲
+   └─ 响应统一 ApiResponse 信封；本地化覆盖 Data；时间按 X-Timezone 换算
+```
+
+## 下一步
+
+- [2. 开发流程](./development)：新增功能的完整接线清单
+- [3. 请求生命周期](./request-lifecycle)：中间件管道逐段与收尾时序
+- [4. 实体基类](./entity) → [5. 数据库配置](./database) → [6. 数据模型](./data-model)
 - [框架 · 模块系统](../../framework/concepts/modularity)：`[DependsOn]` 与拓扑排序机制

@@ -103,7 +103,7 @@ frontend/
 
 | 我要… | 改这里 |
 | --- | --- |
-| 加一个业务实体 | `Domain/Entities/SysXxx.cs`（+ `Expands/`），选对[实体基类](./architecture/data-model#实体基类-先选对基类) |
+| 加一个业务实体 | `Domain/Entities/SysXxx.cs`（+ `Expands/`），选对[实体基类](./backend/entity#先选对基类) |
 | 加一个权限码 | `Domain/Permissions/SaasPermissionCodes.cs`（常量）**和** `SaasPermissionDefinitions.cs`（落库定义），两处都要 |
 | 加一个菜单/页面/按钮 | `Application/Pages/PageRegistry.cs` 的 `All` / `Buttons` |
 | 加一个接口 | `Application/AppServices/**`（写）或 `QueryServices/**`（读）；**分页方法记得标 `[HttpPost]`** |
@@ -146,11 +146,11 @@ frontend/
 | 加事件处理器 | 处理器类 **+** `XiHanLocalEventBusOptions.Handlers` 登记 |
 | 加缓存 | 条目类 **+** 失效器方法 **+** 所有会改到该数据的写侧调用 |
 
-漏掉右边那一半，表现基本都是**静默失效**：不报错、但功能不生效。完整清单见 [二次开发](./development)。
+漏掉右边那一半，表现基本都是**静默失效**：不报错、但功能不生效。完整清单见 [二次开发](./backend/development)。
 
 ## 相关页面
 
-- [后端架构](./architecture/backend)：分层与装配机制
-- [前端架构](./architecture/frontend)：五层结构与依赖方向
-- [二次开发](./development)：新增功能的端到端清单
+- [后端架构](./backend/introduction)：分层与装配机制
+- [前端架构](./frontend/introduction)：五层结构与依赖方向
+- [二次开发](./backend/development)：新增功能的端到端清单
 - [配置参考](./configuration)：`appsettings` 全量

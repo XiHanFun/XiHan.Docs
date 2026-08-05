@@ -2,7 +2,7 @@
 
 XiHan.BasicApp 把"谁在什么时候、从哪里、对什么做了什么、结果如何"拆成**六类互相独立的日志**，各有专属实体、专属写入通道、专属查询接口与前端页面。它们通过一个共同的 `TraceId` 串联同一次请求的完整生命周期，从而既能各自聚焦（安全审计 / 性能分析 / 数据溯源 / 稳定性排障各取所需），又能跨表拼出一条完整链路。
 
-日志的**底座**是框架的结构化日志能力（Serilog 双路输出、多租户日志上下文），详见 [`../framework/packages/logging`](../framework/packages/logging)。本页讲的是 BasicApp 在这套底座之上、面向业务与合规的**审计日志纵切**：实体、脱敏、写入机制、查询监控。
+日志的**底座**是框架的结构化日志能力（Serilog 双路输出、多租户日志上下文），详见 [`../framework/packages/logging`](../../framework/packages/logging)。本页讲的是 BasicApp 在这套底座之上、面向业务与合规的**审计日志纵切**：实体、脱敏、写入机制、查询监控。
 
 ## 六类日志一览
 
@@ -194,7 +194,7 @@ services.AddScoped<IEntityAuditContextProvider, SaasEntityDiffContextProvider>()
 
 ## 与框架的关系
 
-- **结构化日志底座**：Serilog 双路输出、按天/大小滚动、多租户日志上下文（UserId/TenantId/TraceId），见 [`../framework/packages/logging`](../framework/packages/logging)。审计日志是在此之上的、面向合规的**结构化数据表**，而非文本日志文件。
+- **结构化日志底座**：Serilog 双路输出、按天/大小滚动、多租户日志上下文（UserId/TenantId/TraceId），见 [`../framework/packages/logging`](../../framework/packages/logging)。审计日志是在此之上的、面向合规的**结构化数据表**，而非文本日志文件。
 - **日志管道与脱敏**：请求捕获点（中间件 `XiHanRequestLoggingMiddleware`/`XiHanApiLoggingMiddleware`/`XiHanExceptionLoggingMiddleware`、过滤器 `XiHanActionLoggingFilter`）由框架 `XiHan.Framework.Web.Api` 提供；`Pipeline` 抽象、`Writer` 接口、异步队列与 `LogSanitizer` 脱敏器统一在 `XiHan.Framework.Auditing` 包，BasicApp 只提供 Writer 落库实现。
 - **实体变更拦截**：由框架 `XiHan.Framework.Data.Auditing`（`EntityChangeInterceptor`，基于 SqlSugar 命令级 AOP）与仓储基类 `.EnableDiffLogEvent()`（`XiHan.Framework.Data.SqlSugar.Auditing.SqlSugarDiffLogAop`）两条互补路径提供，BasicApp 提供 `IEntityDiffLogWriter` 与 `IEntityAuditContextProvider`。
-- **动态 API / 分页 / FLS**：查询服务遵循 BasicApp 全局约定，分别见 [`../framework/concepts/dynamic-api`](../framework/concepts/dynamic-api) 与本站 [`./permissions`](./permissions)（字段级脱敏、数据范围）。
+- **动态 API / 分页 / FLS**：查询服务遵循 BasicApp 全局约定，分别见 [`../framework/concepts/dynamic-api`](../../framework/concepts/dynamic-api) 与本站 [`./permissions`](./permission)（字段级脱敏、数据范围）。
