@@ -1,4 +1,4 @@
-# 12. 缓存
+# 缓存与分布式锁
 
 框架的缓存抽象、分布式锁、以及**失效时序**这个最容易出错的点。
 
@@ -41,7 +41,7 @@ public Task UpdateUserAsync(long userId, UserUpdateDto input) { … }
 ```
 
 ::: warning 前提是服务注册为接口
-声明式缓存靠 AOP 实现，**服务的注册类型必须是接口**，否则特性静默失效。见 [4. AOP 与拦截器](./aop)。
+声明式缓存靠 AOP 实现，**服务的注册类型必须是接口**，否则特性静默失效。见 [AOP 与拦截器](./aop)。
 :::
 
 ## 缓存条目模式
@@ -72,7 +72,7 @@ await cache.RemoveByPatternAsync(pattern, hideErrors: true, considerUow: true, t
 这类问题极难复现（要恰好有并发读落在提交前的窗口里），一旦发生只能靠手工清缓存恢复。**务必保持 `considerUow: true`。**
 :::
 
-完整的提交时序见 [9. 工作单元与事务](./uow#提交时序)。
+完整的提交时序见 [工作单元与事务](./uow#提交时序)。
 
 ## 分布式锁
 
@@ -88,17 +88,22 @@ if (handle is null) return;   // 没抢到，本轮跳过
 TTL 是崩溃安全网——进程挂了锁能自动释放。但如果临界区跑得比 TTL 久，锁会在执行中途过期，另一个实例就进来了。
 :::
 
-## Lua 脚本是能力接口
+## Lua 脚本
 
-::: tip 破坏性变更（已落地）
-`IDistributedCache` 上的 `ScriptEvaluate` / `ScriptEvaluateAsync` **已移除**——它们的签名里直接写着 StackExchange.Redis 的 `RedisResult` / `RedisValue`，抽象一旦焊上某个客户端的类型，换实现就要改所有调用方。
+Lua 执行**不在 `IDistributedCache` 这个通用契约上**，而是可选能力接口 `ICacheSupportsLuaScript`——通用缓存抽象不应该焊上某个客户端的类型，否则换实现就要改所有调用方。
 
-现在 Lua 执行是**可选能力接口** `ICacheSupportsLuaScript`，签名中立：入参 `object?[]`、返回 `CacheScriptResult`。
+用法是先做类型判断：
 
-迁移：把 `cache.ScriptEvaluate(...)` 改成先 `if (cache is ICacheSupportsLuaScript lua)` 再调，返回值按 `CacheScriptResult` 解析。
+```csharp
+if (cache is ICacheSupportsLuaScript lua)
+{
+    CacheScriptResult result = await lua.ScriptEvaluateAsync(script, keys, args);
+}
+```
 
-`IRedisDelayQueue` / `IRedisStreamQueue` 不受影响——它们名字里就带 Redis，是诚实的专用抽象。
-:::
+签名是中立的：入参 `object?[]`，返回 `CacheScriptResult`（承载标量、整数、布尔与嵌套数组）。具体实现负责把自己的原生返回值映射成这个中立结构。
+
+`IRedisDelayQueue` / `IRedisStreamQueue` 则是名字里就带 Redis 的专用抽象，直接用即可。
 
 ## 常见问题
 
@@ -108,10 +113,10 @@ TTL 是崩溃安全网——进程挂了锁能自动释放。但如果临界区�
 | 偶发读到旧值且不自愈 | 失效没走 `considerUow: true` |
 | `[Cacheable]` 没生效 | 服务注册类型不是接口 |
 | 多实例定时任务重复执行 | Redis 没开，分布式锁退化成进程内锁 |
-| 升级后 `ScriptEvaluate` 编译报错 | 见上面的破坏性变更说明 |
+| 想执行 Lua 脚本 | 用能力接口 `ICacheSupportsLuaScript`，见上节 |
 
 ## 下一步
 
-- [9. 工作单元与事务](./uow)：失效为什么要排队
-- [4. AOP 与拦截器](./aop)：声明式缓存的实现机制
+- [工作单元与事务](./uow)：失效为什么要排队
+- [AOP 与拦截器](./aop)：声明式缓存的实现机制
 - [Caching 包](../packages/caching)：完整 API 与配置

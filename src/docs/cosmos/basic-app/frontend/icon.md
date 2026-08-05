@@ -1,13 +1,21 @@
-# 9. 字体图标
+# 字体图标
 
 图标走 Iconify，**运行在离线模式**——这带来一条必须记住的限制。
 
 ## 用法
 
 ```vue
-<Icon icon="lucide:eye" />
-<Icon icon="lucide:trash-2" class="text-red-500" />
+<script setup lang="ts">
+import { Icon } from '~/iconify'
+</script>
+
+<template>
+  <Icon icon="lucide:eye" />
+  <Icon icon="lucide:trash-2" class="text-red-500" />
+</template>
 ```
+
+`Icon` 不是全局组件，用前须从 `~/iconify`（或转出它的 `~/components`）导入。
 
 图标名格式是 `{集合}:{图标}`，可在 [Iconify 官网](https://icon-sets.iconify.design/) 搜索。
 
@@ -53,9 +61,10 @@ new("identity.position", "岗位管理", "menu.identity_position", MenuType.Menu
 
 ## 加一个图标集
 
-1. 在 `~/iconify/offline.ts` 的 `PRELOAD_ICON_PACKAGES` 加入该集；
-2. 确认对应的 `@iconify-json/{集合}` 依赖已安装；
-3. 重新构建。
+1. 确认对应的 `@iconify-json/{集合}` 依赖已安装；
+2. 在 `~/iconify/offline.ts` 的 `ICON_SET_META` 与 `PACKAGE_LOADERS` 里登记该集（carbon / ep / heroicons 已登记，可跳过）；
+3. 把该集加入同文件的 `PRELOAD_ICON_PACKAGES`；
+4. 重新构建。
 
 ::: warning 加集会增大产物
 每个图标集都是完整数据包。只在确实需要时加，优先从已有四个集里找替代图标。
@@ -72,6 +81,6 @@ new("identity.position", "岗位管理", "menu.identity_position", MenuType.Menu
 
 ## 相关页面
 
-- [7. 布局与主题](./theme)：外观定制
-- [3. 菜单与路由](./routing)：菜单图标从哪来
-- [12. 常用组件](./components)：`IconPicker` 等公共组件
+- [布局与主题](./theme)：外观定制
+- [路由与菜单](./routing)：菜单图标从哪来
+- [常用组件](./components)：`IconPicker` 等公共组件

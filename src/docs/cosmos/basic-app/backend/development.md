@@ -12,7 +12,7 @@
 | **配方 B：独立一等模块** | 加一个完整功能域（代码生成、AI…），自成项目、独立种子/权限命名空间 | `modules/XiHan.BasicApp.<Name>` 新建工程 + 双边接线 | `XiHan.BasicApp.AI` / `CodeGeneration` |
 | **配方 C：仅前端页面** | 后端已有接口，只补一个视图 | `frontend/src/views/**` + `PageRegistry` | 见下 |
 
-**判断准则**：功能是否共享 Saas 的 RBAC 表、`SaasRepository`、Data Protection 密文前缀？是且体量小 → 配方 A；是独立大域、想要独立的权限/种子 `Order` 段与项目边界 → 配方 B。四个业务模块彼此不直接依赖，均以 Saas 为共享基座。
+**判断准则**：功能是否共享 Saas 的 RBAC 表、`SaasRepository`、Data Protection 密文前缀？是且体量小 → 配方 A；是独立大域、想要独立的权限/种子 `Order` 段与项目边界 → 配方 B。`CodeGeneration` / `AI` / `Workflow` 三个模块彼此不直接依赖，均以 Saas 为共享基座。
 
 ## DDD 分层与命名约定
 
@@ -194,7 +194,7 @@ public class XiHanBasicAppAIModule : XiHanModule
         var services = context.Services;
         var configuration = services.GetConfiguration();
 
-        services.AddAIDataSeeders();     // 种子：操作→资源→权限→菜单→角色授权
+        services.AddAIDataSeeders();     // 种子：操作→资源→权限→角色授权
         services.AddAIDomainServices();  // 领域服务：显式 AddScoped（无 DI 标记）
         services.AddAIConfigStore();     // Replace 覆盖框架默认配置源
 
@@ -204,14 +204,17 @@ public class XiHanBasicAppAIModule : XiHanModule
 
         services.AddAISkills();
 
-        services.AddPromptDataSeeders();     // 提示词库（M5）：种子 209–212
+        services.AddPromptDataSeeders();     // 提示词库：种子 209–212
         services.AddPromptDomainServices();
         services.AddPromptStore();           // Replace 覆盖框架默认提示词库
+
+        services.AddAssistantDataSeeders();  // AI 助手：种子 213–216，并由 AiMenuSeeder(217) 统一播种本模块菜单
+        services.AddAssistantDomainServices();
     }
 }
 ```
 
-> `AI` 模块目前包含三段能力：Provider 库化管理、知识库 RAG、提示词库（M5 新增），三者各自「种子 + 领域服务 + `Replace` 覆盖框架默认存储」一套齐全，`AddAISkills` 单独登记对话技能。新增能力时依样追加一段，`Order` 段落不与既有三段交叠。
+> `AI` 模块包含四段能力：Provider 库化管理、知识库 RAG、提示词库、AI 助手。前三段各自「种子 + 领域服务 + `Replace` 覆盖框架默认存储」一套齐全，AI 助手段为「种子 + 领域服务」，`AddAISkills` 单独登记对话技能。新增能力时依样追加一段，`Order` 段落不与既有四段交叠。
 
 ### 模块 csproj（一份就够）
 
@@ -249,7 +252,7 @@ public static IServiceCollection AddAIConfigStore(this IServiceCollection servic
 | --- | --- | --- |
 | Saas | 10–37 | 系统基线 10–29、演示 30–37 |
 | CodeGeneration | 100–105 | — |
-| AI | 200–212 | Provider 200–204、知识库 RAG 205–208、提示词库 209–212 |
+| AI | 200–217 | Provider 200–204、知识库 RAG 205–208、提示词库 209–212、AI 助手 213–216、菜单 217 |
 | Workflow | 300–304 | 操作 300 → 资源 301 → 权限 302 → 菜单 303 → 角色授权 304 |
 
 AI 的 `AddAIDataSeeders` 实链（`AddDataSeeder<T>()` 逐个登记）：
@@ -258,15 +261,14 @@ AI 的 `AddAIDataSeeders` 实链（`AddDataSeeder<T>()` 逐个登记）：
 services.AddDataSeeder<SysOperationSeeder>();       // 200 操作字典（权限派生前置）
 services.AddDataSeeder<SysResourceSeeder>();        // 201 资源（权限派生前置）
 services.AddDataSeeder<SysPermissionSeeder>();      // 202 资源 × 操作 → ai:* 权限
-services.AddDataSeeder<SysMenuSeeder>();            // 203 菜单（建即绑 ai:read）
 services.AddDataSeeder<SysRolePermissionSeeder>();  // 204 仅授超管
 ```
 
-`AddRAGDataSeeders`（205–208）与 `AddPromptDataSeeders`（209–212，提示词库）各自复用 AI 段的 `SysOperationSeeder`（200），链内只补「资源 → 权限 → 菜单 → 角色授权」四步，不重复种操作字典。
+`AddRAGDataSeeders`（205–208）、`AddPromptDataSeeders`（209–212）与 `AddAssistantDataSeeders`（213–216）各自复用 AI 段的 `SysOperationSeeder`（200），链内只补「资源 → 权限 → 角色授权」三步，不重复种操作字典。本模块全部菜单由末尾的 `AiMenuSeeder`（217，`PageRegistry` 驱动）一次播种。
 
 > 新模块选一段未用的 `Order`（如 400–）；**操作/资源种子必须排在权限种子之前**（权限由「资源 × 操作」派生）。
 
-`XiHan.BasicApp.Workflow` 是最新、也最干净的一个独立模块样板：`ConfigureServices` 只有三行（`AddWorkflowStores` 用 `Replace` 把框架工作流的内存存储换成 SqlSugar 持久化、`AddWorkflowDataSeeders` 走完整的五步种子链、`AddWorkflowEventHandlers` 登记三个本地事件处理器），仓储与应用服务全部交给约定注册。要照着做一个新模块，读它比读 AI 模块更省力。
+`XiHan.BasicApp.Workflow` 是最干净的一个独立模块样板：`ConfigureServices` 只有三行（`AddWorkflowStores` 用 `Replace` 把框架工作流的内存存储换成 SqlSugar 持久化、`AddWorkflowDataSeeders` 走完整的五步种子链、`AddWorkflowEventHandlers` 登记三个本地事件处理器），仓储与应用服务全部交给约定注册。要照着做一个新模块，读它比读 AI 模块更省力。
 
 ### 动态 API 动词/路由映射
 
@@ -291,12 +293,11 @@ services.AddDataSeeder<SysRolePermissionSeeder>();  // 204 仅授超管
 
 ### `_core` 页面后端化用 `coreComponentMap`
 
-若页面不落在 `src/views`（个人中心、仪表盘、关于页等 `packages/views/_core` 下的页），`PageDescriptor.Component` 写 `_core/xxx/index`，由前端 `packages/router/dynamic.ts` 的 `coreComponentMap` 解析：
+若页面不落在 `src/views`（个人中心、关于页等 `packages/views/_core` 下的页），`PageDescriptor.Component` 写 `_core/xxx/index`，由前端 `packages/router/dynamic.ts` 的 `coreComponentMap` 解析：
 
 ```ts
 // packages/router/dynamic.ts
 const coreComponentMap: Record<string, () => Promise<unknown>> = {
-  '_core/dashboard/index': () => import('~/views/_core/dashboard/index.vue'),
   '_core/about/index': () => import('~/views/_core/about/index.vue'),
   '_core/profile/index': () => import('~/views/_core/profile/index.vue'),
 }
@@ -344,7 +345,7 @@ export const positionApi = {
 
 判定条件是 `$(SolutionName)` 以 `XiHanFun` 开头**且**框架源码在位；直接 `dotnet build` 单个 csproj（无解决方案上下文）走 NuGet。强制指定：`dotnet build -p:UseXiHanFrameworkSource=true|false`。
 
-> **为什么以解决方案为准而不是探测目录**：源码模式下 VS 要求被 `ProjectReference` 的工程也是解决方案成员，否则设计时报 `NU1105`。`XiHan.BasicApp.slnx` 里没有、也不该有框架工程（它要能被单独克隆的人打开），所以它必须始终走 NuGet。早先版本按「旁边有没有框架源码」自动探测，结果在工作区里打开 `XiHan.BasicApp.slnx` 会被切成源码模式、NU1105 刷屏。
+> **为什么以解决方案为准而不是探测目录**：源码模式下 VS 要求被 `ProjectReference` 的工程也是解决方案成员，否则设计时报 `NU1105`。`XiHan.BasicApp.slnx` 里没有、也不该有框架工程（它要能被单独克隆的人打开），所以它必须始终走 NuGet。
 
 新增独立模块（配方 B）时只加一个 csproj，并在 `XiHan.BasicApp.slnx` 与仓库根的 `XiHanFun*.slnx` 登记。
 

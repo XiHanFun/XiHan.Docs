@@ -1,6 +1,6 @@
-# 12. 常用组件
+# 常用组件
 
-除 [Schema 页面引擎](./schema-page) 之外的公共组件与全局挂件，按用途分组速查。组件源码在 `packages/components/` 与 `packages/layouts/`。
+除 [Schema 页面引擎](./schema-page) 之外的公共组件与全局挂件，按用途分组速查。组件源码在 `packages/components/`、`packages/layouts/` 与 `packages/iconify/`。
 
 ## 编辑器
 
@@ -10,7 +10,7 @@
 | `MdEditor.vue` | md-editor-v3 | Markdown |
 | `JsonEditor.vue` | vue3-ts-jsoneditor | JSON 编辑与查看 |
 
-富文本主要用在消息模板、通知公告正文；JSON 编辑器用在流程定义、任务参数、规则参数这类结构化配置。
+通知公告正文用 Markdown 编辑器（文件库的 Markdown 预览也复用它）；富文本与 JSON 编辑器目前只在编辑器演示页 `packages/views/_core/editor-demo/` 使用。三者都以 `defineAsyncComponent` 懒加载，不进主依赖图。
 
 ## 表单增强
 
@@ -19,7 +19,7 @@
 | `CronExpression.vue` | Cron 表达式：输入框 + 可视化弹窗，不必手写表达式。[任务调度](../backend/scheduling)页在用 |
 | `XEditModal` + `xh-edit-form-grid` | **统一的新增/编辑弹窗外壳**：两列布局、10px 间距、11px 标签、无反馈占位，跨列用 `xh-span-2` |
 | `IconPicker` | 图标选择器，可按需懒加载图标集 |
-| `XLogoUpload` / `XUserAvatar` | 图片上传与头像展示（内置 URL 解析与首字母兜底） |
+| `XLogoUpload`（`src/components/LogoUpload.vue`） / `XUserAvatar` | 图片上传与头像展示（内置 URL 解析与首字母兜底） |
 
 ::: danger 新增/编辑弹窗一律用 `XEditModal`
 全仓已统一，**不要再手写 `NModal` 外壳**。统一外壳保证了弹窗尺寸、间距、标签宽度、按钮位置在所有页面一致，也让后续调整只改一处。
@@ -45,24 +45,25 @@
 | --- | --- |
 | `LockScreen.vue` | 锁屏遮罩。后端返回 **`423`** 时拉起——身份仍有效，解锁而非重新登录 |
 | `AppWatermark.vue` | 水印 |
-| 灵动岛 | 全局操作反馈 |
-| 命令面板 | 全局搜索式导航 |
+| `DynamicIsland.vue` | 灵动岛：全局操作反馈（进行中/成功/失败、进度环、岛内按钮、服务端任务进度） |
+
+全局搜索（`AppGlobalSearch.vue`）挂在布局顶栏工具条上，`Ctrl/Cmd + K` 唤起。
 
 ## 文件与图片
 
 | 工具 | 说明 |
 | --- | --- |
-| `useAvatarUrl` | 头像 URL 解析（fileId → 可访问地址，带首字母兜底） |
+| `useAvatarUrl` | 头像 URL 解析（fileId → 预签名 URL，直链原样；空值/失败返回空串，由 `XUserAvatar` 首字母兜底） |
 | `toAbsoluteFileUrl` | 文件 URL 绝对化 |
-| `SchemaImportDialog` | 导入对话框：模板下载 → 解析 → 预校验 → 批量创建 |
+| `SchemaImportDialog` | CSV 导入对话框：模板下载 → 解析 → 预校验 → 逐行创建 |
 
 ::: warning 本地存储的 URL 是根相对路径
 本地存储返回 `/uploads/...`。前后端同源没问题，**线上不同源时必须拼上 `VITE_API_BASE_URL` 的 origin**，否则浏览器拿前端域名去请求而 404。上面两个工具已处理，自己拼 URL 时别忘了。
 :::
 
-## 图表
+## 图编辑
 
-`packages/diagram` 提供图表能力，与业务视图解耦，按需引入。
+`packages/diagram` 基于 AntV X6 封装通用图编辑能力（工作流设计器在用）。应用侧只依赖本包导出的 `XDiagram` / `DiagramApi` / `DiagramData` / `registerVueShape`，不直接依赖 `@antv/x6`。
 
 ## 布局
 
@@ -74,7 +75,7 @@
 
 ## 相关页面
 
-- [5. Schema 驱动页面](./schema-page)：列表页引擎
-- [7. 布局与主题](./theme)：布局配置与主题定制
-- [11. 实时通信](./realtime)：消息中心的推送通道
-- [9. 字体图标](./icon)：图标用法与离线模式限制
+- [Schema 驱动页面](./schema-page)：列表页引擎
+- [布局与主题](./theme)：布局配置与主题定制
+- [实时通信](./realtime)：消息中心的推送通道
+- [字体图标](./icon)：图标用法与离线模式限制

@@ -1,4 +1,4 @@
-# 9. 工作单元与事务
+# 工作单元与事务
 
 事务边界怎么划、提交时序是什么、嵌套怎么算——这一章的每条规则都对应过一个真实事故，值得完整读一遍。
 
@@ -62,7 +62,7 @@ public class ImportService(IUnitOfWorkManager uowManager) : ITransientDependency
 using var inner = uowManager.Begin(options, requiresNew: true);
 ```
 
-`requiresNew` 同时意味着**新的逻辑工作单元**和**新的物理连接**——两者缺一，内层就还是跑在外层的连接和事务上（这曾是它长期静默失效的原因，现已修复）。
+`requiresNew` 同时意味着**新的逻辑工作单元**和**新的物理连接**——两者缺一，内层就还是跑在外层的连接和事务上。
 
 ::: warning 语义代价：内层提交后不再受外层回滚影响
 所以**不要在已经修改过某些行的事务里，再用 `requiresNew` 去改同一批行**——两条独立连接改同一批行，轻则互相覆盖，重则死锁。
@@ -78,13 +78,9 @@ await innerUow.RollbackAsync();
 await outerUow.CompleteAsync();   // ← 抛 XiHanException
 ```
 
-::: tip 这是修复后的行为
-历史版本里：子工作单元的 `Complete` 是空实现、`Rollback` 却上抛父级，内层回滚会把父工作单元置为已回滚，而 `CompleteAsync` 开头的 `if (_isRolledback) return;` 让外层提交**静默成功**——拦截器不抛异常、HTTP 返回 200、数据库一行没写。唯一线索是 `Dispose` 时的 `Failed` 事件，而它全仓无订阅者。
+**内层回滚 = 整体终止**。父子共用同一物理事务，所以内层判定失败就应该终止整体，而不是让外层若无其事地提交。
 
-现在会直接抛异常。同时 `SqlSugarClientResolver` 的钉住连接判定加上了「是否已回滚」，检出已回滚的事务型工作单元会抛出并提示改用 `Begin(requiresNew: true)`——避免回滚之后的写入落在一条已无事务的连接上被逐条自动提交。
-:::
-
-**内层回滚 = 整体终止**。父子共用同一物理事务，这是正确语义。
+配套地，`SqlSugarClientResolver` 的钉住连接判定包含「是否已回滚」：检出已回滚的事务型工作单元会抛出，并提示改用 `Begin(requiresNew: true)`——避免回滚之后的写入落在一条已无事务的连接上被逐条自动提交。
 
 ## 提交时序
 
@@ -129,7 +125,7 @@ await cache.RemoveByPatternAsync(pattern, hideErrors: true, considerUow: true, t
 
 ## 下一步
 
-- [8. 数据访问](./data)：仓储与查询过滤器
-- [12. 缓存](./caching)：失效时序
-- [13. 事件总线](../packages/eventbus)：本地与分布式事件的区别
+- [数据访问](./data)：仓储与查询过滤器
+- [缓存](./caching)：失效时序
+- [事件总线](../packages/eventbus)：本地与分布式事件的区别
 - [Uow 包](../packages/uow)：完整 API

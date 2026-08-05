@@ -20,7 +20,7 @@
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `code` | `int` | 业务码，**恒为数字**（枚举经 `NumericEnumConverter` 强制序列化为 int，不受全局 `JsonStringEnumConverter` 影响） |
+| `code` | `string` | 业务码，序列化为**枚举成员名**（如 `"Success"` / `"BadRequest"` / `"LoginExpired"`）。**不要按数字比较**，判定成功用 `isSuccess` |
 | `message` | `string` | 面向用户的提示，默认取业务码的描述文案（如「请求成功」） |
 | `data` | `any` | 成功时是业务数据；失败时承载错误明细字符串 |
 | `traceId` | `string?` | 请求追踪 ID，跨日志/链路定位一次请求 |
@@ -31,7 +31,7 @@
 
 ```json
 {
-  "code": 200,
+  "code": "Success",
   "message": "请求成功",
   "data": { "userName": "superadmin" },
   "traceId": "8f2b1c0d4e5a6b7c8d9e0f1a2b3c4d5e",
@@ -44,7 +44,7 @@
 
 ```json
 {
-  "code": 400,
+  "code": "BadRequest",
   "message": "请求错误",
   "data": "用户名或密码错误",
   "timestamp": "2026-08-04T02:11:33.4821567+00:00",
@@ -101,7 +101,7 @@
 | **camelCase 命名** | `UserName` → `userName` | `OAuthProviders` → **`oAuthProviders`**（首字母小写只作用于第一个字符，别写成 `oauthProviders`） |
 | **null 省略** | `DefaultIgnoreCondition = WhenWritingNull` | 字段可能整个不出现，客户端类型要按可选处理 |
 | **`long` 序列化为字符串** | `12345` → `"12345"` | 避免 JavaScript Number 精度溢出；雪花 ID、耗时、字节数都是字符串，需要运算时显式转数字。反序列化时数字与字符串都接受 |
-| **枚举序列化为成员名** | `Status.Enabled` → `"Enabled"` | 唯一例外是 `ApiResponse.code`，恒为 int。请求侧枚举既可发数字也可发成员名 |
+| **枚举序列化为成员名** | `Status.Enabled` → `"Enabled"` | `ApiResponse.code` 同样是成员名字符串。请求侧枚举既可发数字也可发成员名 |
 | **`DateTime` / `DateTimeOffset` 按 `X-Timezone` 换算输出** | 存储恒 UTC，输出按请求头时区 | 不发头就按服务端默认；`DateTimeOffset` 走 ISO 8601 带偏移 |
 | **忽略循环引用** | `ReferenceHandler.IgnoreCycles` | — |
 
@@ -171,7 +171,7 @@ curl -X POST http://127.0.0.1:9708/api/Auth/Login \
 
 ```json
 {
-  "code": 200,
+  "code": "Success",
   "message": "请求成功",
   "data": {
     "requiresTwoFactor": false,
@@ -192,7 +192,7 @@ curl -X POST http://127.0.0.1:9708/api/Auth/Login \
 
 ```json
 {
-  "code": 200,
+  "code": "Success",
   "data": {
     "requiresTwoFactor": true,
     "availableTwoFactorMethods": ["totp", "email"],
@@ -332,7 +332,7 @@ curl -X POST http://127.0.0.1:9708/api/UserQuery/UserPage \
 
 ```json
 {
-  "code": 200,
+  "code": "Success",
   "data": {
     "items": [ /* ... */ ],
     "page": {

@@ -1,4 +1,4 @@
-# 5. 数据库配置
+# 数据库配置
 
 连接怎么配、支持哪些库、读写分离怎么开、启动时的建库建表播种、分表怎么查，以及**为什么加字段后部署会炸**。
 
@@ -14,7 +14,7 @@ ORM 是 SqlSugar，`DbType` 取它的枚举值：
 | MySQL / MariaDB | `MySql` | MariaDB 协议兼容，同用 `MySql` |
 | SQL Server | `SqlServer` | — |
 | Oracle | `Oracle` | 支持但不建议 |
-| 达梦 / 人大金仓 / GaussDB | `Dm` / `Kdbndp` / `PostgreSQL` | 国产库，取对应值 |
+| 达梦 / 人大金仓 | `Dm` / `Kdbndp` | 国产库，驱动随 `SqlSugarCore` 一并安装 |
 
 本地用 Docker 起库见 [开发环境](../dev-environment)。
 
@@ -84,7 +84,7 @@ ORM 是 SqlSugar，`DbType` 取它的枚举值：
 
 | 键 | 说明 |
 | --- | --- |
-| `EnableDbInitialization` | 启动时自动建库（库不存在则创建） |
+| `EnableDbInitialization` | 启动时自动建库（库不存在则创建）；同时是整个初始化流程的总开关，关掉则建表与播种一并跳过 |
 | `EnableTableInitialization` | 启动时 CodeFirst 建表 |
 | `EnableDataSeeding` | 启动时写入种子数据 |
 
@@ -121,16 +121,17 @@ ORM 是 SqlSugar，`DbType` 取它的枚举值：
 
 超管初始密码用 `Saas:Seed:SuperAdminPassword`（环境变量 `Saas__Seed__SuperAdminPassword`）覆盖，**生产必改**。
 
-种子的 `Order` 段与执行顺序见 [1. 框架简介](./introduction#种子数据)。
+种子的 `Order` 段与执行顺序见 [框架简介](./introduction#种子数据)。
 
 ## 分表查询
 
 按月分表的实体（日志类）物理表名形如 `Sys_Access_Log_20260801`。
 
 ::: warning 分表不能当普通表查
-要走 SqlSugar 的分表 API，按时间范围定位物理表。直接 `Queryable<T>()` 查逻辑表名会失败或只命中当前分片。
+读写都必须显式挂 SqlSugar 的分表 API，否则表名里的 `{year}{month}{day}` 占位符不会被替换：
 
-因此**日志类查询必须带时间范围**——这既是性能要求，也是分表机制的要求。
+- 查询、插入：`.SplitTable()`；
+- 条件删除：`.SplitTable(tabs => tabs)`——无参重载只支持按实体集合删除，条件删除会在运行时抛异常。
 :::
 
 ## SQL 日志与诊断
@@ -140,7 +141,7 @@ ORM 是 SqlSugar，`DbType` 取它的枚举值：
 | `EnableSqlLog` | `false` | 打印所有 SQL。**生产建议关闭**，日志会爆量 |
 | `EnableSqlErrorLog` | `true` | 记录 SQL 异常 |
 | `EnableSlowSqlLog` | `true` | 记录慢 SQL |
-| `SlowSqlThresholdMilliseconds` | — | 慢 SQL 阈值，**纯观测用途、不影响语句执行** |
+| `SlowSqlThresholdMilliseconds` | `10000` | 慢 SQL 阈值（毫秒），**纯观测用途、不影响语句执行** |
 | `CommandTimeoutSeconds` | `300` | ADO 命令超时；0/负值不覆盖；**须明显大于慢 SQL 阈值** |
 
 排查性能问题的顺序：先看慢 SQL 日志找出目标语句 → 临时开 `EnableSqlLog` 看完整 SQL 与参数 → 定位后关掉。
@@ -178,12 +179,12 @@ ORM 是 SqlSugar，`DbType` 取它的枚举值：
 | 数据变更日志空 | `EnableDiffLog` 没开 |
 | 写操作报参数重名 | 仓储里显式调了 `.EnableQueryFilter()` |
 | 从库没分担读 | 确认 `SlaveConnectionConfigs` 填了；`HitRate` 写了也无效 |
-| 日志查不到数据 | 分表查询没带时间范围 |
-| 多节点主键冲突 | `WorkerId` 没逐节点改，见 [4. 实体基类](./entity#主键与并发) |
+| 日志查不到数据 | 分表查询没挂 `.SplitTable()` |
+| 多节点主键冲突 | `WorkerId` 没逐节点改，见 [实体基类](./entity#主键与并发) |
 
 ## 相关页面
 
-- [4. 实体基类](./entity)：列约定、软删、分表声明
-- [6. 数据模型](./data-model)：全部数据表清单
+- [实体基类](./entity)：列约定、软删、分表声明
+- [数据模型](./data-model)：全部数据表清单
 - [开发环境](../dev-environment)：Docker 起库与连接串对齐
 - [配置参考](../configuration#xihan-data-sqlsugarcore)：全量配置项

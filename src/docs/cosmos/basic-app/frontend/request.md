@@ -1,4 +1,4 @@
-# 4. 服务端交互
+# 服务端交互
 
 前端调后端的全部约定：请求客户端怎么建、URL 怎么拼、分页协议长什么样、响应怎么解包、401/423 怎么处理。
 
@@ -6,16 +6,16 @@
 
 ```text
 业务视图
-   └─ src/api/modules/**        ← 按域的 API 与 DTO 类型（你写的）
-        └─ src/api/base.ts      ← 动态 API 客户端 / 资源工厂
-             └─ packages/request ← RequestClient（axios 封装，拦截器 + 解包）
+   └─ src/api/modules/**                  ← 按域的 API 与 DTO 类型（你写的）
+        └─ src/api/base.ts / factory.ts   ← 动态 API 客户端 / 资源工厂
+             └─ packages/request          ← RequestClient（axios 封装，拦截器 + 解包）
 ```
 
 ## 动态 API 客户端
 
 | 工具 | 说明 |
 | --- | --- |
-| `createDynamicApiClient(controllerName)` | 按控制器名建低层客户端，暴露 `get` / `post` / `put` / `delete`；URL 拼成 `/{apiPrefix}/{控制器名}/{动作名}` |
+| `createDynamicApiClient(controllerName)` | 按控制器名建低层客户端，暴露 `get` / `post` / `put` / `delete`；URL 拼成 `{apiPrefix}/{控制器名}/{动作名}` |
 | `createReadApi(controller, resource)` | 标准读封装：`page` / `detail` |
 | `createCommandApi(controller, resource)` | 标准写封装：`create` / `update` |
 | `defineResource({ query, command, resource? })` | **资源工厂**，一次生成 `page`/`detail`/`create`/`update`/`remove`，并保留 `query`/`command` 客户端供扩展 |
@@ -114,9 +114,9 @@ messageQueryApi.post<PageResult<EmailListItemDto>>('EmailPage', emailPageQueryDt
 
 1. （可选）解密响应；
 2. 记本地请求日志（含后端 `traceId`）；
-3. **`423` → 触发锁屏遮罩钩子**——必须先于 401 分支，且不刷新不登出；
-4. **`401` → 刷新令牌并重放原请求**；
-5. 归一化错误消息（覆盖 axios 默认英文）。
+3. 归一化错误消息（覆盖 axios 默认英文）；
+4. **`423` → 触发锁定遮罩钩子**——必须先于 401 分支，且不刷新不登出；
+5. **`401` → 刷新令牌并重放原请求**。
 
 ### 401 自动刷新的三条保障
 
@@ -169,5 +169,5 @@ const page = await userApi.page(query)   // 直接就是 PageResult<UserListItem
 ## 相关页面
 
 - [接口对接指南](../api-guide)：响应信封、业务码全表、请求头、获取 token
-- [1. 框架简介](./introduction#请求链路时序)：完整请求时序图
-- [5. Schema 驱动页面](./schema-page)：查询参数怎么从页面流到这里
+- [框架简介](./introduction#请求链路时序)：完整请求时序图
+- [Schema 驱动页面](./schema-page)：查询参数怎么从页面流到这里

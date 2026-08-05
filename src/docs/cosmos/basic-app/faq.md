@@ -165,7 +165,7 @@ public async Task<PageResultDtoBase<PositionListItemDto>> GetPositionPageAsync(
 
 ### 枚举值到底发数字还是发字符串？
 
-- **响应**：枚举输出为**成员名字符串**（如 `"Enabled"`）。唯一例外是 `ApiResponse.code`，恒为 int。
+- **响应**：枚举一律输出为**成员名字符串**（如 `"Enabled"`），`ApiResponse.code` 也是（如 `"Success"`）。
 - **请求**：数字和成员名都接受。前端契约层统一发数字（`QueryOperator.Between` = `4000` 等）。
 
 ---

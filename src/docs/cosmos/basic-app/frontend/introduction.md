@@ -1,6 +1,6 @@
 # 前端架构
 
-前端不是「一个 Vue 工程」，而是**分层的单仓库多包结构**。本页讲分层与依赖方向、启动引导链路、请求链路的完整时序，以及第三方依赖的归属规则。具体怎么写页面见 [前端开发指南](./introduction)。
+前端不是「一个 Vue 工程」，而是**分层的单仓库多包结构**。本页讲分层与依赖方向、启动引导链路、请求链路的完整时序，以及第三方依赖的归属规则。具体怎么写页面见 [开发流程](./development)。
 
 ## 技术栈
 
@@ -9,7 +9,7 @@
 | 框架 | Vue 3.5（`<script setup>`） |
 | 语言 / 构建 | TypeScript · Vite |
 | UI 库 | Naive UI |
-| 状态 | Pinia（+ 持久化插件） |
+| 状态 | Pinia（Setup Store + `$reset` 插件） |
 | 样式 | Tailwind CSS 4（CSS-first `@theme`，**preflight 关闭**） |
 | 路由 | vue-router（默认 hash 模式） |
 | 国际化 | vue-i18n（`legacy: false`） |
@@ -40,9 +40,9 @@
 │     modules/**（按域的 API 与 DTO 类型）                          │
 ├──────────────────────────────────────────────────────────────────┤
 │  ② 可复用内核  packages/**                                        │
-│     components(含 schema/rbac) · composables · hooks · stores ·   │
-│     layouts · router · locales · design · iconify · diagram ·     │
-│     plugins · views · types · utils · constants                   │
+│     components(schema/chat/common) · composables · hooks ·        │
+│     stores · layouts · router · locales · design · iconify ·      │
+│     diagram · plugins · views · types · utils · constants         │
 ├──────────────────────────────────────────────────────────────────┤
 │  ① 传输底座  packages/request                                     │
 │     RequestClient：请求头注入 / 响应解包 / 401 刷新重放 /          │
@@ -137,7 +137,7 @@ app.use(router).mount('#app')
 | `VITE_ROUTER_HISTORY` | `hash` | 路由模式 |
 | `VITE_HOME_PATH` | `/workbench/dashboard` | 首页兜底路径（后端菜单未派生出首页时用） |
 | `VITE_AUTH_ROUTE_MODE` | 动态 | 设为 `static` 则用前端静态路由 + 权限过滤 |
-| `VITE_APP_TITLE` / `SUBTITLE` / `LOGO` | — | 品牌兜底（运行时优先用后端站点配置） |
+| `VITE_APP_TITLE` / `SUBTITLE` / `LOGO` | — | 品牌兜底（登录后由 `/Auth/UserInfo` 的 `appTitle` / `appLogo` 覆盖） |
 | `VITE_API_SECURITY_*` | `ENABLED=false` | 前端侧接口签名/加密开关与密钥 |
 
 ::: warning 改了后端端口
@@ -154,15 +154,16 @@ app.use(router).mount('#app')
 | 权限码 | 后端 `SaasPermissionDefinitions` | 拿到码集合，按页面/字段/操作三级过滤 |
 | 枚举标签 | 后端枚举元数据（`Enums.{culture}.json`） | 按 `X-Language` 拉取，切语言响应式重取 |
 | 字段脱敏规则 | 后端 `SysFieldLevelSecurity` | **脱敏在服务端完成**，前端只用规则控制只读/标识 |
-| 站点品牌 | 后端 `SysSiteConfig` | 启动时匿名拉 effective 配置 |
+| 站点品牌 | 后端 `/Auth/UserInfo` 的 `appTitle` / `appLogo` | 登录后写入 app store，覆盖 `.env` 兜底 |
 
 因此**新增页面的主要工作在后端**（`PageRegistry` + 权限），前端只补视图组件、API 客户端与 i18n 文案。
 
 ## 相关页面
 
-- [前端开发指南](./introduction)：目录、组件与日常开发
+- [开发流程](./development)：新增一个页面的五步与自检清单
 - [Schema 驱动页面](../frontend/schema-page)：列表页开发手册
 - [路由与菜单](../frontend/routing)：动态路由生成与守卫
 - [权限与脱敏](../frontend/permission)：三级过滤与 FLS
-- [主题与国际化](./theme)：Tailwind v4、主题、i18n、时区
+- [布局与主题](./theme)：布局、Tailwind v4、主题、偏好同步
+- [国际化](./i18n)：语言包与文案
 - [接口对接指南](../api-guide)：响应信封与请求协议

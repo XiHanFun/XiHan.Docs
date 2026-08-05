@@ -115,17 +115,17 @@
 ### 写侧
 
 ```csharp
-[HttpPost]
 [UnitOfWork(true)]                                          // ← 开事务
 [PermissionAuthorize(SaasPermissionCodes.Position.Create)]  // ← 细粒度权限
-public async Task<PositionDetailDto> CreatePositionAsync(PositionCreateDto input, CancellationToken ct = default)
+public async Task<PositionDetailDto> CreatePositionAsync(PositionCreateDto input, CancellationToken cancellationToken = default)
 {
     var command = PositionApplicationMapper.ToCreateCommand(input);
-    var result = await _domainService.CreateAsync(command, ct);   // 业务规则在领域服务
-    await _cacheInvalidator.InvalidateXxxAsync();                 // 失效在 UoW 提交后才真正执行
-    return PositionApplicationMapper.ToDetailDto(result);
+    var result = await _positionDomainService.CreatePositionAsync(command, cancellationToken);  // 业务规则在领域服务
+    return PositionApplicationMapper.ToDetailDto(result.Position);
 }
 ```
+
+影响缓存的写方法在领域服务返回后调 `ISaasCacheInvalidator` 的对应方法（如 `OperationAppService` 调 `InvalidateOperationDefinitionAsync`），失效以 `considerUow: true` 排队，UoW 提交后才真正执行。
 
 ::: danger 没标 `[UnitOfWork]` 就没有事务
 框架判定「要不要被工作单元拦截」看的是类/方法上有没有 `[UnitOfWork]`（或实现 `IUnitOfWorkEnabled`，而它在框架里无人实现）。**没有中间件会替你开环境工作单元。** 多步写操作漏标注 = 没有原子性。
@@ -151,7 +151,7 @@ public async Task<PositionDetailDto> CreatePositionAsync(PositionCreateDto input
 
 - **缓存失效必须 `considerUow: true`**，否则会在事务提交前就清缓存，并发读会把未提交的旧值重新灌回去。
 - **分布式事件在提交后才发**，因此提交成功但投递失败会丢事件。要强投递保证得自己接持久化发件箱。
-- **内层 `RollbackAsync` 之后外层再提交会抛 `XiHanException`**（历史版本会静默返回 200 而一行没写）。
+- **内层 `RollbackAsync` 之后外层再提交会抛 `XiHanException`**——父子共用同一物理事务，内层回滚即整体终止。
 
 ## 响应
 

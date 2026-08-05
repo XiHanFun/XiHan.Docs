@@ -13,7 +13,7 @@ RBAC 的核心实体都落在 `Saas` 模块的 `Domain/Entities` 下，均为 `s
 | `SysUser` | `Sys_User` | 身份主体（Subject）：用户名/邮箱/手机/资料。`Email` 全平台唯一（`UX_Em`），是登录标识 |
 | `SysUserSecurity` | `Sys_User_Security` | 与 `SysUser` 一对一的**安全扩展**：密码哈希、锁定、MFA、失败计数、多端策略 |
 | `SysRole` | `Sys_Role` | 角色：一组权限的分配单元，支持层级继承与数据范围 |
-| `SysDepartment` | `Sys_Department` | 组织架构树节点（单父严格树），是数据范围 `dept`/`dept_and_sub` 的基础 |
+| `SysDepartment` | `Sys_Department` | 组织架构树节点（单父严格树），是数据范围 `DepartmentOnly` / `DepartmentAndChildren` 的基础 |
 | `SysDepartmentHierarchy` | `Sys_Department_Hierarchy` | 部门层级**闭包表**：预计算祖先-后代对，支持 O(1) 展开 |
 | `SysMenu` | `Sys_Menu` | 纯 UI 结构（导航/路由/展示），通过 `PermissionId` 绑定一个权限点 |
 | `SysPosition` | `Sys_Position` | 扁平岗位字典（职务/职位），供人员任用引用 |
@@ -41,7 +41,7 @@ RBAC 的核心实体都落在 `Saas` 模块的 `Domain/Entities` 下，均为 `s
 
 ### 部门与闭包表
 
-部门是严格单父树。为了高效回答"某部门的全部下级/祖先"（数据范围 `dept_and_sub` 要用），系统用**闭包表** `SysDepartmentHierarchy` 把所有"祖先-后代对"预计算出来（含 `Depth=0` 的自环），并冗余 `Path`/`PathName` 便于面包屑。
+部门是严格单父树。为了高效回答"某部门的全部下级/祖先"（数据范围 `DepartmentAndChildren` 要用），系统用**闭包表** `SysDepartmentHierarchy` 把所有"祖先-后代对"预计算出来（含 `Depth=0` 的自环），并冗余 `Path`/`PathName` 便于面包屑。
 
 闭包表是"查询加速镜像"，不是独立业务数据——所有写入必须由 `SysDepartment` 变更触发，服务层在**增/删/移**部门时统一重建：
 
@@ -57,7 +57,7 @@ RBAC 的核心实体都落在 `Saas` 模块的 `Domain/Entities` 下，均为 `s
 
 `SysMenu` 只描述 UI 层级（目录/菜单/按钮/外链），**后端鉴权永远基于 Permission，不依赖菜单存在性**。菜单通过可空的 `PermissionId` 反向绑定一个权限点：空=纯展示菜单；有值=按该权限码门控可见性。若一个菜单需要多个权限，约定**建组合权限点**再绑定，而非引多对多。
 
-> 运行时的菜单/路由/组件路径/权限码/国际化键由后端 `PageRegistry` 作为单一事实源统一注册（见 [系统架构](./introduction)）；`SysMenu` 表是其落库形态。`TenantId=0` 为平台全局菜单，所有租户共享读取，租户可叠加私有菜单。
+> 运行时的菜单/路由/组件路径/权限码/国际化键由后端 `PageRegistry` 作为单一事实源统一注册（见 [框架简介](./introduction)）；`SysMenu` 表是其落库形态。`TenantId=0` 为平台全局菜单，所有租户共享读取，租户可叠加私有菜单。
 
 ## 登录方式
 
@@ -72,7 +72,7 @@ RBAC 的核心实体都落在 `Saas` 模块的 `Domain/Entities` 下，均为 `s
 `POST /api/Auth/Login`（`LoginRequestDto`）。`Username` 传邮箱（全平台唯一定位）；平台账号也可用用户名。流程：
 
 1. 平台态定位账号 → `IAuthenticationDomainService.AuthenticatePasswordLoginAsync`：校验存在性、`IsActive`、密码哈希、账户锁定/失败计数，并判定是否需要二次验证。
-2. 应用层附加校验：`Status` 是否启用、（带租户时）成员关系与生效/过期、密码是否过期。
+2. 同一域服务内的账号可用性校验：`Status` 是否启用、（带租户时）成员关系与生效/过期、密码是否过期。
 3. 若 `RequiresTwoFactor` → 返回 2FA 挑战（不签发令牌，见下）。
 4. 通过 → 决定落点租户、签发双令牌、落地会话、发布登录成功领域事件。
 
@@ -89,14 +89,14 @@ RBAC 的核心实体都落在 `Saas` 模块的 `Domain/Entities` 下，均为 `s
 
 ### 第三方登录（OAuth2）
 
-内建支持 **GitHub / Google / QQ**（可扩展），由框架 `XiHan.Framework.Authentication.OAuth` 提供，配置节 `XiHan:Authentication:OAuth`（`OAuthOptions`：`Enabled`/`FrontendCallbackUrl`/`Providers[]`）。前端登录页展示哪些提供商由运行时配置 `saas.auth.oauth.providers`（存库）决定。
+内建支持 **GitHub / Google / Gitee / QQ**，由框架 `XiHan.Framework.Authentication.OAuth` 提供，配置节 `XiHan:Authentication:OAuth`（`OAuthOptions`：`Enabled`/`FrontendCallbackUrl`/`Providers[]`）。前端登录页展示哪些提供商由运行时配置 `saas.auth.oauth.providers`（存库）决定。
 
 OAuth 走**独立的 Web 端点**（不是动态 API），落在 `Infrastructure/OAuth/OAuthEndpoints.cs`：
 
 ```text
 ① 前端跳转：GET /api/OAuth/ExternalLogin?provider=github[&bindTicket=xxx]
       端点校验 provider（绑定意图则一次性消费 bindTicket 得到 userId）
-      → ChallengeAsync(provider) → 302 到 GitHub/Google/QQ 授权页
+      → ChallengeAsync(provider) → 302 到三方授权页
 ② 用户在三方授权
 ③ 三方回跳：GET /api/OAuth/Callback?code=...&state=...
       端点 AuthenticateAsync(ExternalCookie) 读出三方 Claim：
@@ -113,7 +113,7 @@ OAuth 走**独立的 Web 端点**（不是动态 API），落在 `Infrastructure
 - 未绑定则**首登自动建号**：用户名 `{provider}_{随机hex}`、随机强密码、不分配角色；三方邮箱**仅在未被占用时**采用，否则用占位邮箱 `{username}@external.local`——**绝不按邮箱并入既有账号**（防冒用）。
 - `SysExternalLogin` 只存身份关联（Provider/ProviderKey/邮箱/头像），**不存三方 Access/Refresh Token**。
 
-**账号绑定**（把三方账号绑到已登录用户）：已登录用户先 `POST /api/Auth/CreateOAuthBindTicket` 拿一次性票据（`oauth:bind-ticket:{ticket}`，缓存 5 分钟），带 `bindTicket` 走同一发起端点；回调时以 `IsBind=true` 走 `BindExternalLoginAsync`，已被他人绑定则拒绝（`conflict`）。
+**账号绑定**（把三方账号绑到已登录用户）：已登录用户先 `POST /api/Auth/OAuthBindTicket`（方法 `CreateOAuthBindTicketAsync`，动词前缀 `Create` 被剥离）拿一次性票据（`oauth:bind-ticket:{ticket}`，缓存 5 分钟），带 `bindTicket` 走同一发起端点；回调时以 `IsBind=true` 走 `BindExternalLoginAsync`，已被他人绑定则拒绝（`conflict`）。
 
 > 具体支持哪些 provider、scope、回调地址以仓库配置为准。
 
@@ -153,19 +153,17 @@ Access Token 的 Claim 主要有：`sub`/`jti`、`UserId`、`UserName`、`Sessio
 | 状态 | 值 | 含义 |
 | --- | --- | --- |
 | `Active` | 0 | 活跃（鉴权"会话有效"= `Active` 且未软删） |
-| `Offline` | 1 | 登出/心跳超时 |
-| `Revoked` | 2 | 强制下线/安全撤销 |
+| `Offline` | 1 | 离线（未被强制撤销，可按策略重新激活） |
+| `Revoked` | 2 | 登出/强制下线/安全撤销 |
 | `Expired` | 3 | 超过绝对过期时间 |
 
-多端策略由 `SysUserSecurity` 控制：`AllowMultiLogin`（是否允许多端，默认 true）与 `MaxLoginDevices`（最大设备数，0=不限）。同一自然人在不同租户可复用同一业务 `SessionId`，但会落成**不同 TenantId 的独立会话记录**。
+多端策略由 `SysUserSecurity` 控制：`AllowMultiLogin`（是否允许多端，默认 true）与 `MaxLoginDevices`（最大设备数，0=不限）。切换租户复用**同一条会话记录**：会话行的 `TenantId` 迁移到目标上下文（平台态戳 `0`），不新建会话。
 
-登出 `POST /api/Auth/Logout`：按 `userId + SessionId` 撤销会话、吊销关联令牌，并发布登出领域事件。用户自助的"我的设备/会话"管理、踢其他端，见[个人中心](#个人中心)；管理员侧撤销走 `UserSessionAppService`（需 `SysPermissionCodes.UserSession.Revoke` 权限）。删除用户时会吊销其全部会话并实时 `ForceLogout` 踢出在线连接。
+登出 `POST /api/Auth/Logout`：按 `userId + SessionId` 撤销会话、吊销关联令牌，并发布登出领域事件。用户自助的"我的设备/会话"管理、踢其他端，见[个人中心](#个人中心)；管理员侧撤销走 `UserSessionAppService`（需 `SaasPermissionCodes.UserSession.Revoke` 权限）。删除用户时会吊销其全部会话并实时 `ForceLogout` 踢出在线连接。
 
 ## 密码安全
 
 - **哈希算法：PBKDF2**（框架 `XiHan.Framework.Security.Password.PasswordHasher`，配置节 `XiHan:Authentication:PasswordHasher`）。默认 **HMAC-SHA256、迭代 600,000 次（OWASP 建议）、32 字节随机盐、32 字节输出**；存储格式为自描述串 `version:iterations:algorithm:base64(salt):base64(hash)`，校验用定长比较（抗时序攻击），参数变更时 `NeedsRehash` 支持透明升级。密码**严禁明文落库**（`SysUserSecurity.Password`，`[JsonIgnore]`）。
-
-  > 部分实体注释写的是"Argon2/BCrypt"，那是历史注释；**当前实现是 PBKDF2**，以仓库源码为准。
 
 - **验证码一次性消费**：邮箱登录码、2FA 邮箱/短信码、找回密码链接均**用后即焚**——读取即从缓存删除，防重放/爆破。邮箱码 6 位、10 分钟；找回密码令牌 30 分钟。
 - **找回密码**（匿名，防用户枚举）：`POST /api/Auth/PasswordResetRequest` 无论邮箱是否存在都返回"已受理"；存在则签发一次性重置令牌（`auth:pwd-reset:{token}`，缓存 30 分钟，仅记录 token→userId，**不立即改密**）并邮件带链接。用户点链接后 `POST /api/Auth/ConsumePasswordResetToken` 设新密码（8-128 位），成功即失效令牌并落 `PasswordReset` 审计。
@@ -186,7 +184,7 @@ Access Token 的 Claim 主要有：`sub`/`jti`、`UserId`、`UserName`、`Sessio
 
 ## 个人中心
 
-`ProfileAppService`（`[DynamicApi(RouteTemplate 前缀 api/Profile)]`，`[Authorize]`）覆盖当前登录用户的自助管理，拆成多个 partial：
+`ProfileAppService`（`[Authorize]`，按动态 API 约定推导出路由前缀 `api/Profile`）覆盖当前登录用户的自助管理，拆成多个 partial：
 
 - **资料**：`GetProfile` / `UpdateProfile`（昵称、头像、性别、时区、语言等）；改用户名 `ChangeUserName`（内置账号禁改，改后通知）。
 - **安全 · 密码**：`ChangePassword`（域服务校验旧密码，改后落 `PasswordChanged` 审计并通知）。
@@ -203,4 +201,5 @@ Access Token 的 Claim 主要有：`sub`/`jti`、`UserId`、`UserName`、`Sessio
 - [权限模型](./permission)：权限码、RBAC 继承、数据范围、字段脱敏、ABAC 约束、实时校验。
 - [多租户](./multi-tenancy)：成员关系、平台运维态、租户切换、版本门控。
 - [框架 · 认证模块](../../framework/packages/authentication)：JWT / OAuth2 / TOTP / PBKDF2 的底层实现。
-- [系统架构](./introduction)：认证/租户解析/授权在请求管道中的位置，与后端驱动菜单。
+- [请求生命周期](./request-lifecycle)：认证/租户解析/会话闸门/授权在请求管道中的位置。
+- [框架简介](./introduction)：后端驱动菜单的单一事实源 `PageRegistry`。

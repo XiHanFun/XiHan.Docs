@@ -1,4 +1,4 @@
-# 16. 即时通讯
+# 即时通讯
 
 后端的 SignalR 侧：两条 Hub、怎么往前端推、在线状态怎么算，以及一条必须遵守的载荷约定。
 
@@ -115,6 +115,6 @@ Nginx 等反向代理必须转发 `Upgrade` / `Connection` 头，否则 WebSocke
 ## 相关页面
 
 - [前端手册 · 实时通信](../frontend/realtime)：`useSignalR` 与连接管理
-- [15. 消息通知](./messaging)：通知的产生、模板与多通道分发
+- [消息通知](./messaging)：通知的产生、模板与多通道分发
 - [框架 · Web.RealTime](../../framework/packages/web-realtime)：SignalR 集成的框架实现
 - [配置参考](../configuration#realtime-signalr)：SignalR 配置项

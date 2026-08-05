@@ -1,4 +1,4 @@
-# 5. 配置与选项
+# 配置与选项
 
 框架怎么读配置、选项模式怎么用、配置节怎么命名、什么该放配置什么该写代码。
 
@@ -144,7 +144,7 @@ context.Services.ConfigureDynamicApiConventions(conventions =>
 | 运行期由管理员调整、要按租户隔离（业务开关、阈值） | **数据库**（自行实现配置源） |
 | 装配期确定的类型/委托/约定 | **代码** |
 
-框架的可替换点大多留了「配置源」接口（如 `IAiProviderConfigStore`），业务侧可以 `Replace` 成数据库实现——这就是「配置落库」的标准做法，见 [15. 扩展与二次开发](./extending#配方-b-替换框架的默认实现)。
+框架的可替换点大多留了「配置源」接口（如 `IAiProviderConfigStore`），业务侧可以 `Replace` 成数据库实现——这就是「配置落库」的标准做法，见 [扩展与二次开发](./extending#配方-b-替换框架的默认实现)。
 
 ## 常见问题
 
@@ -157,6 +157,6 @@ context.Services.ConfigureDynamicApiConventions(conventions =>
 
 ## 下一步
 
-- [2. 模块生命周期](./lifecycle)：三个配置钩子分别在什么时候跑
-- [3. 依赖注入](./dependency-injection)：选项模式与约定注册
-- [15. 扩展与二次开发](./extending)：把配置源换成数据库实现
+- [模块生命周期](./lifecycle)：三个配置钩子分别在什么时候跑
+- [依赖注入](./dependency-injection)：选项模式与约定注册
+- [扩展与二次开发](./extending)：把配置源换成数据库实现

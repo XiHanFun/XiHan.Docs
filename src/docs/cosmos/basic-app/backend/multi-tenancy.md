@@ -6,7 +6,7 @@ XiHan.BasicApp 是一套 **B2B SaaS 多租户内核**：一份代码、一套部
 
 ## 隔离模型：字段级隔离 + `TenantId=0` 约定
 
-BasicApp 默认走**字段级隔离（Field）**：所有业务实体继承自 `BasicAppEntity`（底层是框架的 `SugarMultiTenantEntity<long>`），带一个 `TenantId` 列，查询按当前租户上下文自动过滤，无需业务代码手动拼条件。
+BasicApp 默认走**字段级隔离（Field）**：所有业务实体继承自 `BasicApp*` 实体基类族（`BasicAppEntity` / `BasicAppCreationEntity` / `BasicAppFullAuditedEntity` / `BasicAppAggregateRoot` 等，底层是框架的 `SugarMultiTenant*<long>`），带一个 `TenantId` 列，查询按当前租户上下文自动过滤，无需业务代码手动拼条件。
 
 隔离模式由 `SysTenant.IsolationMode`（`TenantIsolationMode`）声明，支持三种，`SysTenant` 还预留了独立库连接串等字段：
 
@@ -14,7 +14,7 @@ BasicApp 默认走**字段级隔离（Field）**：所有业务实体继承自 `
 | --- | --- |
 | `Field`（默认） | 同库同表，靠 `TenantId` 列区分租户数据 |
 | `Database` | 每租户独立数据库（`ConnectionString` 加密存储，需 `InitializeDatabase` 建库建表种子） |
-| `Schema` | 同库不同 Schema |
+| `Schema` | 同库不同 Schema（尚未实装：`SaasTenantConnectionProvider` 解析到该模式直接抛异常 fail-closed，拒绝退化为行隔离） |
 
 ### 框架层 `long?`/null 与应用层 `TenantId=0` 的关系
 
@@ -34,7 +34,7 @@ BasicApp 默认走**字段级隔离（Field）**：所有业务实体继承自 `
 
 ## 登录与落点：邮箱全局唯一，先登录后选租户
 
-BasicApp 采用**先登录后选租户**：登录页不再让用户选租户，统一在平台态（`_currentTenant.Change(null)`）完成身份认证，成功后按用户的成员关系自动决定落点。
+BasicApp 采用**先登录后选租户**：登录页不选择租户，统一在平台态（`_currentTenant.Change(null)`）完成身份认证，成功后按用户的成员关系自动决定落点。
 
 - **邮箱是全平台唯一的登录身份标识**。注册、开通租户管理员、找回密码都强制校验邮箱且全局唯一（`ExistsEmailGloballyAsync`）。平台账号也可用用户名登录。
 - 支持密码登录、邮箱验证码登录、第三方（OAuth）登录，均在平台态定位用户后走统一落点逻辑（`IssueLoginTokenWithLandingAsync`）。
@@ -61,7 +61,7 @@ BasicApp 采用**先登录后选租户**：登录页不再让用户选租户，�
 - 进入平台运维态：仅超管，或拥有 `PlatformAdmin` 成员身份者。
 - 切换会在目标上下文内**重建授权快照并签发新令牌**——权限随落点租户实时重算，不沿用旧令牌里的声明。
 
-可切换的租户列表来自当前用户的有效成员关系（`GetActiveByUserIdAsync`，跨租户读取、忽略租户过滤），前端用 `TenantSwitcherDto` 渲染切换器。
+可切换的租户列表由 `GetMyAvailableTenantsAsync` 提供：普通用户取自己的有效成员关系（`GetActiveByUserIdAsync`，跨租户读取、忽略租户过滤），超管无成员关系、直接返回全部可用租户（正常态、未过期）；前端用 `TenantSwitcherDto` 渲染切换器。
 
 ## 成员关系：`SysTenantUser`
 
@@ -97,7 +97,7 @@ BasicApp 采用**先登录后选租户**：登录页不再让用户选租户，�
 | `SysTenantEditionPermission` | `Sys_Tenant_Edition_Permission` | 版本 → 权限**白名单**映射（`EditionId` × `PermissionId`，唯一） |
 | `SysTenant.EditionId` | `Sys_Tenant` | 某租户订阅了哪个版本（`null` 时取 `IsDefault=true` 的默认版本） |
 
-内置版本种子（`SaasTenantEditionSeeder`）：`free`（免费/默认，只读+基础成员）、`basic`（+组织/用户/角色管理）、`pro`（+高级权限/审计/安全）、`enterprise`（授予全部**租户安全**权限、不限配额）。版本记录本身是平台级（`TenantId=0`），由平台运营维护。
+内置版本种子（`SaasTenantEditionSeeder`）：`free`（免费/默认，只读+基础成员）、`basic`（+组织/用户/角色管理）、`pro`（+高级权限/审计/安全）、`enterprise`（授予除平台专属权限（`SaasPlatformPermissions.PlatformOnlyCodes`）之外的全部全局权限、不限配额）。版本记录本身是平台级（`TenantId=0`），由平台运营维护。
 
 关键约束（见 `SysTenantEdition` 与领域服务）：
 
@@ -116,11 +116,11 @@ BasicApp 采用**先登录后选租户**：登录页不再让用户选租户，�
 - 租户未绑定版本（`EditionId` 为空）；
 - 版本未配置白名单（白名单为空）——避免把租户误锁死（fail-open 仅限"未启用门控"这一语义）。
 
-性能上，门控白名单走**独立的版本门控缓存**（`SaasEditionGateCacheItem`，`CacheName` = `EditionGate`，10 分钟 TTL），在 per-user 授权快照缓存**之外**按当前租户上下文叠加，避免切换租户后缓存串味，鉴权热路径不必每请求查库。版本白名单/租户换版的写路径会调 `InvalidateEditionGateAsync` 失效缓存（事务提交后生效）。
+性能上，门控白名单走**独立的版本门控缓存**（`SaasEditionGateCacheItem`，缓存名 `SaasCacheNames.EditionGate` = `basicapp:saas:tenancy:edition-gate`，10 分钟 TTL），在 per-user 授权快照缓存**之外**按当前租户上下文叠加，避免切换租户后缓存串味，鉴权热路径不必每请求查库。版本白名单/租户换版的写路径会调 `InvalidateEditionGateAsync` 失效缓存（事务提交后生效）。
 
 ### 开通一站式：建管理员 + 角色 + 授权
 
-创建租户时若同时提供管理员账号信息（`AdminUserName` + `AdminPassword` + `AdminEmail`），`CreateTenantAsync` 会调 `ProvisionTenantAdminAsync` 一站式开通（`TenantProvisionDomainService`），全程在新租户上下文内进行：
+创建租户时若同时提供 `AdminUserName` + `AdminPassword`（此时 `AdminEmail` 必填且须为有效邮箱），`CreateTenantAsync` 会调 `ProvisionTenantAdminAsync` 一站式开通（`TenantProvisionDomainService`），全程在新租户上下文内进行：
 
 1. **确保版本**：租户未指定则取默认版本并回写 `SysTenant.EditionId`；
 2. **建管理员**：创建 `SysUser`（校验邮箱全局唯一）+ `SysUserSecurity`（密码哈希）+ `SysTenantUser`（`MemberType=Owner`、`InviteStatus=Accepted`）；
