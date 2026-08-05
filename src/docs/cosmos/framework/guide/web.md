@@ -70,7 +70,7 @@ public override void OnApplicationInitialization(ApplicationInitializationContex
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `code` | `string` | 业务码，序列化为**枚举成员名**（如 `"Success"`）。判定成功请用 `isSuccess` |
+| `code` | `int` | 业务码，**恒为数字**（属性级 `NumericEnumConverter`，不受全局枚举转字符串影响） |
 | `message` | `string` | 面向用户的提示，默认取业务码描述 |
 | `data` | `any` | 成功时是业务数据；失败时承载错误明细 |
 | `traceId` | `string?` | 请求追踪 ID |
@@ -101,7 +101,7 @@ public override void OnApplicationInitialization(ApplicationInitializationContex
 | **camelCase 命名** | `UserName` → `userName` | `OAuthProviders` → **`oAuthProviders`**（只有首字符变小写） |
 | **null 省略** | `WhenWritingNull` | 字段可能整个不出现，客户端按可选处理 |
 | **`long` → 字符串** | `12345` → `"12345"` | 避免 JS Number 精度溢出；反序列化时数字与字符串都接受 |
-| **枚举 → 成员名** | `Status.Enabled` → `"Enabled"` | `ApiResponse.code` 也是成员名字符串 |
+| **枚举 → 成员名** | `Status.Enabled` → `"Enabled"` | 唯一例外是 `ApiResponse.code`，恒为 int |
 | **时间按 `X-Timezone` 换算** | 存储 UTC，输出按请求头时区 | `DateTimeOffset` 走 ISO 8601 带偏移 |
 
 ## 请求头约定

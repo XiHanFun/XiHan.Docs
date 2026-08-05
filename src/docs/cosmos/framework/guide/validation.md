@@ -161,7 +161,7 @@ options.InvalidModelStateResponseFactory = actionContext =>
 
 ```json
 {
-  "code": "BadRequest",
+  "code": 400,
   "message": "请求错误",
   "data": "用户名不能为空; 邮箱格式不正确",
   "traceId": "0HN7A...",
@@ -197,7 +197,7 @@ return ApiResponse.Failure(
 
 ```json
 {
-  "code": "ValidationFailed",
+  "code": 11000,
   "message": "数据校验失败",
   "data": "手机号已被其他账号绑定"
 }

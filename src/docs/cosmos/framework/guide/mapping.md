@@ -274,8 +274,10 @@ public class MyDto
 }
 ```
 
-要在整个应用范围内让某个枚举恒为数字，另一条路是把 `NumericEnumConverter<TEnum>` 也加进 `Converters` 集合，并确保它**排在 `JsonStringEnumConverter` 之前**（集合内先匹配者胜）。
+要在整个应用范围内让某个枚举恒为数字，另一条路是把 `NumericEnumConverter<TEnum>` 也加进 `Converters` 集合，并确保它**排在 `JsonStringEnumConverter` 之前**（集合内先匹配者胜）——但顺序依赖脆弱，优先用属性级标注。
 :::
+
+框架的 `ApiResponse.Code` 就是属性级标注的实例：枚举 `ApiResponseCodes` 类型上也标了同一个转换器（供不经 Web 管道的场景使用），属性上再标一次保证 Web 管道下同样输出数字。
 
 `NumericEnumConverter` 的读取端兼容数字、数字字符串和成员名三种来源，且解析不了时**会抛 `JsonException`**（与其他转换器的静默默认值不同）。
 
