@@ -88,4 +88,4 @@ public class OrderAppService : IApplicationService
 ## 相关模块
 
 - [XiHan.Framework.Web.Api](./web-api) — 生成本包所展示的 OpenAPI 文档与动态 API 分组。
-- [动态 API](../concepts/dynamic-api) — 动态 API 与 `[DynamicApi]` 分组约定。
+- [动态 API](../guide/dynamic-api) — 动态 API 与 `[DynamicApi]` 分组约定。

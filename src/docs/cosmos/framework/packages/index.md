@@ -160,4 +160,4 @@ Utils（零依赖）
           └ Web.Core → Web.Api → Web.Docs / Web.Gateway / Web.Grpc / Web.RealTime
 ```
 
-> 你只需在应用模块上 `[DependsOn]` 顶层包，整条依赖链会被框架自动装配。详见 [核心概念 · 模块系统](../concepts/modularity)。
+> 你只需在应用模块上 `[DependsOn]` 顶层包，整条依赖链会被框架自动装配。详见 [核心概念 · 模块系统](../guide/modularity)。

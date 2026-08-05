@@ -36,7 +36,7 @@ public class MyModule : XiHanModule { }
 ## 工作原理
 
 - **自动注册**：`ApplicationServiceBase : IApplicationService, ITransientDependency`，其派生类被框架约定式装配为瞬时依赖。
-- **动态 API**：应用服务实现的 `IApplicationService` 标记 + `[DynamicApi]` 特性，被框架的动态 API 机制识别并生成路由，替代手写 Controller。详见 [动态 API](../concepts/dynamic-api)。
+- **动态 API**：应用服务实现的 `IApplicationService` 标记 + `[DynamicApi]` 特性，被框架的动态 API 机制识别并生成路由，替代手写 Controller。详见 [动态 API](../guide/dynamic-api)。
 - **映射**：CRUD 基类内部用 Mapster 的 `Adapt` 在实体与 DTO 间转换，所有映射方法均 `virtual`，可重写定制。
 - **软删除感知**：删除时若实体实现 `ISoftDelete` 且容器中存在对应的 `ISoftDeleteRepositoryBase<TEntity, TKey>`，则走软删除；否则物理删除。
 - **校验**：创建/更新/分页入参统一经 `ValidateInputObject` 用 DataAnnotations 校验（`validateAllProperties: true`）。
@@ -175,7 +175,7 @@ public class ProductAppService
 }
 ```
 
-> 动态 API 的工作原理与更多配置见 [动态 API](../concepts/dynamic-api)。
+> 动态 API 的工作原理与更多配置见 [动态 API](../guide/dynamic-api)。
 
 ## 注意事项与最佳实践
 
@@ -197,4 +197,4 @@ public class ProductAppService
 
 - [XiHan.Framework.Application.Contracts](./application-contracts) — 本包实现的契约层
 - [XiHan.Framework.Domain](./domain) — 被编排的领域对象
-- [动态 API](../concepts/dynamic-api) — 应用服务如何自动变成 REST 接口
+- [动态 API](../guide/dynamic-api) — 应用服务如何自动变成 REST 接口

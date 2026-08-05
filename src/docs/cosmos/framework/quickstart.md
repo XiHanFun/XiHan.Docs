@@ -81,7 +81,7 @@ await app.InitializeApplicationAsync();
 await app.RunAsync();
 ```
 
-> `AddApplicationAsync<T>` 和 `InitializeApplicationAsync` 是框架的两个入口方法：前者在**服务注册阶段**装配模块，后者在**应用初始化阶段**接入中间件。详见 [核心概念 · 生命周期](./concepts/lifecycle)。
+> `AddApplicationAsync<T>` 和 `InitializeApplicationAsync` 是框架的两个入口方法：前者在**服务注册阶段**装配模块，后者在**应用初始化阶段**接入中间件。详见 [核心概念 · 生命周期](./guide/lifecycle)。
 
 ## 第五步：写第一个接口
 
@@ -111,7 +111,7 @@ public class HelloAppService : ApplicationServiceBase
 - 继承 `ApplicationServiceBase` —— 它同时标记了 `IApplicationService` 和 `ITransientDependency`，所以**会被自动注册进 DI 容器**，无需手写 `services.AddTransient`。
 - 打上 `[DynamicApi]` —— 框架的动态 API 约定会扫描到它，为 `GetGreeting` 生成对应的 HTTP 路由。
 
-> 想了解路由是怎么从方法名推导出来的、如何自定义分组/版本/路由，见 [核心概念 · 动态 API](./concepts/dynamic-api)。
+> 想了解路由是怎么从方法名推导出来的、如何自定义分组/版本/路由，见 [核心概念 · 动态 API](./guide/dynamic-api)。
 
 ## 第六步：运行
 
@@ -185,7 +185,7 @@ public class MyAppModule : XiHanModule { }
 
 ## 下一步
 
-- [核心概念 · 模块系统](./concepts/modularity)：理解 `[DependsOn]` 与自动装配
-- [核心概念 · 生命周期](./concepts/lifecycle)：理解 7 个生命周期钩子
-- [核心概念 · 依赖注入](./concepts/dependency-injection)：理解约定式服务注册
-- [核心概念 · 动态 API](./concepts/dynamic-api)：理解应用服务如何变成接口
+- [核心概念 · 模块系统](./guide/modularity)：理解 `[DependsOn]` 与自动装配
+- [核心概念 · 生命周期](./guide/lifecycle)：理解 7 个生命周期钩子
+- [核心概念 · 依赖注入](./guide/dependency-injection)：理解约定式服务注册
+- [核心概念 · 动态 API](./guide/dynamic-api)：理解应用服务如何变成接口

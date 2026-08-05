@@ -22,6 +22,52 @@ function pkg(text: string, name: string): DefaultTheme.SidebarItem {
   return { text, link: `/cosmos/framework/packages/${name}` };
 }
 
+// 开发指南：按能力域编号；内容页在 guide/ 或直接指向对应包页
+function chapter(
+  index: number,
+  text: string,
+  link: string
+): DefaultTheme.SidebarItem {
+  return { text: `${index}. ${text}`, link: `/cosmos/framework/${link}` };
+}
+
+const guideChapters: [text: string, link: string][] = [
+  ["模块系统", "guide/modularity"],
+  ["模块生命周期", "guide/lifecycle"],
+  ["依赖注入", "guide/dependency-injection"],
+  ["AOP 与拦截器", "guide/aop"],
+  ["配置与选项", "guide/configuration"],
+  ["Web 应用开发", "guide/web"],
+  ["动态 API", "guide/dynamic-api"],
+  ["数据访问", "guide/data"],
+  ["工作单元与事务", "guide/uow"],
+  ["多租户", "guide/multi-tenancy"],
+  ["认证与授权", "guide/authentication"],
+  ["缓存与分布式锁", "guide/caching"],
+  ["事件总线", "packages/eventbus"],
+  ["定时任务与后台作业", "packages/tasks"],
+  ["工作流", "packages/workflow"],
+  ["日志", "packages/logging"],
+  ["审计", "packages/auditing"],
+  ["国际化", "packages/localization"],
+  ["对象存储与文件", "packages/object-storage"],
+  ["消息与机器人", "packages/messaging"],
+  ["实时通信", "packages/web-realtime"],
+  ["HTTP 远程请求", "packages/http"],
+  ["数据加解密", "packages/security"],
+  ["对象映射", "packages/objectmapping"],
+  ["序列化", "packages/serialization"],
+  ["数据校验", "packages/validation"],
+  ["分布式 ID", "packages/distributed-ids"],
+  ["模板引擎", "packages/templating"],
+  ["搜索引擎", "packages/search-engines"],
+  ["AI 与 MCP", "packages/ai"],
+  ["网关与流量治理", "packages/web-gateway"],
+  ["可观测性", "packages/observability"],
+  ["扩展与二次开发", "guide/extending"],
+  ["常见问题", "guide/faq"],
+];
+
 const frameworkSidebar: DefaultTheme.SidebarItem[] = [
   {
     text: "开始",
@@ -33,25 +79,9 @@ const frameworkSidebar: DefaultTheme.SidebarItem[] = [
     ],
   },
   {
-    text: "核心概念",
+    text: "开发指南",
     collapsed: false,
-    items: [
-      { text: "模块系统", link: "/cosmos/framework/concepts/modularity" },
-      { text: "模块生命周期", link: "/cosmos/framework/concepts/lifecycle" },
-      {
-        text: "依赖注入",
-        link: "/cosmos/framework/concepts/dependency-injection",
-      },
-      { text: "动态 API", link: "/cosmos/framework/concepts/dynamic-api" },
-    ],
-  },
-  {
-    text: "进阶",
-    collapsed: false,
-    items: [
-      { text: "扩展与二次开发", link: "/cosmos/framework/extending" },
-      { text: "常见问题", link: "/cosmos/framework/faq" },
-    ],
+    items: guideChapters.map(([text, link], i) => chapter(i + 1, text, link)),
   },
   {
     text: "模块总览",

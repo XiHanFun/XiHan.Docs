@@ -167,7 +167,7 @@ public async Task<InvoiceDto> CreateInvoiceAsync(InvoiceCreateDto input) { … }
 
 前缀匹配要求**词边界**（前缀之后必须是大写字母或下划线），所以 `AddressBook` 不会被 `Add` 命中而变成 `POST /ressBook`，`EditorTemplate` 也不会被 `Edit` 命中。
 
-完整动词表见 [动态 API](./concepts/dynamic-api)。
+完整动词表见 [动态 API](./dynamic-api)。
 
 ### 分页方法收不到请求体
 
@@ -243,7 +243,7 @@ BasicApp 把这两步封装成了 `AddSaasLocalEventHandler<T>()`。
 ## 还没解决？
 
 - [扩展与二次开发](./extending)：模块、替换默认实现、拦截器、动态 API 定制的完整配方
-- [模块系统](./concepts/modularity) / [生命周期](./concepts/lifecycle) / [依赖注入](./concepts/dependency-injection)：机制本身
-- [模块总览](./packages/)：逐包的配置项、API 与注意事项
-- [BasicApp 常见问题](../basic-app/faq)：业务系统层面的坑（认证、权限、菜单、前端）
+- [模块系统](./modularity) / [生命周期](./lifecycle) / [依赖注入](./dependency-injection)：机制本身
+- [模块总览](../packages/)：逐包的配置项、API 与注意事项
+- [BasicApp 常见问题](../../basic-app/faq)：业务系统层面的坑（认证、权限、菜单、前端）
 - 仍未解决可到 [GitHub Issues](https://github.com/XiHanFun/XiHan.Framework/issues) 提问

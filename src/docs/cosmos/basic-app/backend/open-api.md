@@ -53,7 +53,7 @@ BasicApp 对外开放有**三条互不相同的路径**，最容易混淆的是�
 
 同样的原因，第三方登录回调里的 `ExternalLoginAsync` 被标 `[DynamicApi(IsEnabled = false)]` 不对外暴露，且调用时用 `ProxyHelper.UnProxy` 取真实目标实例。
 
-自己写匿名端点时记住这条，见 [框架常见问题](../../framework/faq#匿名端点调用应用服务时永久挂起)。
+自己写匿名端点时记住这条，见 [框架常见问题](../../framework/guide/faq#匿名端点调用应用服务时永久挂起)。
 
 ## 开放接口：签名调用
 

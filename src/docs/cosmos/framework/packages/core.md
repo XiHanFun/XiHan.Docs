@@ -118,11 +118,11 @@ public class MyModule : XiHanModule
 
 ## 核心能力
 
-- **模块化系统**：`XiHanModule` 基类 + `[DependsOn]`，`XiHanModuleHelper` 递归发现模块（并打印目录树日志），`ModuleLoader` 建描述符并拓扑排序，`ModuleManager` 驱动生命周期。详见 [模块化](../concepts/modularity)。
-- **7 阶段生命周期**：服务注册三阶段 + 初始化三阶段 + 关机，每阶段同步/异步双版本。详见 [生命周期](../concepts/lifecycle)。
+- **模块化系统**：`XiHanModule` 基类 + `[DependsOn]`，`XiHanModuleHelper` 递归发现模块（并打印目录树日志），`ModuleLoader` 建描述符并拓扑排序，`ModuleManager` 驱动生命周期。详见 [模块化](../guide/modularity)。
+- **7 阶段生命周期**：服务注册三阶段 + 初始化三阶段 + 关机，每阶段同步/异步双版本。详见 [生命周期](../guide/lifecycle)。
 - **应用引导**：`IServiceCollection.AddApplication<TStartupModule>()` / `AddApplicationAsync<TStartupModule>()` 从启动模块引导；`XiHanApplicationFactory` 支持"外部容器"（Web/Host）与"内部容器"（独立自建 `ServiceCollection`）两种模式。
 - **远程/集成服务标记**：`IRemoteService` 空标记接口——`XiHan.Framework.Application.Contracts` 的 `IApplicationService` 即继承自它，是动态 API 自动暴露为 REST 的判定基础（`XiHan.Framework.Web.Api` 的 `TypeHelper` 用 `IApplicationService.IsAssignableFrom(type)` 识别应用服务类型）；配套的细粒度控制特性 `RemoteServiceAttribute`（`IsEnabled` / `IsMetadataEnabled` / `Name` 分组名 + `IsExplicitlyEnabledFor` 等静态判定）、`IntegrationServiceAttribute`（标记集成服务，`IsDefinedOrInherited` 支持接口继承判定）、`ApplicationServiceTypes`（`[Flags]` 枚举：`ApplicationServices` / `IntegrationServices` / `All`）、`DisableXiHanFeaturesAttribute`（按类禁用拦截器 / 中间件 / MVC 过滤器）均定义在 Core，供上层按需读取。
-- **约定式依赖注入**：标记接口 / `[Dependency]` / `[ExposeServices]` / `[ExposeKeyedService]` / `[DisableConventionalRegistration]`，可插拔 `IConventionalRegistrar`。详见 [依赖注入](../concepts/dependency-injection)。
+- **约定式依赖注入**：标记接口 / `[Dependency]` / `[ExposeServices]` / `[ExposeKeyedService]` / `[DisableConventionalRegistration]`，可插拔 `IConventionalRegistrar`。详见 [依赖注入](../guide/dependency-injection)。
 - **缓存式服务提供器**：`ICachedServiceProvider`（scoped，缓存含瞬态在内的所有已解析服务）/ `ITransientCachedServiceProvider` / `IRootServiceProvider`。
 - **属性/字段注入**：`[AutowiredService]` + `AutowiredServiceHandler.Autowired(this)`（推荐构造函数注入，此为特殊情况兜底）。
 - **选项模式增强**：`PreConfigure<TOptions>` 预配置、`XiHanDynamicOptionsManager<T>`（运行时可覆盖选项）、`XiHanOptionsFactory`。
@@ -362,7 +362,7 @@ app.Shutdown();                         // 逆序跑关机钩子
 
 ## 相关模块
 
-- [模块化概念](../concepts/modularity) · [生命周期概念](../concepts/lifecycle) · [依赖注入概念](../concepts/dependency-injection)
+- [模块化概念](../guide/modularity) · [生命周期概念](../guide/lifecycle) · [依赖注入概念](../guide/dependency-injection)
 - [XiHan.Framework.Castle](./castle) — 基于 Castle 的动态代理落地（实现本包的 `IXiHanInterceptor`）。
 - [XiHan.Framework.Web.Core](./web-core) — 提供 Web Host 引导（`AddApplicationAsync` / `InitializeApplicationAsync`）与 `ApplicationInitializationContext` 的 `GetApplicationBuilder/GetConfiguration/GetEnvironment` 扩展。
 - [XiHan.Framework.Utils](./utils) · [XiHan.Framework.Metadata](./metadata)

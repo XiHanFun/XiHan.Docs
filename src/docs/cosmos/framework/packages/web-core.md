@@ -153,4 +153,4 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 
 - [XiHan.Framework.Web.Api](./web-api) — 在本包之上装配完整的 REST API 中间件管道。
 - [XiHan.Framework.Web.Docs](./web-docs)、[XiHan.Framework.Web.RealTime](./web-realtime)、[XiHan.Framework.Web.Grpc](./web-grpc)、[XiHan.Framework.Web.Gateway](./web-gateway) — 其它 Web 层包，均以本包为底座。
-- [模块生命周期](../concepts/lifecycle) — `PreConfigureServices` / `ConfigureServices` / `OnApplicationInitialization` 钩子。
+- [模块生命周期](../guide/lifecycle) — `PreConfigureServices` / `ConfigureServices` / `OnApplicationInitialization` 钩子。

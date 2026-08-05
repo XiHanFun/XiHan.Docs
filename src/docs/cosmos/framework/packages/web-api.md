@@ -370,5 +370,5 @@ public class PingController : XiHanController
 - [XiHan.Framework.Web.Core](./web-core) — 本包的底座（HttpContext / 当前主体 / 客户端信息 / 托管环境）。
 - [XiHan.Framework.Auditing](./auditing) — 访问/操作/异常/接口/登录五类日志与实体变更审计的采集队列、管道、写入器契约（本包中间件/过滤器是其主要生产方之一）。
 - [XiHan.Framework.Web.Docs](./web-docs) — 在动态 API 之上提供 Scalar/Swagger UI 文档界面。
-- [动态 API](../concepts/dynamic-api) — 动态 API 的设计与约定说明。
-- [模块生命周期](../concepts/lifecycle) — `ConfigureServices` / `OnApplicationInitialization` 等生命周期钩子。
+- [动态 API](../guide/dynamic-api) — 动态 API 的设计与约定说明。
+- [模块生命周期](../guide/lifecycle) — `ConfigureServices` / `OnApplicationInitialization` 等生命周期钩子。

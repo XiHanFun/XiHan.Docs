@@ -248,4 +248,4 @@ var fail = ApiResponse.Failure(ApiResponseCodes.PermissionDenied, "缺少 produc
 - [XiHan.Framework.Application](./application) — 本契约的实现层（应用服务基类 + CRUD 基类 + 动态 API 特性）
 - [XiHan.Framework.Domain.Shared](./domain-shared) — 提供分页查询 DTO
 - [XiHan.Framework.Domain](./domain) — 领域层，DTO 通常由领域实体映射而来
-- [动态 API](../concepts/dynamic-api) — `IApplicationService` 如何被自动暴露为 REST 接口
+- [动态 API](../guide/dynamic-api) — `IApplicationService` 如何被自动暴露为 REST 接口
