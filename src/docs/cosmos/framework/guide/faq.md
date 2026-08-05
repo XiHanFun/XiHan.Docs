@@ -23,7 +23,7 @@
 
 这是**故意的**。`DynamicApiOptions.ThrowOnGenerationFailure` 默认 `true`：任一应用服务生成控制器失败就中断装配并抛聚合异常，异常信息里有具体是哪个服务、哪个方法。
 
-以前这里是「只记日志并跳过」，结果一个服务的全部端点从路由表里静默消失、前端 404 却查不出所以然，所以改成了 fail-fast。**不建议**把它设回 `false`。
+设成 `false` 会改为只记日志并跳过——该服务的全部端点就从路由表里静默消失，前端拿到 404 却查不出所以然。**不建议**关掉。
 
 ### 代码该写在哪个生命周期钩子里
 
@@ -99,9 +99,6 @@ services.AddScoped<IMyService, MyService>();   // ✅ 接口 → 会被代理
 
 其次检查：类型有没有被列进 `DynamicProxyIgnoreTypes`。
 
-::: tip 历史坑（已修，无需再绕）
-曾经有一个更隐蔽的版本：约定注册对「暴露多个服务类型」的 Scoped / Singleton 服务走重定向分支注册成工厂描述符，`ImplementationType` 为空，而动态代理筛选要求它非空——结果**所有 `IScopedDependency` / `ISingletonDependency` 服务上的 `[UnitOfWork]`、`[Cacheable]`、审计拦截全体静默失效**，只有 `ITransientDependency` 侥幸可用。现已通过 `ServiceImplementationTypeRegistry` 记录工厂描述符与实现类型的对应关系修复。升级到修复后的版本即可，不要再为此写绕行代码。
-:::
 
 ### 匿名端点调用应用服务时永久挂起
 
@@ -128,30 +125,28 @@ services.AddScoped<IMyService, MyService>();   // ✅ 接口 → 会被代理
 public async Task<InvoiceDto> CreateInvoiceAsync(InvoiceCreateDto input) { … }
 ```
 
-### 内层调了 `RollbackAsync`，外层却返回成功、数据一行没写
+### 内层调了 `RollbackAsync`，外层还能提交吗
 
-这是历史行为，**现已修复为抛异常**。
+不能。回滚之后再提交会抛 `XiHanException`。
 
-原先：子工作单元的 `Complete` 是空实现、`Rollback` 却上抛父级，内层判定失败回滚会把父工作单元置为已回滚，而 `CompleteAsync` 开头的 `if (_isRolledback) return;` 让外层提交静默成功——拦截器不抛异常、HTTP 返回 200、数据库一行没写，唯一线索是 `Dispose` 时的 `Failed` 事件（全仓无订阅者）。
+父子工作单元共用同一物理事务，内层判定失败回滚就意味着整体终止——让外层若无其事地提交会产出「接口返回 200 但数据一行没写」。
 
-现在回滚后再提交会直接抛 `XiHanException`。同时 `SqlSugarClientResolver` 的钉住连接判定加上了「是否已回滚」，检出已回滚的事务型工作单元会抛出并提示改用 `Begin(requiresNew: true)`——避免回滚之后的写入落在一条已无事务的连接上被逐条自动提交。
+同理 `SqlSugarClientResolver` 的钉住连接判定包含「是否已回滚」：检出已回滚的事务型工作单元会抛出并提示改用 `Begin(requiresNew: true)`，避免回滚之后的写入落在一条已无事务的连接上被逐条自动提交。
 
 ### `requiresNew` 到底给不给我一个独立事务
 
-给。`requiresNew` 同时意味着**新的逻辑工作单元**和**新的物理连接**——两者缺一，内层就还是跑在外层的连接和事务上（这曾是它长期静默失效的原因）。
+给。`requiresNew` 同时意味着**新的逻辑工作单元**和**新的物理连接**——两者缺一，内层就还是跑在外层的连接和事务上。
 
 用的时候记住语义代价：内层提交后**不再受外层回滚影响**。所以**不要在已经修改过某些行的事务里，再用 `requiresNew` 去改同一批行**——两条独立连接改同一批行，轻则互相覆盖，重则死锁。
 
-### 事务回滚了，下游却收到了事件
+### 本地事件和分布式事件的发布时机有什么区别
 
-已修复。原先分布式事件在 `CompleteAsync` 的事件循环里就投出去，而提交发生在循环之后——提交失败回滚数据库时，已发出的事件不会被撤回，下游看到一份从未落库的数据。
+时机不同，且这个差别是有意为之：
 
-现在的语义：
+- **本地事件**：**提交前**发布。其处理器可能继续写库，这些写入必须落在同一个事务里。
+- **分布式事件**：循环内只累积，**事务提交成功后**再按 `EventOrder` 统一发布。这样事务回滚时下游不会收到一份从未落库的数据。
 
-- **本地事件**：**提交前**发布（其处理器可能继续写库，这些写入必须落在同一个事务里）。
-- **分布式事件**：循环内只累积，**事务提交成功后**再按 `EventOrder` 统一发布。
-
-代价是提交成功后若投递失败事件会丢——发件箱本就是进程内实现，进程一停全部丢失，这个取舍没有引入新的丢失窗口。要强投递保证请自行接持久化发件箱。
+代价是提交成功后若投递失败事件会丢。发件箱是进程内实现，进程一停即丢——要强投递保证请自行接持久化发件箱。
 
 ---
 
@@ -227,16 +222,20 @@ services.Configure<XiHanLocalEventBusOptions>(o => o.Handlers.AddIfNotContains(t
 
 BasicApp 把这两步封装成了 `AddSaasLocalEventHandler<T>()`。
 
-### 升级后编译报错：`IDistributedCache` 上找不到 `ScriptEvaluate`
+### 怎么在缓存上执行 Lua 脚本
 
-这是一次**有意的破坏性变更**。`IDistributedCache` 是框架的核心缓存抽象，其 `ScriptEvaluate` / `ScriptEvaluateAsync` 的签名里直接写着 StackExchange.Redis 的 `RedisResult` / `RedisValue`——抽象一旦焊上某个客户端的类型，换实现就要改所有调用方。
+Lua 执行不在 `IDistributedCache` 这个通用契约上，而是**可选能力接口** `ICacheSupportsLuaScript`——通用缓存抽象不应该焊上某个客户端的类型。
 
-现在：
+用法是先做类型判断：
 
-- 这两个成员从 `IDistributedCache` 上移除（Lua 执行是缓存实现的可选能力，不属于通用缓存契约）。
-- `ICacheSupportsLuaScript` 保留为**能力接口**，签名改为中立类型：入参 `object?[]`、返回 `CacheScriptResult`。调用方做类型判断后按需使用。
+```csharp
+if (cache is ICacheSupportsLuaScript lua)
+{
+    CacheScriptResult result = await lua.ScriptEvaluateAsync(script, keys, args);
+}
+```
 
-迁移方式：把 `cache.ScriptEvaluate(...)` 改成先 `if (cache is ICacheSupportsLuaScript lua)` 再调，返回值按 `CacheScriptResult` 解析。`IRedisDelayQueue` / `IRedisStreamQueue` 不受影响——它们名字里就带 Redis，是诚实的专用抽象。
+入参是中立的 `object?[]`，返回 `CacheScriptResult`（支持标量、整数、布尔与嵌套数组）。`IRedisDelayQueue` / `IRedisStreamQueue` 是名字里就带 Redis 的专用抽象，直接用即可。
 
 ---
 

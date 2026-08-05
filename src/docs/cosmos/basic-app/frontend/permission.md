@@ -12,7 +12,7 @@
 
 ## 权限码
 
-格式 `module:resource:action`，如 `saas:user:read`、`workflow:execute`。超管用**字面通配 `*`**（不是段级 `*:*:*`）。
+以 `:` 分段，多数是 `module:resource:action`（如 `saas:user:read`、`saas:tenant-edition-permission:grant`），也有两段的 `module:action`（如 `workflow:execute`）。超管用**字面通配 `*`**（不是段级 `*:*:*`）。
 
 **真源在后端** `SaasPermissionDefinitions`（Saas 模块）与各模块自己的权限码类。前端只是消费者——写权限码字符串时去后端对一下，别凭记忆写。
 
@@ -35,8 +35,8 @@ Access Token 里没有具体权限码（超管例外，只放一个 `*` 作快�
 Schema 页里字段声明 `permission`，**无权时该列与该搜索项整个不渲染**（`selectors.ts` 的 `isFieldPermitted`）：
 
 ```ts
-{ key: 'salary', title: t('hr.employee.salary'), dataType: 'money',
-  permission: 'saas:employee:read-salary' }
+{ key: 'phone', title: t('identity.org.col_phone'), dataType: 'string',
+  permission: 'saas:department:read' }
 ```
 
 注意这是「**不渲染**」而不是「渲染成空」——用户看不到这一列存在。
@@ -44,7 +44,7 @@ Schema 页里字段声明 `permission`，**无权时该列与该搜索项整个�
 ### 三、操作级
 
 - Schema 页的 `actions[].permission`：无权时按钮不出现。
-- `PageSchema` 上的 `exportPermission` / `importPermission` / `removePermission` / `statusPermission`：**精准门控**对应的内置按钮。
+- `PageSchema` 上的 `exportPermission` / `importPermission` / `removePermission`（批量删除）/ `statusPermission`（批量启停）：门控对应的内置按钮。其中只有 `exportPermission` 是**严格门控**（未声明就不显示导出），另外三个未声明时不做限制。
 
 ::: warning `exportPermission` 未声明 = 不显示导出
 这是刻意的默认值选择：宁可漏显示，不可错显示。要导出按钮就必须声明权限码。
@@ -67,8 +67,8 @@ const canGrant = computed(() => hasPermission('saas:tenant-edition-permission:gr
 
 | 方法 | 说明 |
 | --- | --- |
-| `hasPermission(code \| code[])` | 是否有权限码 |
-| `hasRole(role \| role[])` | 是否有角色 |
+| `hasPermission(code \| code[])` | 是否有权限码（传数组时任一命中即通过） |
+| `hasRole(role \| role[])` | 是否有角色（传数组时任一命中即通过） |
 | `hasAnyPermission(codes[])` | 任一命中即通过 |
 
 ::: tip 统一用这一种写法
@@ -81,7 +81,7 @@ const canGrant = computed(() => hasPermission('saas:tenant-edition-permission:gr
 
 **后端返回的敏感字段已经是打码后的值**（如 `138****8000`），前端**不再二次打码**。
 
-前端侧的 `useFieldSecurity(resourceCode)`（`~/components/schema/useFieldSecurity.ts`）按页面 `resourceCode` 拉取当前用户的有效字段规则，用途只有两个：
+前端侧的 `useFieldSecurity(resourceCode)`（`~/components/schema/useFieldSecurity.ts`）由页面自行调用：传入后端资源码，再调 `resolve()` 拉取当前用户在该资源上的有效字段规则（`GET /MyFieldSecurity/Mine?resourceCode=`）。它返回 `ruleFor` / `isReadable` / `isEditable` / `resolve`，用途只有两个：
 
 1. 表单按 `isEditable(fieldKey)` 置**只读**；
 2. 展示「不可见 / 已脱敏」的**标识**。
@@ -94,8 +94,8 @@ const canGrant = computed(() => hasPermission('saas:tenant-edition-permission:gr
 
 端点未就绪或无规则时**默认放行**（`isReadable` / `isEditable` 缺省 `true`）。
 
-::: warning `resourceCode` 缺省则不拉规则
-`PageSchema.resourceCode` 没写的话，`useFieldSecurity` 不会拉取脱敏规则——表单不会自动置只读。需要 FLS 的页面记得声明。
+::: warning `SchemaPage` 不会自动接线 FLS
+`useFieldSecurity` 是独立 hook，`SchemaPage` 不会自动调用它——`PageSchema.resourceCode` 只用于导入留痕。要按 FLS 置只读，得在页面里自己 `useFieldSecurity(...)` + `resolve()` 并把 `isEditable` 接到表单上。
 :::
 
 ### FLS 也门控过滤与排序
@@ -124,7 +124,7 @@ const canGrant = computed(() => hasPermission('saas:tenant-edition-permission:gr
 | 按钮不显示 | 权限码写错（去后端 `SaasPermissionDefinitions` 对）；或用户确实没这个权限 |
 | 导出按钮不显示 | `PageSchema.exportPermission` 没声明 |
 | 列不显示 | 字段 `permission` 无权；或 `visible: false` |
-| 表单该只读却可编辑 | `PageSchema.resourceCode` 没声明，FLS 规则没拉到 |
+| 表单该只读却可编辑 | 页面没调 `useFieldSecurity(...)` + `resolve()`，或没把 `isEditable` 接到表单字段上 |
 | 前端能点、后端 403 | 正常——前端过滤是体验层，以后端为准。检查该接口的 `[PermissionAuthorize]` 是否与前端用的码一致 |
 | 改了授权前端还是旧的 | 重新拉 `/api/Auth/Permissions`；后端侧检查是否调了 `InvalidateAuthorizationAsync` |
 

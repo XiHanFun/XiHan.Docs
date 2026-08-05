@@ -1,4 +1,4 @@
-# 8. 数据访问
+# 数据访问
 
 框架的数据访问基于 **SqlSugar**。本章讲实体怎么定义、仓储怎么用、查询过滤器做了什么、分页协议长什么样。完整 API 见 [Data 包](../packages/data)。
 
@@ -123,7 +123,7 @@ public class OrderRepository(ISqlSugarClientResolver resolver)
 响应是 `PageResultDtoBase<T>`：`Items` + `Page`（`totalCount` / `totalPages` / `hasNext` / `startRecord` 等）+ 可选 `ExtendDatas`。
 
 ::: warning 分页方法要显式标 `[HttpPost]`
-动态 API 会把 `GetXxxPageAsync` 推导成 GET，请求体绑不上。见 [7. 动态 API](./dynamic-api)。
+动态 API 会把 `GetXxxPageAsync` 推导成 GET，请求体绑不上。见 [动态 API](./dynamic-api)。
 :::
 
 ## 建库建表与种子
@@ -162,6 +162,6 @@ public class OrderRepository(ISqlSugarClientResolver resolver)
 
 ## 下一步
 
-- [9. 工作单元与事务](./uow)：事务边界与提交时序
-- [10. 多租户](./multi-tenancy)：租户解析与隔离
+- [工作单元与事务](./uow)：事务边界与提交时序
+- [多租户](./multi-tenancy)：租户解析与隔离
 - [Data 包](../packages/data)：完整配置项与 API

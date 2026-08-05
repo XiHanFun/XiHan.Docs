@@ -1,8 +1,8 @@
-# 6. Web 应用开发
+# Web 应用开发
 
 引用 `XiHan.Framework.Web.Api` 后你得到的是**一整条编排好的中间件管道**、统一响应信封、异常处理与 API 文档。本章讲这条管道长什么样、怎么往里插东西、响应契约是什么。
 
-接口怎么从应用服务变出来见 [7. 动态 API](./dynamic-api)。
+接口怎么从应用服务变出来见 [动态 API](./dynamic-api)。
 
 ## 一行获得整条管道
 
@@ -70,7 +70,7 @@ public override void OnApplicationInitialization(ApplicationInitializationContex
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `code` | `int` | 业务码，**恒为数字**（`NumericEnumConverter` 强制，不受全局枚举转字符串影响） |
+| `code` | `string` | 业务码，序列化为**枚举成员名**（如 `"Success"`）。判定成功请用 `isSuccess` |
 | `message` | `string` | 面向用户的提示，默认取业务码描述 |
 | `data` | `any` | 成功时是业务数据；失败时承载错误明细 |
 | `traceId` | `string?` | 请求追踪 ID |
@@ -101,7 +101,7 @@ public override void OnApplicationInitialization(ApplicationInitializationContex
 | **camelCase 命名** | `UserName` → `userName` | `OAuthProviders` → **`oAuthProviders`**（只有首字符变小写） |
 | **null 省略** | `WhenWritingNull` | 字段可能整个不出现，客户端按可选处理 |
 | **`long` → 字符串** | `12345` → `"12345"` | 避免 JS Number 精度溢出；反序列化时数字与字符串都接受 |
-| **枚举 → 成员名** | `Status.Enabled` → `"Enabled"` | 唯一例外是 `ApiResponse.code`，恒为 int |
+| **枚举 → 成员名** | `Status.Enabled` → `"Enabled"` | `ApiResponse.code` 也是成员名字符串 |
 | **时间按 `X-Timezone` 换算** | 存储 UTC，输出按请求头时区 | `DateTimeOffset` 走 ISO 8601 带偏移 |
 
 ## 请求头约定
@@ -166,7 +166,7 @@ public override void OnApplicationInitialization(ApplicationInitializationContex
 
 ## 下一步
 
-- [7. 动态 API](./dynamic-api)：应用服务怎么变成 REST 接口
-- [8. 数据访问](./data)：仓储与查询
-- [11. 认证与授权](./authentication)：管道里的认证/授权两段
+- [动态 API](./dynamic-api)：应用服务怎么变成 REST 接口
+- [数据访问](./data)：仓储与查询
+- [认证与授权](./authentication)：管道里的认证/授权两段
 - [Web.Api 包](../packages/web-api)：完整配置项与 API

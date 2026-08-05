@@ -50,7 +50,7 @@ module : resource : action
 
 用户通过**角色**获得权限码集合。角色是权限分配单元：
 
-- `SysRole`：承载一组权限，通过 `SysUserRole` 赋给用户。`RoleType` 分 `System`（平台预置，必须 `TenantId=0`）/ `Business` / `Custom`（租户自建，不可全局化）。预置模板如 Owner/Admin/Manager/Member/Viewer/External。
+- `SysRole`：承载一组权限，通过 `SysUserRole` 赋给用户。`RoleType` 分 `System`（平台预置，必须 `TenantId=0`）/ `Business` / `Custom`（租户自建，不可全局化）。平台基线只预置 `super_admin`（`TenantId=0` 的 `System` 角色）；租户开通时自动创建 Owner 角色 `tenant_owner` 并按版本白名单批量授权。
 - `SysRolePermission`：角色↔权限绑定，字段含 `PermissionAction`（`Grant`/`Deny`）、生效/失效时间（`EffectiveTime`/`ExpirationTime`）、`GrantReason`（关联审批单/工单，审计追溯）。
 - `SysUserRole`：用户↔角色绑定（用户"持有"角色）。
 
@@ -61,7 +61,7 @@ module : resource : action
 - 每条记录是 `(AncestorId, DescendantId, Depth, Path)`；`Depth=0` 是自关联，`Depth=1` 直接继承，`Depth=n` 为 n 级间接继承，`Path` 形如 `1/3/5`。
 - 核心不变式：若 `A→B` 且 `B→C` 存在，则 `A→C` 也必须存在。表**不设** `Status`/`IsDeleted`——单条停用会破坏传递闭包一致性，变更时整体重建受影响路径，硬删。
 - 继承语义：后代自动获得祖先的所有 **Grant** 权限，可被后代自己的 `SysRolePermission.Deny` 覆盖；**`DataScope` 不继承**（每个角色独立定义数据范围）；SSD/DSD 约束检查须展开继承链。
-- 写入时服务层做**环路检测**（禁止 `A→B→A`）。DAG 多路径时 `(A,C)` 的 `Depth` 取最短路径。
+- 写入时服务层做**环路检测**（禁止 `A→B→A`）：新增 `A→B` 前先查 B 的祖先集是否已含 A。
 
 ### 用户直授与合并优先级
 
@@ -93,9 +93,9 @@ module : resource : action
 自定义范围有两张对称的明细表，仅在档位为 `Custom` 时枚举可见部门：
 
 - `SysRoleDataScope`：服务 `SysRole.DataScope=Custom`。字段 `RoleId`+`DepartmentId`，`IncludeChildren=true` 时服务层配合 `SysDepartmentHierarchy` 展开所有后代部门（新增子部门自动纳入）。
-- `SysUserDataScope`：服务用户级覆盖 `SysUser.DataScopeOverride=Custom`，纯部门明细。**用户级覆盖优先级高于角色级**：当用户 `DataScopeOverride` 非空时，忽略角色的 `DataScope`。
+- `SysUserDataScope`：服务用户级覆盖 `SysUser.DataScopeOverride=Custom`，纯部门明细；写入前置条件是该用户 `DataScopeOverride=Custom`，否则拒绝。解析时用户级部门明细与角色级范围按**并集**叠加。
 
-数据范围在**查询层**生效：解析出可见部门集后生成 `WHERE dept_id IN (...)`，与权限码组合决定"能对哪些行做这个动作"。
+数据范围在**查询层**生效：任一角色为 `All` 则不限；否则解析出可见部门集（`IncludeChildren` 经 `SysDepartmentHierarchy` 展开后代），再取这些部门下的成员并入"本人"，收敛为可见用户主键集合追加到查询条件，与权限码组合决定"能对哪些行做这个动作"。无任何有效范围时只返回本人数据。
 
 ## 字段级脱敏（FLS）
 
@@ -103,13 +103,13 @@ module : resource : action
 
 | 字段 | 说明 |
 | --- | --- |
-| `TargetType` / `TargetId` | 策略绑定到 `Role` / `User` / `Permission` / `Department`（`FieldSecurityTargetType`） |
+| `TargetType` / `TargetId` | 策略绑定目标（`FieldSecurityTargetType`：`Role` / `User` / `Permission` / `Department`）；服务端解析只匹配 `Role`（当前用户的角色）与 `User`（用户自身） |
 | `ResourceId` / `FieldName` | 受控资源与字段名（区分大小写，对应实体属性名） |
 | `IsReadable` | 是否可读；`false` 时按 `MaskStrategy` 返回 |
 | `IsEditable` | 是否可编辑；`false` 时前端只读、后端写操作拒绝 |
 | `MaskStrategy` | 脱敏策略（见下表） |
 | `MaskPattern` | 配合策略的规则串（JSON/表达式） |
-| `Priority` | 数字越大越高，用于冲突合并覆盖低优先级（如用户级白名单覆盖角色级限制） |
+| `Priority` | 数字越大越高（策略元数据，不能为负）；服务端合并按 deny-overrides 处理，不按优先级放行 |
 
 脱敏策略 `FieldMaskStrategy`：`None`（原值）/ `Hidden`（隐藏或返回 null）/ `FullMask`（全星号）/ `PartialMask`（保留首尾，如 `138****1234`）/ `Hash`（不可逆）/ `Redact`（固定替换如 `[已脱敏]`）/ `Custom`。
 
@@ -119,7 +119,7 @@ module : resource : action
 - `IsReadable=true` + `MaskStrategy!=None` → 可读脱敏值（如客服看手机号 `138****1234`）
 - `IsReadable=false` → 不可读，按策略返回脱敏/隐藏结果
 
-**冲突合并**采用 deny-overrides + 优先级：命中的多条规则里，任一 `IsReadable=false` → 最终不可读，任一 `IsEditable=false` → 最终不可编辑，取最严脱敏；`Priority` 更高的规则可覆盖低优先级（白名单放行场景）。
+**冲突合并**采用 deny-overrides：命中同一字段的多条规则里，任一 `IsReadable=false` → 最终不可读，任一 `IsEditable=false` → 最终不可编辑，脱敏取最严。
 
 ### 服务端落地：读脱敏 + 写校验 + 排序/过滤门控
 
@@ -156,7 +156,7 @@ FLS 由 `IFieldSecurityService` 在服务端强制落地，**不依赖前端**�
 | 只能操作草稿 | `resource.status` | `Equals` | `draft` |
 | 限额操作 | `resource.amount` | `LessThan` | `10000` |
 
-> **建模 vs. 运行时**：上述属性/操作符描述的是 `SysPermissionCondition` 的**存储表达能力**。运行时由框架 `IAbacAttributeCollector` 收集 `subject./resource./environment.` 属性、`IAbacEvaluator` 评估，混合策略里 ABAC 段以策略码触发（如 `same_tenant`/`self_only` 及比较式）。框架默认评估器对 `subject.*`/`resource.*` 的同租户、仅本人、字段比较有内建支持；时间窗/IP 这类 `environment.*` 条件的真实取值需应用侧属性收集器提供，未接入收集器的属性不会自动生效——落地前请以仓库为准确认对应属性已被收集。
+> **建模 vs. 运行时**：上述属性/操作符描述的是 `SysPermissionCondition` 的**存储表达能力**，存储的条件行本身不参与运行时判定。运行时由框架 `IAbacAttributeCollector` 收集 `subject./resource./environment.` 属性、`IAbacEvaluator` 评估，混合策略里 ABAC 段以策略码触发（如 `same_tenant`/`self_only` 及比较式）。框架默认评估器对 `subject.*`/`resource.*` 的同租户、仅本人、字段比较有内建支持；时间窗/IP 这类 `environment.*` 条件的真实取值需应用侧属性收集器提供，未接入收集器的属性不会自动生效——落地前请以仓库为准确认对应属性已被收集。
 
 ### 约束规则 `SysConstraintRule`（+ `SysConstraintRuleItem`）
 
@@ -166,13 +166,15 @@ FLS 由 `IFieldSecurityService` 在服务端强制落地，**不依赖前端**�
 - `ViolationAction`：违规处理 `Deny` / `Warning` / `Log` / `RequireApproval`。
 - 非 ID 类参数（时间窗、最大数量等）以 JSON 存 `Parameters`；有效性由 `Status=Enabled` 且当前时间落在 `EffectiveTime~ExpirationTime` 共同决定。
 - **约束检查必须展开角色继承链**：若 Item 指向角色 A，任何继承 A 的后代角色都视为等效目标（经 `SysRoleHierarchy` 展开）。`ConstraintGroup` 标识互斥集合（先决条件约束中 0=必备项、1=目标项）。
+- 后端目前只提供约束规则与目标项的定义管理（增删改查），授权写路径不会自动拦截违规组合。
 
 ## 会话角色激活（动态职责分离）
 
 `SysUserRole` 是"持有"，`SysSessionRole` 是"激活"：用户可能持有多个角色，但一次会话只激活其中一个子集，用于动态职责分离与最小权限。
 
-- `SessionId`（关联 `SysUserSession` 主键）+ `RoleId` 唯一；`Status`（`SessionRoleStatus`）为 `Active`/`Inactive`/`Expired`，配合 `ActivatedTime`/`DeactivatedTime`/`ExpirationTime` 记录生命周期。
-- **激活前置校验**：该用户确实持有此角色（`SysUserRole` 存在且未过期），且激活通过 DSD 约束检查（`SysConstraintRule` 中 `ConstraintType=DSD`）。
+- `SessionId`（关联 `SysUserSession` 主键）+ `RoleId` 在租户内唯一；`Status`（`SessionRoleStatus`）为 `Active`/`Inactive`/`Expired`，配合 `ActivatedTime`/`DeactivatedTime`/`ExpirationTime` 记录生命周期。
+- **激活的模型约定**：该用户确实持有此角色（`SysUserRole` 存在且未过期），且激活须通过 DSD 约束检查（`SysConstraintRule` 中 `ConstraintType=DSD`）。
+- 后端目前只提供会话激活角色的查询（权限码 `saas:session-role:read`），激活/停用的写入接口未开放。
 - 典型用法：敏感操作前临时激活特权角色，完成后立即停用；凌晨扫描失效已过期的会话角色。
 
 设计意图是让一次会话只以其激活的角色子集办事，从而即便持有互斥角色也不会在同一会话同时生效；DSD 约束在**激活时**校验拦截。持久的角色持有关系仍记在 `SysUserRole`，会话激活是叠加在其上的运行期约束。
@@ -180,7 +182,7 @@ FLS 由 `IFieldSecurityService` 在服务端强制落地，**不依赖前端**�
 ## 申请、审批、委托与留痕
 
 - **权限申请** `SysPermissionRequest`：用户申请权限/角色 → 关联 `SysReview` 审批流 → 审批通过后由服务层**自动**写入 `SysUserRole`/`SysUserPermission` 完成授权。状态 `PermissionRequestStatus`：`Pending`/`Approved`/`Rejected`/`Withdrawn`/`Expired`；可带期望生效/失效时间。
-- **权限委托** `SysPermissionDelegation`：建模"委托人 → 被委托人 → 权限范围 → 时间窗口"（如经理出差把审批权委托给副手）。`PermissionId`/`RoleId` 可空（空=委托全部）；`ExpirationTime` **必填**（委托必须有截止）；生效需 `DelegationStatus=Active`（`DelegationStatus`：`Pending`/`Active`/`Expired`/`Revoked`）且当前时间在窗口内。撤销走 `Revoked`（软删）。
+- **权限委托** `SysPermissionDelegation`：建模"委托人 → 被委托人 → 权限范围 → 时间窗口"（如经理出差把审批权委托给副手）。`PermissionId`/`RoleId` 均可空且可同时填写：非空的 `PermissionId` 直接并入被委托人权限，非空的 `RoleId` 展开为该角色当前有效的 Grant 权限，两者都为空则不产生委托权限；`ExpirationTime` **必填**（委托必须有截止）；生效需 `DelegationStatus=Active`（`DelegationStatus`：`Pending`/`Active`/`Expired`/`Revoked`）且当前时间在窗口内。撤销走 `DelegationStatus=Revoked`，记录本身仅软删。
 - **变更留痕** `SysPermissionChangeLog`：结构化记录"谁在什么时候给谁授予/撤销了什么权限"，是 RBAC 合规审计的核心证据。**只追加，禁止更新和删除**，按月分表（`SplitTable`），携带 `OperatorUserId`/`TargetUserId`/`TargetRoleId`/`PermissionId`/`ChangeType`/`OperationIp`/`TraceId`。`ChangeType`（`PermissionChangeType`）区分角色/用户的授予、撤销、拒绝、分配/移除角色等。与 `SysDiffLog`（通用实体字段变更）职责分离——本表专注权限授予/撤销的业务语义。
 
 ## 版本（Edition）门控
@@ -214,10 +216,10 @@ FLS 由 `IFieldSecurityService` 在服务端强制落地，**不依赖前端**�
         · 委托权限（SysPermissionDelegation）并入快照，再统一被用户 Deny 收窄
         · 版本白名单求交（ApplyEditionGatingAsync）
         · super_admin 角色 → 全部启用权限 + 字面 * 通配放行
-  → 授权(ABAC)：SysPermissionCondition / SysConstraintRule 属性约束
+  → 授权(ABAC)：混合策略里编码在策略名中的 ABAC 策略码
         · 收集 subject./resource./environment. 属性 → 评估器按策略码判定
           （同租户/仅本人/比较式内建；时间窗/IP 依赖应用侧属性收集器）
-  → 数据范围：DataPermissionScope 解析可见部门集 → WHERE dept_id IN (...)
+  → 数据范围：DataPermissionScope 解析可见部门集 → 展开为可见用户主键集合追加到查询条件
   → 字段脱敏：FLS 按 deny-overrides 就地脱敏（读/导出一致），并门控排序/过滤字段
 ```
 

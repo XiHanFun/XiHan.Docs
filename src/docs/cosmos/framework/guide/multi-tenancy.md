@@ -1,4 +1,4 @@
-# 10. 多租户
+# 多租户
 
 框架提供租户上下文、租户解析中间件与数据隔离基础设施。本章讲隔离策略怎么选、上下文怎么切、写路径为什么和读路径不一样。
 
@@ -99,6 +99,6 @@ using (currentTenant.Change(tenantId))
 
 ## 下一步
 
-- [8. 数据访问](./data)：全局查询过滤器
-- [11. 认证与授权](./authentication)：租户解析在管道里的位置
+- [数据访问](./data)：全局查询过滤器
+- [认证与授权](./authentication)：租户解析在管道里的位置
 - [MultiTenancy 包](../packages/multitenancy)：完整 API

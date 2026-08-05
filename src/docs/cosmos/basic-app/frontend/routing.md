@@ -44,11 +44,10 @@ router.addRoute('RootLayout', ...)
 
 ### 二、`_core` 页面：`coreComponentMap` 显式登记
 
-个人中心、仪表盘、关于页等**不落在 `src/views`** 的页面（源码在 `packages/views/_core/`），`Component` 写成 `_core/xxx/index`，由 `packages/router/dynamic.ts` 的 `coreComponentMap` 解析：
+个人中心、关于页等**不落在 `src/views`** 的页面（源码在 `packages/views/_core/`），`Component` 写成 `_core/xxx/index`，由 `packages/router/dynamic.ts` 的 `coreComponentMap` 解析：
 
 ```ts
 const coreComponentMap: Record<string, () => Promise<unknown>> = {
-  '_core/dashboard/index': () => import('~/views/_core/dashboard/index.vue'),
   '_core/about/index': () => import('~/views/_core/about/index.vue'),
   '_core/profile/index': () => import('~/views/_core/profile/index.vue'),
 }
@@ -74,7 +73,7 @@ const coreComponentMap: Record<string, () => Promise<unknown>> = {
 
 ## 静态公共页
 
-纯静态的公共页（登录页、`/about`、错误页等）**不登记在 `PageRegistry`**，由前端 `src/router/routes.ts` 持有，经 `app/context.ts` 注册进 app-context。
+纯静态的公共页（登录页、错误页、`/control-center`、`/editor-demo` 等）**不登记在 `PageRegistry`**，由前端 `src/router/routes.ts` 持有（认证页与错误页定义在 `packages/router/routes/core.ts`，由 `routes.ts` 展开），经 `app/context.ts` 注册进 app-context。
 
 判断标准：需要权限控制、需要出现在侧边菜单里的 → 后端登记；纯展示、所有人可见的 → 前端静态路由。
 

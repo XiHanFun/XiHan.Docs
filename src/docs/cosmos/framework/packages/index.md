@@ -1,6 +1,17 @@
 # 模块总览
 
-XiHan.Framework 由 **66 个 NuGet 包**组成，按分层组织。每个包都有独立文档——下面的表格按层分组，点击即可查阅。
+XiHan.Framework 由 **66 个 NuGet 包**组成，按分层组织。本册是**参考手册**——每个包一页，写完整的 API 清单与配置项全表。
+
+::: tip 先看指南还是先看这里
+文档分两册，解决的问题不同：
+
+| 你的问题 | 去哪 |
+| --- | --- |
+| 「**我要做 X**」——数据访问、事务、认证、缓存、多租户… | [开发指南](../guide/modularity)（38 章，按能力域组织） |
+| 「**这个包有什么**」——完整 API、全部配置项、类型清单 | **本册** |
+
+指南章节末尾都会链到对应的包页。不确定从哪开始就先读[快速上手](../quickstart)。
+:::
 
 > 命名约定：`XiHan.Framework.[模块名]` 为通用类库，`XiHan.Framework.Web.[模块名]` 为 Web 功能。安装即 `dotnet add package <包名>`。
 
@@ -9,7 +20,6 @@ XiHan.Framework 由 **66 个 NuGet 包**组成，按分层组织。每个包都�
 - 只想跑个 Web API？→ `Web.Api` + `Web.Docs`（依赖会自动带上 Core 等底层）
 - 要读写数据库？→ 加 `Data`
 - 要缓存/认证/授权？→ 按需加 `Caching` / `Authentication` / `Authorization`
-- 不确定？→ 先看 [快速上手](../quickstart)，再回这里按需查阅
 
 大多数包无需单独安装——它们会作为上层包的 `[DependsOn]` 依赖被自动引入。
 

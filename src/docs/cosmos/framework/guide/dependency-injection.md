@@ -1,4 +1,4 @@
-# 核心概念 · 依赖注入
+# 依赖注入
 
 XiHan.Framework 直接使用 **.NET 内置的依赖注入容器**（`IServiceCollection` / `IServiceProvider`），没有另造一套。在此之上，它加了两样让日常开发更省心的东西：**约定式自动注册**和**选项模式封装**。
 

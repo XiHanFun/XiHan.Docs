@@ -1,4 +1,4 @@
-# 2. 开发流程
+# 开发流程
 
 从零加一个前端页面的完整流程。**前端页面的事实源在后端**——菜单、路由、组件路径、权限码、i18n 键都在后端 `PageRegistry` 登记，前端只补落盘文件。所以流程是「后端先行、前端跟进」。
 
@@ -12,7 +12,7 @@
 ⑤ 补 i18n 文案（menu.ts + 模块文案）
 ```
 
-前两步属于后端，见 [后端手册 · 开发流程](../backend/development)。下面只讲前端三步。
+前两步属于后端，见 [后端手册 · 二次开发](../backend/development)。下面只讲前端三步。
 
 ## ③ API 模块
 
@@ -27,7 +27,6 @@ src/api/modules/organization/
 标准 CRUD 用资源工厂：
 
 ```ts
-// position.ts
 import { defineResource } from '../../factory'
 
 export const positionApi = defineResource<
@@ -39,18 +38,27 @@ export const positionApi = defineResource<
 })
 ```
 
-有自定义动作时用低层客户端补：
+有自定义动作时改用低层客户端逐个拼（`position.ts` 就是这种写法）：
 
 ```ts
+// position.ts
+import { createDynamicApiClient, createReadApi } from '../../base'
+
+const positionQueryApi = createDynamicApiClient('PositionQuery')
 const positionCommandApi = createDynamicApiClient('Position')
+const positionReadApi = createReadApi<PositionListItemDto, PositionDetailDto, PositionPageQueryDto>(
+  'PositionQuery',
+  'Position',
+)
 
 export const positionApi = {
-  ...defineResource({ query: 'PositionQuery', command: 'Position' }),
-  updateStatus: input => positionCommandApi.put('PositionStatus', input),
+  detail: (id: ApiId) => positionReadApi.detail(id),
+  page: (input: PositionPageQueryDto) => positionQueryApi.post('PositionPage', input),
+  updateStatus: (input: PositionStatusUpdateDto) => positionCommandApi.put('PositionStatus', input),
 }
 ```
 
-别忘了在该域的 `index.ts` 里导出。动作名推导规则与分页协议见 [4. 服务端交互](./request)。
+别忘了在该域的 `index.ts` 里导出。动作名推导规则与分页协议见 [服务端交互](./request)。
 
 ## ④ 视图文件
 
@@ -60,10 +68,10 @@ export const positionApi = {
 | --- | --- | --- |
 | `/identity/position` | `identity/position/index` | `src/views/identity/position/index.vue` |
 
-列表页直接照 [5. Schema 驱动页面](./schema-page) 的骨架写，三段：字段声明 → 查询构建 → 页面 Schema。
+列表页直接照 [Schema 驱动页面](./schema-page) 的骨架写，三段：字段声明 → 查询构建 → 页面 Schema。
 
 ::: warning `_core` 页面要额外登记
-不落在 `src/views` 的页面（个人中心、仪表盘等，源码在 `packages/views/_core/`），`Component` 写 `_core/xxx/index`，**必须同时在 `packages/router/dynamic.ts` 的 `coreComponentMap` 登记**，否则菜单有、点进去 404。
+不落在 `src/views` 的页面（个人中心、关于页等，源码在 `packages/views/_core/`），`Component` 写 `_core/xxx/index`，**必须同时在 `packages/router/dynamic.ts` 的 `coreComponentMap` 登记**，否则菜单有、点进去 404。
 :::
 
 ## ⑤ i18n 文案
@@ -73,10 +81,10 @@ export const positionApi = {
 | 文件 | 键 | 说明 |
 | --- | --- | --- |
 | `packages/locales/langs/{zh-CN,en-US}/menu.ts` | `identity_position` | 菜单标题。键 = 后端 `I18nKey` 去掉 `menu.` 前缀 |
-| `packages/locales/langs/{lang}/{模块}.ts` | `identity.position.col_name` 等 | 页面内文案，约定 `模块.实体.字段或动作` |
+| `src/locales/langs/{zh-CN,en-US}/{模块}.ts` | `identity.position.position_name` 等 | 页面内文案，约定 `模块.实体.字段或动作`。新增模块文件要在同级 `zh-CN.ts` / `en-US.ts` 里 import 并导出 |
 
 ::: danger 裸 `@` 会白屏
-文案里出现裸 `@`（如 `联系 @admin`）会触发 vue-i18n 的 linked message 语法而抛错、整页白屏。必须转义成 <code v-pre>{'@'}</code>。见 [8. 国际化](./i18n)。
+文案里出现裸 `@`（如 `联系 @admin`）会触发 vue-i18n 的 linked message 语法而抛错、整页白屏。必须转义成 <code v-pre>{'@'}</code>。见 [国际化](./i18n)。
 :::
 
 ## 自检清单
@@ -104,14 +112,14 @@ npx eslint src/views/identity/position/index.vue --fix
 ```
 
 ::: warning 别跑全仓 lint
-`pnpm run lint:fix` 展开是 `oxlint --fix && eslint . --fix`，会扫全仓并改动与你无关的文件。**只对本次改动的文件跑**；误跑了用 `git checkout HEAD -- <非本次任务的文件>` 还原。
+`pnpm run lint:fix` 展开是 `cross-env CI=true oxlint --fix && cross-env CI=true eslint . --fix`，会扫全仓并改动与你无关的文件。**只对本次改动的文件跑**；误跑了用 `git checkout HEAD -- <非本次任务的文件>` 还原。
 :::
 
 前端改动由开发者自行在浏览器验证，不走自动化预览。
 
 ## 相关页面
 
-- [后端手册 · 开发流程](../backend/development)：后端纵切片的完整接线清单
-- [3. 菜单与路由](./routing)：路由怎么从后端菜单生成
-- [5. Schema 驱动页面](./schema-page)：列表页开发手册
+- [后端手册 · 二次开发](../backend/development)：后端纵切片的完整接线清单
+- [路由与菜单](./routing)：路由怎么从后端菜单生成
+- [Schema 驱动页面](./schema-page)：列表页开发手册
 - [目录结构与代码地图](../project-structure#前端)：我要改 X 去哪个文件

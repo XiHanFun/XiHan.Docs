@@ -1,8 +1,8 @@
-# 6. 数据模型
+# 数据模型
 
-全部数据表的清单，按业务域分组。想知道某张表归谁管、某个功能落在哪张表，看这页。
+数据表清单，按业务域分组（`XiHan.BasicApp.Saas` 与 `XiHan.BasicApp.Workflow` 两个模块；代码生成、AI 模块的表不在此列）。想知道某张表归谁管、某个功能落在哪张表，看这页。
 
-实体基类、列约定、软删与索引规范见 [4. 实体基类](./entity)；连接与初始化见 [5. 数据库配置](./database)。
+实体基类、列约定、软删与索引规范见 [实体基类](./entity)；连接与初始化见 [数据库配置](./database)。
 
 ## 命名速查
 
@@ -13,7 +13,7 @@
 | 主键列 | **`Basic_Id`**（不是 `Id`） |
 | 多租户列 | `Tenant_Id`，**全局记录 = 0** |
 | 软删列 | `Is_Deleted` |
-| 分表后缀 | `_{yyyyMM}`（按月） |
+| 分表后缀 | `_{year}{month}{day}` + `SplitType.Month`（按月，形如 `_20260801`） |
 
 ## 身份与安全
 
@@ -24,11 +24,11 @@
 | `Sys_User_Session` | `SysUserSession` | 会话中心（多端控制、撤销） |
 | `Sys_User_Setting` | `SysUserSetting` | 用户 UI 偏好（按场景 + key 存 JSON） |
 | `Sys_User_Statistics` | `SysUserStatistics` | 用户统计 |
-| `Sys_User_Api_Credential` | `SysUserApiCredential` | 开放接口个人凭证（AppKey / AppSecret 哈希） |
+| `Sys_User_Api_Credential` | `SysUserApiCredential` | 开放接口个人凭证（AppKey + AppSecret 密文，Data Protection 可逆加密） |
 | `Sys_External_Login` | `SysExternalLogin` | 第三方身份绑定 |
 | `Sys_Password_History` | `SysPasswordHistory` | 历史密码（防重用） |
 
-→ [7. 统一认证](./authentication)
+→ [统一认证](./authentication)
 
 ## 权限与授权
 
@@ -46,7 +46,7 @@
 | `Sys_Constraint_Rule` / `Sys_Constraint_Rule_Item` | — | 约束规则引擎（SSD / DSD / 互斥 / 基数…） |
 | `Sys_Session_Role` | `SysSessionRole` | 会话角色映射 |
 
-→ [8. 权限管理](./permission) · [9. 数据权限](./data-permission) · [14. 审批与约束](./approval)
+→ [权限管理](./permission) · [数据权限](./data-permission) · [审批与约束](./approval)
 
 ## 组织与租户
 
@@ -60,7 +60,7 @@
 | `Sys_Tenant_User` | `SysTenantUser` | 租户成员关系 |
 | `Sys_Tenant_Edition` / `Sys_Tenant_Edition_Permission` | — | 版本套餐与可用权限白名单 |
 
-→ [10. 组织架构](./organization) · [11. 多租户 SaaS](./multi-tenancy)
+→ [组织架构](./organization) · [多租户 SaaS](./multi-tenancy)
 
 ## 系统设置
 
@@ -73,7 +73,7 @@
 | `Sys_Version` | `SysVersion` | 版本管理 |
 | `Sys_Migration_History` | `SysMigrationHistory` | 升级迁移历史 |
 
-→ [19. 系统设置](./settings)
+→ [系统设置](./settings)
 
 ## 消息与通知
 
@@ -88,7 +88,7 @@
 | `Sys_Telegram_Bot` | `SysTelegramBot` | 多实例 Telegram Bot |
 | `Sys_Chat_Conversation` / `_Member` / `Sys_Chat_Message` / `_Reaction` | — | 在线聊天 |
 
-→ [15. 消息通知](./messaging) · [16. 即时通讯](./realtime)
+→ [消息通知](./messaging) · [即时通讯](./realtime)
 
 ## 文件与任务
 
@@ -100,7 +100,7 @@
 | `Sys_Import_History` | `SysImportHistory` | 导入历史 |
 | `Sys_Task` | `SysTask` | 定时任务定义 |
 
-→ [17. 文件与存储](./file) · [12. 定时任务](./scheduling)
+→ [文件与存储](./file) · [定时任务](./scheduling)
 
 ## 开放能力与审批
 
@@ -109,7 +109,7 @@
 | `Sys_OAuth_App` / `Sys_OAuth_Code` / `Sys_OAuth_Token` | — | 作为 OAuth2 / OIDC **服务端**的应用、授权码与令牌 |
 | `Sys_Review` | `SysReview` | 审批 / 审查单 |
 
-→ [20. 开放接口](./open-api) · [14. 审批与约束](./approval)
+→ [开放接口](./open-api) · [审批与约束](./approval)
 
 ## 工作流
 
@@ -122,7 +122,7 @@
 | `Sys_Workflow_Node_Instance` | `SysWorkflowNodeInstance` | 节点实例 |
 | `Sys_Workflow_Bookmark` | `SysWorkflowBookmark` | 书签（挂起点） |
 
-→ [13. 工作流](./workflow)
+→ [工作流](./workflow)
 
 ## 日志（均按月分表）
 
@@ -143,10 +143,10 @@
 物理表名形如 `Sys_Access_Log_20260801`，要走 SqlSugar 的分表 API 按时间定位，不能当普通表直接查。
 :::
 
-→ [18. 日志审计](./logging)
+→ [日志审计](./logging)
 
 ## 相关页面
 
-- [4. 实体基类](./entity)：基类选型与列约定
-- [5. 数据库配置](./database)：连接、初始化、分表
-- [1. 框架简介](./introduction)：模块与分层
+- [实体基类](./entity)：基类选型与列约定
+- [数据库配置](./database)：连接、初始化、分表
+- [框架简介](./introduction)：模块与分层

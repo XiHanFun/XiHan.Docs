@@ -1,8 +1,8 @@
-# 4. 实体基类
+# 实体基类
 
 新增实体前先读这页：基类怎么选、有哪些列是自动来的、多租户列是什么语义、软删与唯一索引怎么配合、命名和索引有哪些强制规范。选错基类的返工成本很高。
 
-全部数据表的清单见 [6. 数据模型](./data-model)。
+全部数据表的清单见 [数据模型](./data-model)。
 
 ## 先选对基类
 
@@ -13,8 +13,8 @@
 | `BasicAppEntity` | 雪花 `long` | 无 | 否 | 极简实体、纯关联表 |
 | `BasicAppEntityWithIdentity` | 数据库自增 `long` | 无 | 否 | 需要自增序号的场景 |
 | `BasicAppCreationEntity` | 雪花 `long` | 创建三列 | 否 | **日志 / 流水**等只增不改的表 |
-| `BasicAppModificationEntity` | 雪花 `long` | 创建 + 修改 | 否 | 会改但不删的配置类 |
-| `BasicAppDeletionEntity` | 雪花 `long` | 创建 + 删除 | 是 | 少见 |
+| `BasicAppModificationEntity` | 雪花 `long` | 仅修改三列 | 否 | 会改但不删的配置类 |
+| `BasicAppDeletionEntity` | 雪花 `long` | 仅删除四列 | 是 | 少见 |
 | **`BasicAppFullAuditedEntity`** | 雪花 `long` | 创建 + 修改 + 删除 | **是** | **绝大多数业务实体的默认选择** |
 | `BasicAppAggregateRoot` | 雪花 `long` | 全套 | 是 | 聚合根（带领域事件能力） |
 
@@ -54,7 +54,7 @@
 时间列都是 `DateTimeOffset`，**存储恒为 UTC**，输出时按请求头 `X-Timezone` 换算。
 
 ::: tip 这些列由 AOP 自动注入
-走的是 SqlSugar 的 `DataExecuting` AOP，**业务代码不要手动赋值**——手动赋的值会被覆盖，或者造成审计信息与实际操作人不符。
+走的是 SqlSugar 的 `DataExecuting` AOP，**业务代码不要手动赋值**——修改三列会被 AOP 无条件覆盖；创建列只在值为默认值时才填充，手动赋值会留下与实际操作人不符的审计信息。
 :::
 
 ::: warning 别对时间列做单列标量投影
@@ -74,7 +74,7 @@
 ::: danger 读写口径不对称
 **读共享、写不共享**——全局过滤器放行 `TenantId=0` 的行让租户能读到平台数据，但租户上下文里**禁止改写/删除**非本租户行（含全局行）。维护全局数据的唯一入口是平台态（`ICurrentTenant.Change(null)`）。
 
-详见 [10. 多租户 SaaS](./multi-tenancy)。
+详见 [多租户 SaaS](./multi-tenancy)。
 :::
 
 ## 软删与唯一索引
@@ -114,7 +114,7 @@
 
 物理表名形如 `Sys_Access_Log_20260801`。查询分表数据要走 SqlSugar 的分表 API（按时间范围定位物理表），**不能当普通表直接查**。
 
-哪些表分了表见 [6. 数据模型](./data-model#日志-均按月分表)。
+哪些表分了表见 [数据模型](./data-model#日志-均按月分表)。
 
 ## 实体分文件约定
 
@@ -129,7 +129,7 @@
 枚举放 `Domain/Entities/Enums/SysXxx.Enum.cs`。
 
 ::: tip 生成的代码不焊外键
-代码生成器不产出 `Navigate` / `LEFT JOIN` / 显示属性 / 物理外键，跨表关联一律由业务层手写。见 [21. 代码生成](./code-generation)。
+代码生成器不产出 `Navigate` / `LEFT JOIN` / 显示属性 / 物理外键，跨表关联一律由业务层手写。见 [代码生成](./code-generation)。
 :::
 
 ## 加一个实体的清单
@@ -144,7 +144,7 @@
 
 ## 相关页面
 
-- [5. 数据库配置](./database)：连接、初始化开关、主从、分表查询
-- [6. 数据模型](./data-model)：全部数据表清单
-- [2. 开发流程](./development)：加一个完整功能纵切片
+- [数据库配置](./database)：连接、初始化开关、主从、分表查询
+- [数据模型](./data-model)：全部数据表清单
+- [开发流程](./development)：加一个完整功能纵切片
 - [框架 · Data 包](../../framework/packages/data)：仓储、查询过滤器、AOP 的框架实现

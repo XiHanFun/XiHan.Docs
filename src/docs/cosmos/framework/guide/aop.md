@@ -1,4 +1,4 @@
-# 4. AOP 与拦截器
+# AOP 与拦截器
 
 `[UnitOfWork]`、`[Cacheable]`、审计留痕这些横切能力，底层都是同一套机制：**Castle 动态代理 + `IXiHanInterceptor`**。理解它能解释一大类「特性标了没生效」的问题，也是写自己横切逻辑的入口。
 
@@ -101,16 +101,6 @@ public override void PreConfigureServices(ServiceConfigurationContext context)
 
 先登记的在外层。要控制顺序就控制 `OnRegistered` 的调用顺序（即模块的拓扑序）。
 
-## 历史坑（已修，无需再绕）
-
-::: tip
-曾经有一个更隐蔽的失效：约定注册对「暴露多个服务类型」的 Scoped / Singleton 服务走重定向分支、注册成工厂描述符，其 `ImplementationType` 为空，而动态代理筛选要求它非空——结果**所有 `IScopedDependency` / `ISingletonDependency` 服务上的 `[UnitOfWork]`、`[Cacheable]`、审计拦截全体静默失效**，只有 `ITransientDependency` 因提前 return 未走重定向而侥幸可用。
-
-而显式写 `[ExposeServices(typeof(IFoo))]` 的服务因暴露列表只有一项也不触发重定向——两种写法行为不一致，使该缺陷极难定位。
-
-现已通过 `ServiceImplementationTypeRegistry` 记录工厂描述符与实现类型的对应关系修复。升级到修复后的版本即可，**不要再为此写绕行代码**。
-:::
-
 ## 常见问题
 
 | 现象 | 原因 |
@@ -122,6 +112,6 @@ public override void PreConfigureServices(ServiceConfigurationContext context)
 
 ## 下一步
 
-- [3. 依赖注入](./dependency-injection)：服务注册与暴露类型
-- [9. 工作单元与事务](./uow)：最重要的一个拦截器
+- [依赖注入](./dependency-injection)：服务注册与暴露类型
+- [工作单元与事务](./uow)：最重要的一个拦截器
 - [Castle 包](../packages/castle)：动态代理集成细节

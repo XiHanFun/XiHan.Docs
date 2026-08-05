@@ -1,4 +1,4 @@
-# 核心概念 · 动态 API
+# 动态 API
 
 动态 API 是 XiHan.Framework 暴露接口的方式：**你写应用服务，框架把它自动变成 REST 接口**，不需要为每个服务再写一个 Controller。
 

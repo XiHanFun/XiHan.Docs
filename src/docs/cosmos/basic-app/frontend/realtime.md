@@ -1,4 +1,4 @@
-# 11. 实时通信
+# 实时通信
 
 前端用 SignalR 接后端两条 Hub：通知 `/hubs/notification` 与聊天 `/hubs/chat`。本页讲连接怎么管、载荷有什么坑、哪些功能依赖它。
 
@@ -24,8 +24,8 @@ onUnmounted(() => {
 | `on(method, handler)` / `off(method)` | 订阅 / 取消订阅服务端方法 |
 | `invoke(method, ...args)` | 调用服务端方法 |
 | `start()` / `stop()` | 手动启停 |
-| `destroy()` | 销毁连接 |
-| `destroyAllSignalRConnections()` | 登出时一把清 |
+| `destroy()` | 清空本 Hub 的全部订阅并停止连接 |
+| `destroyAllSignalRConnections()` | 登出时一把清（模块顶层导出，非 `useSignalR` 返回值） |
 
 ## 连接策略
 
@@ -36,6 +36,7 @@ onUnmounted(() => {
 | **传输回退** | WebSockets → SSE → LongPolling |
 | **自动重连** | 渐进式 1s / 2s / 5s / 10s / 30s |
 | **放弃重连** | token 被清除即停止（登出后不再重试） |
+| **negotiate 401** | 令牌过期时借统一入口刷新后重试一次；刷新失败内部已强制登出 |
 
 ::: tip 为什么要全局单例
 同一条 Hub 被多个组件订阅时若各建各的连接，服务端会为一个用户维持 N 条连接，推送也会重复触发。`useSignalR` 按 `hubPath` 复用同一条连接，组件只管订阅与取消订阅。
@@ -60,14 +61,14 @@ onUnmounted(() => {
 | 站内通知推送 | `/hubs/notification` | 新通知即时到达，无需轮询 |
 | 强制下线 | `/hubs/notification` | 管理员踢人、删除用户时 `ForceLogout` |
 | **用户偏好多端同步** | `/hubs/notification` | 其它设备保存列设置/搜索设置后推 `UserSettingChanged`，已打开的页面即时应用 |
-| 在线聊天 | `/hubs/chat` | 单聊 / 群聊 / 部门会话 |
+| 在线聊天 | `/hubs/chat` | 单聊 / 群聊 / 部门群 / AI 助手会话 |
 | 导出任务进度 | `/hubs/notification` | 长任务进度反馈 |
 
 ## 排查
 
 | 现象 | 原因 |
 | --- | --- |
-| 连接一直 401 | 本地没有 token 时不应发起连接；检查是否在登录前就调了 `start()` |
+| 连接一直 401 | 令牌无效：本地无 token 时 `start()` 直接返回不发请求，negotiate 401 只会刷新重试一次，仍失败即强制登出 |
 | 收到的 ID 精度不对 | 服务端推送前没投影，`long` 直接序列化成了 Number |
 | 登出后仍在重连 | 没调 `destroyAllSignalRConnections()` |
 | 收到重复推送 | 组件卸载时没 `off`，或绕过 `useSignalR` 自建了连接 |
@@ -77,4 +78,4 @@ onUnmounted(() => {
 
 - [后端手册 · 即时通讯](../backend/realtime)：Hub 定义、推送与在线状态
 - [后端手册 · 消息通知](../backend/messaging)：通知的产生与分发
-- [12. 常用组件](./components)：消息中心 UI
+- [常用组件](./components)：消息中心 UI

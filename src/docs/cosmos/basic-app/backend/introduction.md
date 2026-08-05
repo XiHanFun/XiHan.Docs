@@ -1,4 +1,4 @@
-# 1. 框架简介
+# 框架简介
 
 XiHan.BasicApp 后端是一套基于 [XiHan.Framework](../../framework/index) 的多租户中后台内核。本页讲**组织方式**：整体全景、项目怎么分层、模块怎么装配、每个模块内部怎么切 DDD、服务注册有哪些必须遵守的约定、种子数据怎么排序。
 
@@ -60,7 +60,7 @@ XiHan.BasicApp 后端是一套基于 [XiHan.Framework](../../framework/index) �
 | `XiHan.BasicApp.Web.Core` | Web 基座 | **纯聚合模块**：挂上 `Core` 与框架 Web 能力（`WebCore`/`WebApi`/`WebDocs`/`WebRealTime`/`WebGateway`），自身不注册任何服务 |
 | `XiHan.BasicApp.Saas` | 业务模块 | 核心业务：身份/角色/权限/菜单/组织/租户/配置/字典/文件/消息/日志/任务/审批/OAuth/聊天 |
 | `XiHan.BasicApp.CodeGeneration` | 业务模块 | 代码生成 |
-| `XiHan.BasicApp.AI` | 业务模块 | AI Provider 库化管理 / 知识库 RAG / 提示词库 |
+| `XiHan.BasicApp.AI` | 业务模块 | AI Provider 库化管理 / 知识库 RAG / 提示词库 / AI 助手 |
 | `XiHan.BasicApp.Workflow` | 业务模块 | 工作流应用层（存储持久化 + 定义/实例/待办 + 待办通知） |
 | `XiHan.BasicApp.WebHost` | 主机 | 启动入口，聚合四个业务模块 + 可观测性 + MCP |
 
@@ -102,7 +102,7 @@ await app.RunAsync();
 
 四个业务模块之外的框架能力经 `Saas → Web.Core → Core → XiHan.Framework.*` 一路传递，**无需在根模块重复声明**。根模块额外负责：
 
-- **健康检查**：`AddCheck<DatabaseHealthCheck>("database")` + `AddCheck<RedisHealthCheck>("redis")`；`/health` 匿名暴露，只回总状态与检查项名（不外泄连接串/异常）。
+- **健康检查**：`AddCheck<DatabaseHealthCheck>("database")` + `AddCheck<RedisHealthCheck>("redis")` + `AddCheck<QdrantHealthCheck>("qdrant")`；`/health` 匿名暴露，只回总状态与检查项名（不外泄连接串/异常）。
 - **Telegram Webhook**：在 `OnPreApplicationInitialization` 注册，位于鉴权中间件**之前**，自带 `secret_token` 强校验。
 - **可观测性**：开启后经 `AddOpenTelemetry` 装配链路追踪、可选指标与日志导出（`OtlpEndpoint` / `SamplingRatio`）。
 - **MCP Server**：启用且配了密钥时把 AI 技能暴露为 MCP tools，端点由 `McpApiKeyEndpointFilter` fail-closed 守门。
@@ -183,7 +183,7 @@ services.Replace(ServiceDescriptor.Scoped<ISessionStateGate, SaasSessionStateGat
 | `IPermissionChecker` | `SaasPermissionChecker` | 鉴权改读 Redis **授权快照**，授权变更免重登即生效 |
 | `ISessionStateGate` | `SaasSessionStateGate` | 会话失效 → 401、锁屏 → **423** |
 | `IAiProviderConfigStore` | `SaasAiProviderConfigStore` | AI Provider 配置从数据库读（而非 appsettings） |
-| `IAiPromptStore` | 提示词库实现 | 提示词从 `SysAiPrompt` 读 |
+| `IAiPromptStore` | `SaasAiPromptStore` | 提示词从 `SysAiPrompt` 读 |
 | `IWorkflowDefinitionStore` / `IWorkflowInstanceStore` / `IWorkflowBookmarkStore` | `SqlSugar*Store` | 工作流从内存存储换成落库，获得崩溃恢复 |
 
 ## 菜单：后端单一事实源
@@ -221,7 +221,7 @@ services.Replace(ServiceDescriptor.Scoped<ISessionStateGate, SaasSessionStateGat
 | --- | --- |
 | Saas | 10–37（系统基线 10–29、演示 30–37） |
 | CodeGeneration | 100–105 |
-| AI | 200–212（Provider 200–204、RAG 205–208、提示词 209–212） |
+| AI | 200–217（Provider 200–204、RAG 205–208、提示词 209–212、助手 213–217） |
 | Workflow | 300–304 |
 
 链内顺序恒为「**操作 → 资源 → 权限 → 菜单 → 角色授权**」——权限由「资源 × 操作」派生，所以操作/资源种子必须排在权限种子之前。缺了 `SysOperationSeeder` 会让整条链**静默失效**。
@@ -242,7 +242,7 @@ services.Replace(ServiceDescriptor.Scoped<ISessionStateGate, SaasSessionStateGat
 切换点只在两个基座（`Core` / `Web.Core`），业务模块作者无需关心。
 
 ::: tip 为什么以解决方案为准而不是探测目录
-源码模式下 VS 要求被 `ProjectReference` 的工程也是解决方案成员，否则设计时报 `NU1105`。而 `XiHan.BasicApp.slnx` 里没有、也不该有框架工程（它要能被单独克隆的人打开），所以它必须始终走 NuGet。早先按「旁边有没有框架源码」自动探测，结果在工作区里打开 `XiHan.BasicApp.slnx` 会被切成源码模式、NU1105 刷屏。
+源码模式下 VS 要求被 `ProjectReference` 的工程也是解决方案成员，否则设计时报 `NU1105`。而 `XiHan.BasicApp.slnx` 里没有、也不该有框架工程（它要能被单独克隆的人打开），所以它必须始终走 NuGet。
 :::
 
 ## 前后端协作数据流
@@ -265,7 +265,7 @@ UoW 收尾：本地事件(提交前) → 提交 → 分布式事件(提交后) �
 
 ## 下一步
 
-- [2. 开发流程](./development)：新增功能的完整接线清单
-- [3. 请求生命周期](./request-lifecycle)：中间件管道逐段与收尾时序
-- [4. 实体基类](./entity) → [5. 数据库配置](./database) → [6. 数据模型](./data-model)
+- [开发流程](./development)：新增功能的完整接线清单
+- [请求生命周期](./request-lifecycle)：中间件管道逐段与收尾时序
+- [实体基类](./entity) → [数据库配置](./database) → [数据模型](./data-model)
 - [框架 · 模块系统](../../framework/guide/modularity)：`[DependsOn]` 与拓扑排序机制

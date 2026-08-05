@@ -1,6 +1,6 @@
 # 缓存与异步
 
-BasicApp 的读路径几乎全部走 Redis 分布式缓存，写路径**精准失效**；耗时动作（发邮件短信、导出）不占请求线程，走队列 + 后台消费。这两条机制的时序稍有偏差就会出现「改完不生效」「读到脏数据」「任务丢了」，本页把它们说透。
+BasicApp 的热点读路径走 Redis 分布式缓存，写路径**精准失效**；耗时动作（发邮件短信、导出）不占请求线程，走队列 + 后台消费。这两条机制的时序稍有偏差就会出现「改完不生效」「读到脏数据」「任务丢了」，本页把它们说透。
 
 ## 缓存
 
@@ -8,9 +8,9 @@ BasicApp 的读路径几乎全部走 Redis 分布式缓存，写路径**精准�
 
 ```text
 ① 缓存条目类（Application/Caching/Saas*CacheItem.cs）
-     一个热点读定义一个条目类，封装「键怎么拼、值是什么、多久过期」
+     一个热点读定义一个条目类，用 [CacheName] 绑定缓存名并定义缓存值结构
 ② 缓存键常量（SaasCacheNames / SaasCacheKeys）
-     键名一律 const 集中，禁止内联字符串
+     缓存名一律 const 集中在 SaasCacheNames，业务键/匹配模式由 SaasCacheKeys 拼，禁止内联字符串
 ③ 失效器（ISaasCacheInvalidator / SaasCacheInvalidator）
      按域提供精准失效方法，底层 RemoveByPatternAsync(..., considerUow: true)
 ```
@@ -32,7 +32,7 @@ BasicApp 的读路径几乎全部走 Redis 分布式缓存，写路径**精准�
 | `SaasPermissionSelectCacheItem` / `SaasRoleSelectCacheItem` / `SaasResourceSelectCacheItem` / `SaasOperationSelectCacheItem` | `basicapp:saas:{域}:select` | 各类下拉选择项 |
 | `SaasTelegramConversationStateCacheItem` | `basicapp:saas:bot:telegram-conversation` | Telegram 会话态 |
 
-键名统一在 `SaasCacheNames` 里定义为 `const`，模式拼接在 `SaasCacheKeys`。**新增缓存必须走这套，不要内联字符串**——否则失效器找不到你的键。
+缓存名统一在 `SaasCacheNames` 里定义为 `const`（条目类用 `[CacheName]` 引用），业务键与匹配模式拼接在 `SaasCacheKeys`。**新增缓存必须走这套，不要内联字符串**——否则失效器找不到你的键。
 
 ### 失效器
 
@@ -69,9 +69,9 @@ _configValueCache.RemoveByPatternAsync(pattern, hideErrors: true, considerUow: t
 
 ### 加一个新缓存的清单
 
-1. 在 `SaasCacheNames` 加键名常量；必要时在 `SaasCacheKeys` 加模式拼接方法。
-2. 新建 `SaasXxxCacheItem`，定义值结构与过期。
-3. 读侧 `*QueryService` 里先查缓存、未命中回源并回填。
+1. 在 `SaasCacheNames` 加缓存名常量；必要时在 `SaasCacheKeys` 加业务键/匹配模式拼接方法。
+2. 新建 `SaasXxxCacheItem`，用 `[CacheName]` 绑定第 1 步的常量并定义值结构。
+3. 读侧 `*QueryService` 里先查缓存、未命中回源并回填（过期时间在回填时用 `DistributedCacheEntryOptions` 指定）。
 4. 在 `ISaasCacheInvalidator` / `SaasCacheInvalidator` 加一个 `InvalidateXxxAsync`，底层用 `RemoveByPatternAsync(..., considerUow: true)`。
 5. **所有会改到该数据的写侧方法都要调它**——漏一个就会出现「某个入口改完不生效」。
 
@@ -84,16 +84,16 @@ _configValueCache.RemoveByPatternAsync(pattern, hideErrors: true, considerUow: t
    │ 业务行落库（状态 Pending）
    │ 事务提交
    ▼
-IRedisDelayQueue<T>.Enqueue  ───────►  拉取 → 原子领取（置 Sending）→ 执行 → 置终态
+IRedisDelayQueue<T>.EnqueueAsync ─────►  拉取 → 原子领取（置 Sending / Processing）→ 执行 → 置终态
    （提交之后才入队）                       │
-                                            └─ 启动时复位崩溃残留的 Sending → Pending 并重投
+                                            └─ 启动时复位崩溃残留的在途状态 → Pending 并重投
 ```
 
 三条设计要点：
 
 1. **数据库表是事实源，队列只承载「待办工作」**。状态、重试次数、定时、审计都在表里；队列里只有一个轻量消息（通常就是实体 Id）。
 2. **提交之后才入队**，保证后台拉到消息时业务行已经可见（无环境工作单元时直接入队）。
-3. **原子领取**：`TryClaimForSendingAsync` 之类的方法原子地把行置为 `Sending`，天然去重、按 `MaxRetryCount` 自限重试。
+3. **原子领取**：发件箱的 `TryClaimForSendingAsync` 原子地把行由 `Pending` / 可重试 `Failed` 置为 `Sending`（天然去重、按 `MaxRetryCount` 自限重试）；导出的 `ClaimByIdAsync` 原子地把行由 `Pending` 置为 `Processing`。
 
 ### 现有的两条异步链路
 
@@ -102,11 +102,11 @@ IRedisDelayQueue<T>.Enqueue  ───────►  拉取 → 原子领取�
 | **邮件 / 短信发件箱** | `DbMessageOutbox.EnqueueAsync(channel, entityId)` | `MessageOutboxHostedService` | `Sys_Email` / `Sys_Sms` |
 | **异步导出** | `ExportTaskAppService` 提交时入队 | `ExportTaskHostedService` | `Sys_Export_Task` |
 
-两者都继承框架的 `XiHanBackgroundServiceBase<T>`（封装了循环拉取、并发控制、重试、优雅停机、运行统计），子类只实现「取任务」和「处理任务」两个方法。
+两者都继承框架的 `XiHanBackgroundServiceBase<T>`（封装了循环拉取、并发控制、重试、优雅停机、运行统计），子类实现 `FetchWorkItemsAsync`（取任务）和 `ProcessItemAsync`（处理任务）两个抽象方法，并重写 `ExecuteAsync` 在循环前做一次启动复位。
 
 ### 崩溃恢复
 
-进程被杀时可能留下一批 `Sending` 状态的行——它们既不会被再次领取，也永远不会完成。所以后台服务**启动时先做一次复位**：`ResetInFlightAndCollectPendingAsync` 把残留的 `Sending` 改回 `Pending` 并收集起来重新投递。
+进程被杀时可能留下一批处于在途状态（发件箱 `Sending`、导出 `Processing`）的行——它们既不会被再次领取，也永远不会完成。所以后台服务**启动时先做一次复位**：发件箱用 `ResetInFlightAndCollectPendingAsync` 把残留的 `Sending` 改回 `Pending` 并收集待发送重新投递；导出用 `ResetOrphanedProcessingAsync` 复位后再由 `GetPendingIdsAsync` 取出待执行任务重投。
 
 新增异步链路时这一步别漏，否则一次异常重启就会永久卡住一批任务。
 
@@ -124,7 +124,7 @@ IRedisDelayQueue<T>.Enqueue  ───────►  拉取 → 原子领取�
 BasicApp 的写路径大量使用本地事件解耦（如授权变更 → 写权限变更日志、待办创建 → 发站内通知）。
 
 ::: warning 事件处理器必须显式登记
-本地事件总线只自动发现「以接口为服务类型」的注册。裸 `services.AddTransient<MyHandler>()` **不会被订阅，静默失败**。必须用 `AddSaasLocalEventHandler<T>()`（内部 `AddTransient` + 把类型加进 `XiHanLocalEventBusOptions.Handlers`），并在 `AddSaasEventHandlers` 里登记。
+本地事件总线只订阅登记在 `XiHanLocalEventBusOptions.Handlers` 里的处理器类型。裸 `services.AddTransient<MyHandler>()` **不会被订阅，静默失败**。必须用 `AddSaasLocalEventHandler<T>()`（内部 `AddTransient` + 把类型加进 `XiHanLocalEventBusOptions.Handlers`），并在 `AddSaasEventHandlers` 里登记。
 :::
 
 发布时机（框架保证）：

@@ -28,12 +28,12 @@ PageSchema         ← 整页事实源（字段 + 资源适配器 + 操作 + 权
 
 - **搜索**：常用搜索 + 高级搜索浮层；时间区间（→ `Between`）、枚举/标签多选（→ `In`）
 - **表格**：列设置（显隐/顺序/固定/列宽）、密度切换、斑马纹/边框风格、多选、序号列、行悬停速览、树形模式
-- **列宽拖拽**：拖表头右边框调宽（`@dnd-kit/vue`），值写入列设置可保存
+- **列宽拖拽**：拖表头右边框调宽，值写入列设置可保存
 - **多字段排序**：点多个列头累加，数组顺序即优先级
 - **导出**：本地 CSV，或提交到[导出中心](../backend/file#导出中心-file-export-center)异步导出
 - **导入**：模板下载、CSV 解析、预校验、批量创建对话框
 - **批量操作**：批量删除、批量启停、页面自定义批量动作
-- **个人视图/搜索方案**：保存当前筛选 + 排序为命名方案
+- **个人视图/搜索方案**：保存当前筛选 + 排序为命名方案（经组件实例方法 `saveView` / `applyView` 暴露，无内置 UI 入口）
 - **偏好云端同步**：列设置与搜索设置按 `pageCode` 同步后端，多端一致
 
 ## 字段 Schema：`ListFieldSchema`
@@ -126,7 +126,7 @@ function buildAccessQuery(params: SchemaQueryParams) {
 const schema = computed<PageSchema>(() => ({
   pageCode: 'log.access',
   pageName: t('log.access.page_name'),
-  exportPermission: 'saas:access-log:export',   // 权限码以后端 SaasPermissionDefinitions 为准
+  exportPermission: 'saas:access-log:export',   // 权限码常量见后端 SaasPermissionCodes（登记在 SaasPermissionDefinitions）
   rowKey: 'basicId',
   scrollX: 2200,
   fields: fields.value,
@@ -222,7 +222,7 @@ resource: {
 | 能力 | 说明 |
 | --- | --- |
 | **列设置 / 搜索设置** | 按 `pageCode` 同步后端（`useUserSettingSync`），多端一致 |
-| **个人视图 / 搜索方案** | 保存当前筛选 + 排序为命名方案（`useViewManager`） |
+| **个人视图 / 搜索方案** | 保存当前筛选 + 排序 + 每页数量为命名方案（`useViewManager`）；无内置 UI，经模板 ref 调用 `saveView` / `applyView` |
 
 同步策略：**localStorage 仍是事实源**，后端加载成功则覆盖本地，保存失败静默忽略（尽力而为）。其它设备保存后经 SignalR `UserSettingChanged` 实时推送并应用到已打开的页面。
 
