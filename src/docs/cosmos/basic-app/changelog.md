@@ -8,6 +8,10 @@
 
 ## v3.10.0 (2026-08-05)
 
+::: warning 破坏性变更
+本版动态 API 的路径参数全面改走 query，接口 URL 随之改变（如 `GET /api/User/User/{id}` 变为 `GET /api/User/User?id=1`）。前端已随本版一并改完，**自建客户端与外部调用方需同步调整**。
+:::
+
 - **新增** 接入 OIDC，发现文档与 JWKS 匿名开放，`/connect/userinfo` 按 scope 收窄返回字段并校验令牌未被撤销，授权码带 nonce 且在授予 openid 范围时返回 `id_token`
 - **新增** 新增容器化编排，一条 `docker compose up -d` 拉起前端、后端与 PostgreSQL / Redis / Qdrant
 - **新增** 接入 GitHub Actions 流水线，后端 Release 构建与测试、前端类型检查与 lint 共四条门禁

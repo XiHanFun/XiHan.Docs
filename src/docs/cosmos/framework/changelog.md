@@ -8,6 +8,10 @@
 
 ## v3.10.0 (2026-08-05)
 
+::: warning 破坏性变更
+本版三处。动态 API 的路由段只由显式 `[FromRoute]` 产生，此前按参数名自动生成的 Id 路由段全部消失（`GET /api/User/User/{id}` 变为 `GET /api/User/User?id=1`），需保持原 URL 的请在参数上标注 `[FromRoute]`。`IDistributedCache` 移除两个 Lua 脚本成员，改用 `ICacheSupportsLuaScript` 的中立签名（`object?[]` 入参、`CacheScriptResult` 返回）。工作单元回滚后再调 `CompleteAsync` 由静默返回改为**抛出异常**，自行实现 `IUnitOfWork` 的需补 `IsRolledback` 成员。
+:::
+
 - **新增** 新增 Web.Mcp 包，MCP Server 的 HTTP 传输、`/mcp` 端点映射与应用管理 key 鉴权下沉至框架，应用只需声明模块依赖
 - **新增** 新增 OpenID Connect 协议层，含 RSA 签名密钥提供者、`id_token` 签发与发现文档，配置节 `XiHan:Authentication:Oidc` 默认关闭
 - **新增** 搜索引擎从空壳改为可用抽象，拆出契约包 SearchEngines.Abstractions 与进程内实现 SearchEngines，核心包不再传递 Elasticsearch 依赖
