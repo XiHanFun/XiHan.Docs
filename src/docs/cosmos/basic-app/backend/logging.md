@@ -170,7 +170,7 @@ services.AddScoped<IEntityAuditContextProvider, SaasEntityDiffContextProvider>()
 
 ### 前端页面
 
-菜单由后端 `PageRegistry` 单一注册（建菜单即绑权限码），本页六个页面挂在"日志审计"分组（路由 `/log`）下：
+菜单由后端 `PageRegistry` 单一注册（建菜单即绑权限码），本页六个页面挂在"审计中心"分组（路由 `/log`）下：
 
 | 菜单 | 路由 | 组件 | 图标 |
 | --- | --- | --- | --- |
@@ -179,18 +179,18 @@ services.AddScoped<IEntityAuditContextProvider, SaasEntityDiffContextProvider>()
 | 操作日志 | `/log/operation` | `log/operation/index` | `lucide:mouse-pointer-click` |
 | 登录日志 | `/log/login` | `log/login/index` | `lucide:log-in` |
 | 异常日志 | `/log/exception` | `log/exception/index` | `lucide:triangle-alert` |
-| 数据变更 | `/log/diff` | `log/diff/index` | `lucide:file-diff` |
+| 数据变更日志 | `/log/diff` | `log/diff/index` | `lucide:file-diff` |
 
-> 同一分组下还有"链路追踪"（`/log/trace`）与"权限变更"（`/log/permission-change`）两个页面，见下文[相关能力](#相关能力-权限变更日志与链路追踪查询)。
+> 同一分组下还有"日志链路追踪"（`/log/trace`）与"权限变更日志"（`/log/permission-change`）两个页面，见下文[相关能力](#相关能力-权限变更日志与链路追踪查询)。
 
 每页是一个查询表格（时间区间 + 多维过滤 + 多字段排序 + 导出按钮），点行进共享的详情抽屉 `_components/LogDetailDrawer.vue` 查看完整字段——实体变更页在详情里渲染 `BeforeData`/`AfterData`/`ChangedFields` 的前后对比。导出按钮受 `saas:xxx-log:export` 权限码控制（无权限不渲染）。
 
 ## 相关能力：权限变更日志与链路追踪查询
 
-"日志审计"菜单分组下，除本页六类外还挂了两个紧密关联、但**不计入"六类"**的能力，二者共用同一套写入基础设施与保留策略（含前文的 `LogRetentionCleanupTask`）：
+"审计中心"菜单分组下，除本页六类外还挂了两个紧密关联、但**不计入"六类"**的能力，二者共用同一套写入基础设施与保留策略（含前文的 `LogRetentionCleanupTask`）：
 
-- **权限变更日志 `SysPermissionChangeLog`**（菜单"权限变更"，路由 `/log/permission-change`，权限码 `saas:permission-change-log:read`，仅查看、无导出）：结构化记录"谁在什么时候给谁授予/撤销了什么权限"——`OperatorUserId`/`TargetUserId`/`TargetRoleId`/`PermissionId` + `ChangeType`，按月分表。授权写路径通过 `IAuthorizationChangeNotifier` 发布 `AuthorizationChangedDomainEvent`，`PermissionChangeLogEventHandler` 订阅后落库；查询走只读的 `PermissionChangeLogQueryService`。与 `SysDiffLog` 的边界：`SysDiffLog` 记通用实体字段变更，本表专注权限授予/撤销这一业务语义。
-- **链路追踪查询 `TraceQueryService`**（菜单"链路追踪"，路由 `/log/trace`，权限码 `saas:log-trace:read`）：按维度（用户名 / 会话标识 / `TraceId` / IP / 用户主键）+ 时间范围（≤ 31 天，防止扫描过多月表）跨**全部 7 类**分表日志（本页六类 + 权限变更日志）聚合成一条时间倒序时间线，单类型默认最多返回 200 条（上限 500，超出标记 `Truncated`）。它是本页反复强调的"用 `TraceId` 串联同一次请求全链路"能力的实际查询入口。
+- **权限变更日志 `SysPermissionChangeLog`**（菜单"权限变更日志"，路由 `/log/permission-change`，权限码 `saas:permission-change-log:read`，仅查看、无导出）：结构化记录"谁在什么时候给谁授予/撤销了什么权限"——`OperatorUserId`/`TargetUserId`/`TargetRoleId`/`PermissionId` + `ChangeType`，按月分表。授权写路径通过 `IAuthorizationChangeNotifier` 发布 `AuthorizationChangedDomainEvent`，`PermissionChangeLogEventHandler` 订阅后落库；查询走只读的 `PermissionChangeLogQueryService`。与 `SysDiffLog` 的边界：`SysDiffLog` 记通用实体字段变更，本表专注权限授予/撤销这一业务语义。
+- **链路追踪查询 `TraceQueryService`**（菜单"日志链路追踪"，路由 `/log/trace`，权限码 `saas:log-trace:read`）：按维度（用户名 / 会话标识 / `TraceId` / IP / 用户主键）+ 时间范围（≤ 31 天，防止扫描过多月表）跨**全部 7 类**分表日志（本页六类 + 权限变更日志）聚合成一条时间倒序时间线，单类型默认最多返回 200 条（上限 500，超出标记 `Truncated`）。它是本页反复强调的"用 `TraceId` 串联同一次请求全链路"能力的实际查询入口。
 
 ## 与框架的关系
 
