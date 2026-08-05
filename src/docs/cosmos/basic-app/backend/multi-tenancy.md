@@ -2,7 +2,7 @@
 
 XiHan.BasicApp 是一套 **B2B SaaS 多租户内核**：一份代码、一套部署，同时承载多个互不可见的租户（企业客户），并以**版本（Edition）**作为订阅售卖与功能门控的单元。本页讲清楚隔离怎么落地、登录后落到哪里、超级管理员如何跨租户运维、版本白名单如何在运行时门控权限，以及请求如何解析到租户上下文。
 
-权限码、数据范围、字段脱敏等细节见 [权限模型](./permissions)；框架层的租户上下文、解析链与存储见 [XiHan.Framework.MultiTenancy](../framework/packages/multitenancy)。本页聚焦 BasicApp 应用层的租户与版本机制。
+权限码、数据范围、字段脱敏等细节见 [权限模型](./permission)；框架层的租户上下文、解析链与存储见 [XiHan.Framework.MultiTenancy](../../framework/packages/multitenancy)。本页聚焦 BasicApp 应用层的租户与版本机制。
 
 ## 隔离模型：字段级隔离 + `TenantId=0` 约定
 
@@ -151,11 +151,11 @@ BasicApp 采用**先登录后选租户**：登录页不再让用户选租户，�
 
 配置节 `XiHan:MultiTenancy:Resolve`（`XiHanTenantResolveOptions`）可调头/查询串键名、开关与 `FallbackTenant`。
 
-对 BasicApp 而言，**主路径是令牌里的 `TenantId`**：先登录后选租户，登录时按落点决定令牌是否带 `TenantId` claim（平台态不带），之后每次请求由 `CurrentUserTenantResolveContributor` 据此还原上下文；换租户则重新签发令牌。解析链的完整机制见 [XiHan.Framework.MultiTenancy](../framework/packages/multitenancy)。
+对 BasicApp 而言，**主路径是令牌里的 `TenantId`**：先登录后选租户，登录时按落点决定令牌是否带 `TenantId` claim（平台态不带），之后每次请求由 `CurrentUserTenantResolveContributor` 据此还原上下文；换租户则重新签发令牌。解析链的完整机制见 [XiHan.Framework.MultiTenancy](../../framework/packages/multitenancy)。
 
 ## 与权限的交叉点
 
-版本门控是租户维度对权限的**再收窄**，叠在 RBAC/ABAC 判定链之上。完整判定链（认证 → 租户解析 → RBAC → ABAC → 数据范围 → 字段脱敏）与权限码/数据范围/FLS 细节见 [权限模型](./permissions)。要点回顾：
+版本门控是租户维度对权限的**再收窄**，叠在 RBAC/ABAC 判定链之上。完整判定链（认证 → 租户解析 → RBAC → ABAC → 数据范围 → 字段脱敏）与权限码/数据范围/FLS 细节见 [权限模型](./permission)。要点回顾：
 
 - 授权快照按 `(当前租户 OR 全局 TenantId=0)` 聚合绑定行，再被当前租户版本白名单取交集收窄。
 - 超管（`*`）与平台运维态不受版本门控。
@@ -163,6 +163,6 @@ BasicApp 采用**先登录后选租户**：登录页不再让用户选租户，�
 
 ## 下一步
 
-- [权限模型](./permissions)：RBAC + ABAC、权限码、数据范围、字段脱敏
-- [系统架构](./architecture)：租户解析在请求管道中的位置
-- [XiHan.Framework.MultiTenancy](../framework/packages/multitenancy)：框架层租户上下文、解析链与存储
+- [权限模型](./permission)：RBAC + ABAC、权限码、数据范围、字段脱敏
+- [系统架构](./introduction)：租户解析在请求管道中的位置
+- [XiHan.Framework.MultiTenancy](../../framework/packages/multitenancy)：框架层租户上下文、解析链与存储

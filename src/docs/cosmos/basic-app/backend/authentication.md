@@ -2,7 +2,7 @@
 
 XiHan.BasicApp 的身份体系围绕**统一身份**设计：一个自然人对应一个 `SysUser` 账号，用**邮箱**作为全平台唯一登录标识；同一账号可通过成员关系在多个租户里办事。本页讲清楚**主体模型**（用户/角色/部门/菜单/岗位）、**登录方式**、**令牌与会话**、**密码安全**、**登录落点**与**个人中心**。
 
-> 权限如何判定（权限码、数据范围、字段脱敏、ABAC）见 [权限模型](./permissions)；租户隔离、成员关系、版本门控见 [多租户](./multi-tenancy)。本页只做交叉链接，不重复。
+> 权限如何判定（权限码、数据范围、字段脱敏、ABAC）见 [权限模型](./permission)；租户隔离、成员关系、版本门控见 [多租户](./multi-tenancy)。本页只做交叉链接，不重复。
 
 ## 主体模型
 
@@ -25,7 +25,7 @@ RBAC 的核心实体都落在 `Saas` 模块的 `Domain/Entities` 下，均为 `s
 
 - 用户 ↔ 角色：`SysUserRole`（`Sys_User_Role`），多对多、支持带生效期的临时授权（`EffectiveTime`/`ExpirationTime`）。
 - 用户 ↔ 部门：`SysUserDepartment`（`Sys_User_Department`），多部门归属，`IsMain` 标识主部门，可挂 `PositionId`（岗位）、工号、职级、入职日期。
-- 角色 ↔ 权限、角色继承、数据范围等归权限模型，见 [权限模型](./permissions)。
+- 角色 ↔ 权限、角色继承、数据范围等归权限模型，见 [权限模型](./permission)。
 
 ### 用户（SysUser）
 
@@ -57,7 +57,7 @@ RBAC 的核心实体都落在 `Saas` 模块的 `Domain/Entities` 下，均为 `s
 
 `SysMenu` 只描述 UI 层级（目录/菜单/按钮/外链），**后端鉴权永远基于 Permission，不依赖菜单存在性**。菜单通过可空的 `PermissionId` 反向绑定一个权限点：空=纯展示菜单；有值=按该权限码门控可见性。若一个菜单需要多个权限，约定**建组合权限点**再绑定，而非引多对多。
 
-> 运行时的菜单/路由/组件路径/权限码/国际化键由后端 `PageRegistry` 作为单一事实源统一注册（见 [系统架构](./architecture)）；`SysMenu` 表是其落库形态。`TenantId=0` 为平台全局菜单，所有租户共享读取，租户可叠加私有菜单。
+> 运行时的菜单/路由/组件路径/权限码/国际化键由后端 `PageRegistry` 作为单一事实源统一注册（见 [系统架构](./introduction)）；`SysMenu` 表是其落库形态。`TenantId=0` 为平台全局菜单，所有租户共享读取，租户可叠加私有菜单。
 
 ## 登录方式
 
@@ -65,7 +65,7 @@ RBAC 的核心实体都落在 `Saas` 模块的 `Domain/Entities` 下，均为 `s
 
 前端先调 `GET /api/Auth/LoginConfig` 拿到 `LoginConfigDto`（`loginMethods` + `oAuthProviders`），据此决定展示哪些登录按钮——**支持的方式以该配置为准**。
 
-> 路由是方法名 `GetLoginConfigAsync` **剥离动词前缀 `Get` 并去掉 `Async`** 后的结果。全部认证端点的方法与 URL 对照表见 [接口对接指南](./api-guide#端点总表)。
+> 路由是方法名 `GetLoginConfigAsync` **剥离动词前缀 `Get` 并去掉 `Async`** 后的结果。全部认证端点的方法与 URL 对照表见 [接口对接指南](../api-guide#端点总表)。
 
 ### 账号密码
 
@@ -142,7 +142,7 @@ TOTP 遵循 RFC 6238：HMAC-SHA1、Base32 密钥、6 位、30 秒步长、±1 �
 
 登录成功签发 `LoginTokenDto`：**Access Token**（JWT，HMAC-SHA256 签名）+ **Refresh Token**（不透明随机串）。配置节 `XiHan:Authentication:Jwt`（`JwtOptions`），默认 Access 60 分钟、Refresh 7 天、时钟偏移容差 5 分钟（**以仓库配置为准**）。
 
-Access Token 的 Claim 主要有：`sub`/`jti`、`UserId`、`UserName`、`SessionId`、`TenantId`（有则带）、`Email`/`Phone`/`Picture`、`DeviceFingerprint`、多个 `Role`。**具体权限码不冻结进令牌**——只在超管时放一个通配 `*` 作快路径；其余权限一律由服务端**实时快照**判定，避免授予/回收后令牌失效不及时，也避免权限清单泄露（与 [权限模型](./permissions) 的实时校验一致）。
+Access Token 的 Claim 主要有：`sub`/`jti`、`UserId`、`UserName`、`SessionId`、`TenantId`（有则带）、`Email`/`Phone`/`Picture`、`DeviceFingerprint`、多个 `Role`。**具体权限码不冻结进令牌**——只在超管时放一个通配 `*` 作快路径；其余权限一律由服务端**实时快照**判定，避免授予/回收后令牌失效不及时，也避免权限清单泄露（与 [权限模型](./permission) 的实时校验一致）。
 
 刷新：`POST /api/Auth/RefreshToken`（`RefreshTokenRequestDto` 带旧 AccessToken + RefreshToken）→ 校验后签发新令牌，并落一条 `TokenRefreshed` 审计。
 
@@ -200,7 +200,7 @@ Access Token 的 Claim 主要有：`sub`/`jti`、`UserId`、`UserName`、`Sessio
 
 ## 相关页面
 
-- [权限模型](./permissions)：权限码、RBAC 继承、数据范围、字段脱敏、ABAC 约束、实时校验。
+- [权限模型](./permission)：权限码、RBAC 继承、数据范围、字段脱敏、ABAC 约束、实时校验。
 - [多租户](./multi-tenancy)：成员关系、平台运维态、租户切换、版本门控。
-- [框架 · 认证模块](../framework/packages/authentication)：JWT / OAuth2 / TOTP / PBKDF2 的底层实现。
-- [系统架构](./architecture)：认证/租户解析/授权在请求管道中的位置，与后端驱动菜单。
+- [框架 · 认证模块](../../framework/packages/authentication)：JWT / OAuth2 / TOTP / PBKDF2 的底层实现。
+- [系统架构](./introduction)：认证/租户解析/授权在请求管道中的位置，与后端驱动菜单。

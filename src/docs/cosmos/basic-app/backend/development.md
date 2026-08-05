@@ -2,7 +2,7 @@
 
 本页是 BasicApp 最重实操的一页：**在既有代码库上扩展新功能时，究竟要新建/改哪些文件、在哪些点接线**。所有清单与接线点均对照真实源码复核（以「岗位 / Position」这一现成的扁平 CRUD 纵切片、以及 `XiHan.BasicApp.AI` 独立模块为样板）。
 
-> 先读懂 [系统架构](./architecture)（分层与模块装配）与 [权限模型](./permissions)（权限码 / 数据范围 / FLS）再动手，事半功倍。
+> 先读懂 [系统架构](./introduction)（分层与模块装配）与 [权限模型](./permission)（权限码 / 数据范围 / FLS）再动手，事半功倍。
 
 ## 两种扩展粒度
 
@@ -329,7 +329,7 @@ export const positionApi = {
 
 `PageDescriptor.I18nKey` 命名为 `menu.{Code 中 . 与 - 替换为 _}`（岗位 → `menu.identity_position`）；双语文案在 `frontend/packages/locales/langs/{zh-CN,en-US}/menu.ts` 维护，键为去掉 `menu.` 前缀的 `identity_position`。
 
-> 前端更细的约定（Schema 驱动、三级权限过滤、字段级脱敏、时区/语言头、枚举选项响应式等）见 [前端结构](./frontend)。
+> 前端更细的约定（Schema 驱动、三级权限过滤、字段级脱敏、时区/语言头、枚举选项响应式等）见 [前端结构](../frontend/introduction)。
 
 ---
 
@@ -368,9 +368,9 @@ export const positionApi = {
 
 ## 下一步
 
-- [系统架构](./architecture)：分层、模块装配、DI 约定、缓存与失效
-- [权限模型](./permissions)：权限码 / RBAC / ABAC / 数据范围 / 字段级脱敏
-- [前端结构](./frontend)：Schema 驱动页、三级权限过滤、i18n / 时区
+- [系统架构](./introduction)：分层、模块装配、DI 约定、缓存与失效
+- [权限模型](./permission)：权限码 / RBAC / ABAC / 数据范围 / 字段级脱敏
+- [前端结构](../frontend/introduction)：Schema 驱动页、三级权限过滤、i18n / 时区
 - [代码生成](./code-generation)：用生成器批量产出 CRUD 纵切片
-- [部署](./deployment)：重建库、Qdrant 前置、环境配置
-- [动态 API 概念](../framework/concepts/dynamic-api)：框架层动词/路由映射机制
+- [部署](../deployment)：重建库、Qdrant 前置、环境配置
+- [动态 API 概念](../../framework/concepts/dynamic-api)：框架层动词/路由映射机制

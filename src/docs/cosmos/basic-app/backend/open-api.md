@@ -8,7 +8,7 @@ BasicApp 对外开放有**三条互不相同的路径**，最容易混淆的是�
 | **第三方 OAuth 登录** | 我去接别人 | 登录页上的 GitHub / Gitee / Google / QQ 按钮 |
 | **开放接口（签名调用）** | 服务端到服务端 | 第三方系统用 AppKey/AppSecret 签名调本平台接口，无 JWT |
 
-第二条属于登录方式，见 [身份与认证 · 第三方登录](./identity#第三方登录-oauth2)。本页讲第一、三条。
+第二条属于登录方式，见 [身份与认证 · 第三方登录](./authentication#第三方登录-oauth2)。本页讲第一、三条。
 
 ## OAuth2 / OIDC 服务端
 
@@ -53,7 +53,7 @@ BasicApp 对外开放有**三条互不相同的路径**，最容易混淆的是�
 
 同样的原因，第三方登录回调里的 `ExternalLoginAsync` 被标 `[DynamicApi(IsEnabled = false)]` 不对外暴露，且调用时用 `ProxyHelper.UnProxy` 取真实目标实例。
 
-自己写匿名端点时记住这条，见 [框架常见问题](../framework/faq#匿名端点调用应用服务时永久挂起)。
+自己写匿名端点时记住这条，见 [框架常见问题](../../framework/faq#匿名端点调用应用服务时永久挂起)。
 
 ## 开放接口：签名调用
 
@@ -61,7 +61,7 @@ BasicApp 对外开放有**三条互不相同的路径**，最容易混淆的是�
 
 ### 凭证从哪来
 
-用户在[个人中心 · 开发者](./identity#个人中心)自助申请：
+用户在[个人中心 · 开发者](./authentication#个人中心)自助申请：
 
 - `AppKey`（`ak_` 前缀，全局唯一）
 - `AppSecret`（`sk_` 前缀，**与账号密码同栈只存哈希，明文仅在创建/滚动时返回一次**）
@@ -76,7 +76,7 @@ BasicApp 对外开放有**三条互不相同的路径**，最容易混淆的是�
 
 由框架中间件 `XiHanOpenApiSecurityMiddleware` 统一验签，只对 `ProtectedPathPrefixes` 命中的路径生效（BasicApp 配的是 `/api/openapi`）。
 
-请求头、待签名串的构造、算法选择、两个自测端点（`/api/openapi/Ping`、`/api/openapi/Echo`）见 [接口对接指南 · 开放接口](./api-guide#开放接口-签名调用-无-jwt)——那里有可直接照抄的完整规则。
+请求头、待签名串的构造、算法选择、两个自测端点（`/api/openapi/Ping`、`/api/openapi/Echo`）见 [接口对接指南 · 开放接口](../api-guide#开放接口-签名调用-无-jwt)——那里有可直接照抄的完整规则。
 
 ### 两个必踩的坑
 
@@ -100,7 +100,7 @@ BasicApp 对外开放有**三条互不相同的路径**，最容易混淆的是�
 
 ## 相关页面
 
-- [接口对接指南](./api-guide)：签名算法与自测端点
-- [身份与认证](./identity)：第三方登录、个人中心凭证管理
-- [审计日志](./audit-log)：开放接口日志
-- [数据模型](./architecture/data-model#开放能力与审批)：相关表结构
+- [接口对接指南](../api-guide)：签名算法与自测端点
+- [身份与认证](./authentication)：第三方登录、个人中心凭证管理
+- [审计日志](./logging)：开放接口日志
+- [数据模型](./data-model#开放能力与审批)：相关表结构

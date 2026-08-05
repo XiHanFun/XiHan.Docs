@@ -1,6 +1,6 @@
 # AI 能力
 
-BasicApp 的 AI 能力落在独立模块 `XiHan.BasicApp.AI` 里，与代码生成模块同构（独立工程、独立种子段、独立权限资源）。它坐落在框架薄层 [XiHan.Framework.AI](../framework/packages/ai) 之上：**框架**提供 provider 解析、会话/嵌入门面、RAG 切片检索、提示词模板、Agent 与 MCP 桥接的抽象与默认实现；**BasicApp** 在其上做三件业务落地——把 AI Provider 配置**库化管理**（存库 + 加密 + 前端可维护 + 热切换），把 RAG 知识库**接上真实向量库（Qdrant）**并暴露为文档管理 / 检索问答 / MCP 工具，以及把**提示词模板库化**（覆盖框架默认 Options 实现，前端可维护）。
+BasicApp 的 AI 能力落在独立模块 `XiHan.BasicApp.AI` 里，与代码生成模块同构（独立工程、独立种子段、独立权限资源）。它坐落在框架薄层 [XiHan.Framework.AI](../../framework/packages/ai) 之上：**框架**提供 provider 解析、会话/嵌入门面、RAG 切片检索、提示词模板、Agent 与 MCP 桥接的抽象与默认实现；**BasicApp** 在其上做三件业务落地——把 AI Provider 配置**库化管理**（存库 + 加密 + 前端可维护 + 热切换），把 RAG 知识库**接上真实向量库（Qdrant）**并暴露为文档管理 / 检索问答 / MCP 工具，以及把**提示词模板库化**（覆盖框架默认 Options 实现，前端可维护）。
 
 模块只依赖 `XiHanBasicAppSaasModule`（复用 RBAC 表、`SaasRepository`、DataProtection 密文前缀），框架 AI 经 Saas → Core 传递进来。
 
@@ -224,7 +224,7 @@ BasicApp 通过框架把知识检索能力对外暴露为标准工具，两条�
 
 ### MCP Server（应用管理 key，fail-closed）
 
-MCP Server 的启用与暴露由框架包 [XiHan.Framework.Web.Mcp](../framework/packages/web-mcp) 负责，WebHost 只 `[DependsOn(typeof(XiHanWebMcpModule))]`。配置节 `XiHan:AI:Mcp`（`XiHanMcpOptions`）：
+MCP Server 的启用与暴露由框架包 [XiHan.Framework.Web.Mcp](../../framework/packages/web-mcp) 负责，WebHost 只 `[DependsOn(typeof(XiHanWebMcpModule))]`。配置节 `XiHan:AI:Mcp`（`XiHanMcpOptions`）：
 
 | 字段 | 默认 | 说明 |
 | --- | --- | --- |
@@ -257,7 +257,7 @@ MCP Server 的启用与暴露由框架包 [XiHan.Framework.Web.Mcp](../framework
 
 ## 相关文档
 
-- [框架 · XiHan.Framework.AI](../framework/packages/ai)：底层 provider 解析/热切换、RAG 切片检索、提示词模板、Agent/MCP 桥接的抽象与默认实现
-- [权限模型](./permissions)：`module:resource:action` 权限码、数据范围、字段级脱敏
+- [框架 · XiHan.Framework.AI](../../framework/packages/ai)：底层 provider 解析/热切换、RAG 切片检索、提示词模板、Agent/MCP 桥接的抽象与默认实现
+- [权限模型](./permission)：`module:resource:action` 权限码、数据范围、字段级脱敏
 - [多租户](./multi-tenancy)：字段级隔离与 `TenantId=0` 全局约定
-- [部署](./deployment)：环境要求与重建库策略
+- [部署](../deployment)：环境要求与重建库策略

@@ -158,5 +158,5 @@ pnpm build
 ## 下一步
 
 - [快速开始](./getting-started)：本地开发环境
-- [系统架构](./architecture)：模块划分
+- [系统架构](./backend/introduction)：模块划分
 - [功能清单](./features)：系统能力

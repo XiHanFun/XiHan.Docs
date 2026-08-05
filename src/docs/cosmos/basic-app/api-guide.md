@@ -2,7 +2,7 @@
 
 本页是**前后端分离对接的唯一参考**：接口基址、统一响应信封、请求头、**怎么拿到 token**、分页与查询协议、动态 API 路由推导、错误处理、开放接口签名调用。所有字段、路由与取值都对照仓库源码核实，可直接照抄。
 
-> 想先跑起来看接口，见 [快速开始](./getting-started)；想知道认证体系的设计（会话、2FA、密码哈希），见 [身份与认证](./identity)。
+> 想先跑起来看接口，见 [快速开始](./getting-started)；想知道认证体系的设计（会话、2FA、密码哈希），见 [身份与认证](./backend/authentication)。
 
 ## 基址与在线文档
 
@@ -348,7 +348,7 @@ curl -X POST http://127.0.0.1:9708/api/UserQuery/UserPage \
 ```
 
 ::: warning 排序/过滤受字段级安全门控
-读侧会经 `IFieldSecurityService.GuardFiltersAsync` / `GuardSortsAsync` 过滤：**只有当前用户「可读且未脱敏」的字段**才允许参与过滤与排序，其余被静默剔除；剔完没有有效排序时回退到该接口的默认排序。所以「排序没生效」优先查字段权限，见 [权限模型](./permissions)。
+读侧会经 `IFieldSecurityService.GuardFiltersAsync` / `GuardSortsAsync` 过滤：**只有当前用户「可读且未脱敏」的字段**才允许参与过滤与排序，其余被静默剔除；剔完没有有效排序时回退到该接口的默认排序。所以「排序没生效」优先查字段权限，见 [权限模型](./backend/permission)。
 :::
 
 ## 动态 API 路由推导规则
@@ -392,7 +392,7 @@ BasicApp 没有 Controller——应用服务打上 `[DynamicApi]` 就是 REST �
 
 ## 开放接口：签名调用（无 JWT）
 
-面向**服务端到服务端**的第三方调用，走 HMAC 签名而非 JWT。用户在[个人中心](./identity#个人中心)自助申请凭证：`AppKey`（`ak_` 前缀）+ `AppSecret`（`sk_` 前缀，**明文仅在创建/滚动时返回一次**，服务端只存哈希），每人最多 5 个。
+面向**服务端到服务端**的第三方调用，走 HMAC 签名而非 JWT。用户在[个人中心](./backend/authentication#个人中心)自助申请凭证：`AppKey`（`ak_` 前缀）+ `AppSecret`（`sk_` 前缀，**明文仅在创建/滚动时返回一次**，服务端只存哈希），每人最多 5 个。
 
 由框架中间件 `XiHanOpenApiSecurityMiddleware` 统一验签，配置节 `XiHan:Web:Api:OpenApiSecurity`：
 
@@ -461,7 +461,7 @@ Hub 侧**没有** `long → string` 与枚举的自动转换器（那是 MVC JSO
 ## 下一步
 
 - [常见问题](./faq)：401/403、菜单不出、时间差 8 小时等高频故障速查
-- [身份与认证](./identity)：会话、2FA、OAuth、密码安全的完整设计
-- [权限模型](./permissions)：权限码、数据范围、字段级脱敏（决定你能查到什么字段）
-- [二次开发](./development)：怎么新增一个接口
+- [身份与认证](./backend/authentication)：会话、2FA、OAuth、密码安全的完整设计
+- [权限模型](./backend/permission)：权限码、数据范围、字段级脱敏（决定你能查到什么字段）
+- [二次开发](./backend/development)：怎么新增一个接口
 - [动态 API 概念](../framework/concepts/dynamic-api)：框架层的路由推导实现

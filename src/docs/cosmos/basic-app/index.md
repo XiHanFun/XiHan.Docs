@@ -16,8 +16,8 @@ XiHan.BasicApp 采用**前后端分离**架构：
 <div class="tip custom-block" style="padding-top: 8px">
 
 1. [**快速开始**](./getting-started) —— 在本地把前后端跑起来（约 10 分钟）
-2. [**系统架构**](./architecture) —— 看懂后端模块划分与前后端协作
-3. [**权限模型**](./permissions) —— 理解 RBAC + ABAC、数据范围、多租户隔离
+2. [**系统架构**](./backend/introduction) —— 看懂后端模块划分与前后端协作
+3. [**权限模型**](./backend/permission) —— 理解 RBAC + ABAC、数据范围、多租户隔离
 
 </div>
 
@@ -32,34 +32,34 @@ XiHan.BasicApp 采用**前后端分离**架构：
 
 **架构**
 
-- [架构总览](./architecture) —— 全景、四条贯穿全局的设计、数据流
-- [后端架构](./architecture/backend) —— 分层、模块装配、DDD、DI 约定、种子
-- [前端架构](./architecture/frontend) —— 五层结构、启动引导、请求时序
-- [请求生命周期](./architecture/request-lifecycle) —— 中间件管道逐段、401/403/423、UoW 收尾
-- [数据模型](./architecture/data-model) —— 实体基类、审计与软删、多租户列、全表清单
-- [缓存与异步](./architecture/caching-async) —— 缓存条目、精准失效、队列消费
+- [架构总览](./backend/introduction) —— 全景、四条贯穿全局的设计、数据流
+- [后端架构](./backend/introduction) —— 分层、模块装配、DDD、DI 约定、种子
+- [前端架构](./frontend/introduction) —— 五层结构、启动引导、请求时序
+- [请求生命周期](./backend/request-lifecycle) —— 中间件管道逐段、401/403/423、UoW 收尾
+- [数据模型](./backend/data-model) —— 实体基类、审计与软删、多租户列、全表清单
+- [缓存与异步](./backend/caching) —— 缓存条目、精准失效、队列消费
 
 **身份与访问**
 
-- [身份与认证](./identity) —— 多种登录、JWT 双令牌、会话、2FA
-- [权限模型](./permissions) —— RBAC + ABAC、权限码、数据范围、字段脱敏
-- [组织架构](./organization) —— 部门树与闭包表、岗位、用户归属
-- [多租户与版本](./multi-tenancy) —— 字段级隔离、租户切换、版本门控
+- [身份与认证](./backend/authentication) —— 多种登录、JWT 双令牌、会话、2FA
+- [权限模型](./backend/permission) —— RBAC + ABAC、权限码、数据范围、字段脱敏
+- [组织架构](./backend/organization) —— 部门树与闭包表、岗位、用户归属
+- [多租户与版本](./backend/multi-tenancy) —— 字段级隔离、租户切换、版本门控
 
 **业务功能**
 
-- [消息中心](./messaging) · [工作流](./workflow) · [审批与约束规则](./approval)
-- [文件与存储](./file-storage) · [任务调度](./scheduling) · [系统设置](./system-settings)
-- [开放能力](./open-platform) · [审计日志](./audit-log) · [代码生成](./code-generation) · [AI 能力](./ai)
+- [消息中心](./backend/messaging) · [工作流](./backend/workflow) · [审批与约束规则](./backend/approval)
+- [文件与存储](./backend/file) · [任务调度](./backend/scheduling) · [系统设置](./backend/settings)
+- [开放能力](./backend/open-api) · [审计日志](./backend/logging) · [代码生成](./backend/code-generation) · [AI 能力](./backend/ai)
 
 **前端开发**
 
-- [前端开发指南](./frontend) —— 技术栈、api 层、SignalR、常用组件
-- [Schema 驱动页面](./frontend/schema-page) · [路由与菜单](./frontend/routing) · [权限与脱敏](./frontend/permission) · [主题与国际化](./frontend/theming-i18n)
+- [前端开发指南](./frontend/introduction) —— 技术栈、api 层、SignalR、常用组件
+- [Schema 驱动页面](./frontend/schema-page) · [路由与菜单](./frontend/routing) · [权限与脱敏](./frontend/permission) · [主题与国际化](./frontend/theme)
 
 **二次开发与参考**
 
-- [二次开发](./development) —— 加功能纵切片 / 加独立模块 / 加前端页
+- [二次开发](./backend/development) —— 加功能纵切片 / 加独立模块 / 加前端页
 - [接口对接指南](./api-guide) —— 响应信封、业务码、**怎么获取 token**、分页协议
 - [配置参考](./configuration) —— `appsettings` 全量配置节
 - [功能清单](./features) · [常见问题](./faq) · [部署](./deployment) · [更新日志](./changelog)

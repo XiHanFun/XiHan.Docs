@@ -1,8 +1,8 @@
 # 工作流
 
-`XiHan.BasicApp.Workflow` 是四个一等业务模块之一，坐落在框架 [工作流引擎](../framework/packages/workflow) 之上，把「图执行引擎」变成一套可运营的审批/流程系统：定义能在管理端建、实例能在页面上看和干预、待办能办理和转办、状态落库不怕重启。
+`XiHan.BasicApp.Workflow` 是四个一等业务模块之一，坐落在框架 [工作流引擎](../../framework/packages/workflow) 之上，把「图执行引擎」变成一套可运营的审批/流程系统：定义能在管理端建、实例能在页面上看和干预、待办能办理和转办、状态落库不怕重启。
 
-> 引擎本身的机制（书签、活动、表达式、定时器）见 [框架 · Workflow](../framework/packages/workflow)。本页只讲 BasicApp 这一层加了什么。
+> 引擎本身的机制（书签、活动、表达式、定时器）见 [框架 · Workflow](../../framework/packages/workflow)。本页只讲 BasicApp 这一层加了什么。
 
 ## 模块做了什么
 
@@ -154,8 +154,8 @@ Draft 草稿 ──发布──► Published 已发布 ──停用──► Dis
 
 ## 相关页面
 
-- [框架 · Workflow](../framework/packages/workflow)：引擎机制、内置活动、配置项、代码方式定义流程
-- [框架 · Workflow.Abstractions](../framework/packages/workflow-abstractions)：定义模型与存储端口
+- [框架 · Workflow](../../framework/packages/workflow)：引擎机制、内置活动、配置项、代码方式定义流程
+- [框架 · Workflow.Abstractions](../../framework/packages/workflow-abstractions)：定义模型与存储端口
 - [审批与约束](./approval)：另一套更轻的审批（`SysReview`）与 RBAC 约束规则引擎
-- [数据模型](./architecture/data-model#工作流-xihan-basicapp-workflow-模块)：四张表
+- [数据模型](./data-model#工作流)：四张表
 - [消息中心](./messaging)：待办通知的投递通道

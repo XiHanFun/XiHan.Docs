@@ -210,94 +210,83 @@ const uiNavConst: DefaultTheme.NavItemWithLink[] = [
     activeMatch: "/cosmos/ui/npm-package-dependency/",
   },
 ];
+// 生成手册条目：自动带序号前缀
+function manual(
+  dir: "backend" | "frontend",
+  entries: [text: string, name: string][]
+): DefaultTheme.SidebarItem[] {
+  return entries.map(([text, name], index) => ({
+    text: `${index + 1}. ${text}`,
+    link: `/cosmos/basic-app/${dir}/${name}`,
+  }));
+}
+
 const basicAppSidebar: DefaultTheme.SidebarItem[] = [
   {
-    text: "入门",
+    text: "开始",
     collapsed: false,
     items: [
       { text: "应用简介", link: "/cosmos/basic-app/" },
       { text: "系统概述", link: "/cosmos/basic-app/overview" },
       { text: "开发环境", link: "/cosmos/basic-app/dev-environment" },
       { text: "快速开始", link: "/cosmos/basic-app/getting-started" },
-      { text: "目录结构与代码地图", link: "/cosmos/basic-app/project-structure" },
+      { text: "目录结构", link: "/cosmos/basic-app/project-structure" },
+      { text: "常见问题", link: "/cosmos/basic-app/faq" },
     ],
   },
   {
-    text: "架构",
-    link: "/cosmos/basic-app/architecture",
+    text: "后端手册",
     collapsed: false,
-    items: [
-      { text: "后端架构", link: "/cosmos/basic-app/architecture/backend" },
-      { text: "前端架构", link: "/cosmos/basic-app/architecture/frontend" },
-      {
-        text: "请求生命周期",
-        link: "/cosmos/basic-app/architecture/request-lifecycle",
-      },
-      { text: "数据模型", link: "/cosmos/basic-app/architecture/data-model" },
-      {
-        text: "缓存与异步",
-        link: "/cosmos/basic-app/architecture/caching-async",
-      },
-    ],
+    items: manual("backend", [
+      ["框架简介", "introduction"],
+      ["开发流程", "development"],
+      ["请求生命周期", "request-lifecycle"],
+      ["实体基类", "entity"],
+      ["数据库配置", "database"],
+      ["数据模型", "data-model"],
+      ["统一认证", "authentication"],
+      ["权限管理", "permission"],
+      ["数据权限", "data-permission"],
+      ["组织架构", "organization"],
+      ["多租户 SaaS", "multi-tenancy"],
+      ["缓存与异步", "caching"],
+      ["定时任务", "scheduling"],
+      ["工作流", "workflow"],
+      ["审批与约束", "approval"],
+      ["消息通知", "messaging"],
+      ["即时通讯", "realtime"],
+      ["文件与存储", "file"],
+      ["日志审计", "logging"],
+      ["系统设置", "settings"],
+      ["开放接口", "open-api"],
+      ["代码生成", "code-generation"],
+      ["AI 能力", "ai"],
+    ]),
   },
   {
-    text: "身份与访问",
+    text: "前端手册",
     collapsed: false,
-    items: [
-      { text: "身份与认证", link: "/cosmos/basic-app/identity" },
-      { text: "权限模型", link: "/cosmos/basic-app/permissions" },
-      { text: "组织架构", link: "/cosmos/basic-app/organization" },
-      { text: "多租户与版本", link: "/cosmos/basic-app/multi-tenancy" },
-    ],
-  },
-  {
-    text: "业务功能",
-    collapsed: false,
-    items: [
-      { text: "消息中心", link: "/cosmos/basic-app/messaging" },
-      { text: "工作流", link: "/cosmos/basic-app/workflow" },
-      { text: "审批与约束规则", link: "/cosmos/basic-app/approval" },
-      { text: "文件与存储", link: "/cosmos/basic-app/file-storage" },
-      { text: "任务调度", link: "/cosmos/basic-app/scheduling" },
-      { text: "系统设置", link: "/cosmos/basic-app/system-settings" },
-      { text: "开放能力", link: "/cosmos/basic-app/open-platform" },
-      { text: "审计日志", link: "/cosmos/basic-app/audit-log" },
-      { text: "代码生成", link: "/cosmos/basic-app/code-generation" },
-      { text: "AI 能力", link: "/cosmos/basic-app/ai" },
-    ],
-  },
-  {
-    text: "前端开发",
-    link: "/cosmos/basic-app/frontend",
-    collapsed: false,
-    items: [
-      {
-        text: "Schema 驱动页面",
-        link: "/cosmos/basic-app/frontend/schema-page",
-      },
-      { text: "路由与菜单", link: "/cosmos/basic-app/frontend/routing" },
-      { text: "权限与脱敏", link: "/cosmos/basic-app/frontend/permission" },
-      {
-        text: "主题与国际化",
-        link: "/cosmos/basic-app/frontend/theming-i18n",
-      },
-    ],
-  },
-  {
-    text: "二次开发",
-    collapsed: false,
-    items: [
-      { text: "二次开发指南", link: "/cosmos/basic-app/development" },
-      { text: "接口对接指南", link: "/cosmos/basic-app/api-guide" },
-    ],
+    items: manual("frontend", [
+      ["框架简介", "introduction"],
+      ["开发流程", "development"],
+      ["菜单与路由", "routing"],
+      ["服务端交互", "request"],
+      ["Schema 驱动页面", "schema-page"],
+      ["权限与脱敏", "permission"],
+      ["布局与主题", "theme"],
+      ["国际化", "i18n"],
+      ["字体图标", "icon"],
+      ["实时通信", "realtime"],
+      ["常用组件", "components"],
+    ]),
   },
   {
     text: "参考",
     collapsed: false,
     items: [
+      { text: "接口对接指南", link: "/cosmos/basic-app/api-guide" },
       { text: "配置参考", link: "/cosmos/basic-app/configuration" },
       { text: "功能清单", link: "/cosmos/basic-app/features" },
-      { text: "常见问题", link: "/cosmos/basic-app/faq" },
       { text: "部署", link: "/cosmos/basic-app/deployment" },
       { text: "更新日志", link: "/cosmos/basic-app/changelog" },
     ],

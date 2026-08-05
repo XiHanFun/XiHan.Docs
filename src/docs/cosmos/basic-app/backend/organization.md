@@ -2,7 +2,7 @@
 
 组织架构回答的是「**这个人在公司里是谁**」：属于哪个部门、担任什么岗位、能看到哪个范围的数据。它是数据范围（`dept` / `dept_and_sub`）的底座，也是消息定向、审批指派的依据。
 
-> 用户主体与登录见 [身份与认证](./identity)；数据范围如何参与鉴权见 [权限模型](./permissions)；跨租户的成员关系见 [多租户与版本](./multi-tenancy)。
+> 用户主体与登录见 [身份与认证](./authentication)；数据范围如何参与鉴权见 [权限模型](./permission)；跨租户的成员关系见 [多租户与版本](./multi-tenancy)。
 
 ## 三个主体
 
@@ -78,7 +78,7 @@
 | `tenant` | 整个租户 | — |
 | 自定义 | 指定部门集合 | `Sys_Role_Data_Scope` / `Sys_User_Data_Scope` |
 
-用户级 `DataScopeOverride` 可以覆盖角色默认。完整判定见 [权限模型](./permissions)。
+用户级 `DataScopeOverride` 可以覆盖角色默认。完整判定见 [权限模型](./permission)。
 
 ::: warning 「有权限但查不到数据」多半是数据范围
 返回 200 且列表为空、而不是 403——这是数据范围在起作用，不是 bug。排查顺序：用户的主部门对不对 → 角色的数据范围设成了什么 → 闭包表是否完整。
@@ -96,12 +96,12 @@
 | 任一变更 | 需失效 `SaasDepartmentTreeCacheItem`（`InvalidateOrganizationAsync`），涉及授权的还要失效授权快照 |
 
 ::: danger 漏失效缓存 = 改完不生效
-部门树走 Redis 缓存（`basicapp:saas:organization:dept-tree`）。写侧改完必须调 `ISaasCacheInvalidator.InvalidateOrganizationAsync()`，否则前端组织树、下拉选项都还是旧的。详见 [缓存与异步](./architecture/caching-async)。
+部门树走 Redis 缓存（`basicapp:saas:organization:dept-tree`）。写侧改完必须调 `ISaasCacheInvalidator.InvalidateOrganizationAsync()`，否则前端组织树、下拉选项都还是旧的。详见 [缓存与异步](./caching)。
 :::
 
 ## 相关页面
 
-- [身份与认证](./identity)：用户主体、会话、登录
-- [权限模型](./permissions)：数据范围如何参与鉴权
+- [身份与认证](./authentication)：用户主体、会话、登录
+- [权限模型](./permission)：数据范围如何参与鉴权
 - [多租户与版本](./multi-tenancy)：租户成员关系（与部门归属是两件事）
-- [数据模型](./architecture/data-model#组织与租户)：相关表结构
+- [数据模型](./data-model#组织与租户)：相关表结构

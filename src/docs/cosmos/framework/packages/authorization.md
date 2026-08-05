@@ -178,7 +178,7 @@ public class ReportService(IAuthorizationService authz)
 }
 ```
 
-> `XiHan.BasicApp` 在此基础上落地了完整的权限码 `resource:action:scope`、数据范围与字段级脱敏（FLS），见 [BasicApp 权限模型](../../basic-app/permissions)。
+> `XiHan.BasicApp` 在此基础上落地了完整的权限码 `resource:action:scope`、数据范围与字段级脱敏（FLS），见 [BasicApp 权限模型](../../basic-app/backend/permission)。
 
 ## 扩展点 / 自定义
 
@@ -205,4 +205,4 @@ public class ReportService(IAuthorizationService authz)
 
 - [XiHan.Framework.Authentication](./authentication)
 - [XiHan.Framework.Security](./security)
-- [BasicApp 权限模型](../../basic-app/permissions)（权限码 / 数据范围 / 字段脱敏的应用层落地）
+- [BasicApp 权限模型](../../basic-app/backend/permission)（权限码 / 数据范围 / 字段脱敏的应用层落地）

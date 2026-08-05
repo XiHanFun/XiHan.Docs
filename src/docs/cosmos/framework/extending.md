@@ -326,4 +326,4 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 - [模块系统](./concepts/modularity)：`[DependsOn]` 与拓扑排序机制
 - [生命周期](./concepts/lifecycle)：七个钩子分别在什么时候跑
 - [动态 API](./concepts/dynamic-api)：路由推导的完整规则
-- [BasicApp 二次开发](../basic-app/development)：在完整业务系统上扩展的实战清单
+- [BasicApp 二次开发](../basic-app/backend/development)：在完整业务系统上扩展的实战清单

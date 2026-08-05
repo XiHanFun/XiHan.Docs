@@ -105,7 +105,7 @@ const coreComponentMap: Record<string, () => Promise<unknown>> = {
 
 ## 相关页面
 
-- [后端架构 · 菜单](../architecture/backend#菜单-后端单一事实源)：`PageRegistry` 的字段与种子机制
+- [后端架构 · 菜单](../backend/introduction#菜单-后端单一事实源)：`PageRegistry` 的字段与种子机制
 - [权限与脱敏](./permission)：三级权限过滤
 - [Schema 驱动页面](./schema-page)：页面本身怎么写
-- [二次开发 · 加一个前端页面](../development#配方-c-加一个前端页面)：端到端清单
+- [二次开发 · 加一个前端页面](../backend/development#配方-c-加一个前端页面)：端到端清单

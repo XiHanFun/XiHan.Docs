@@ -110,7 +110,7 @@ ExportTaskHostedService 拉取 → 执行导出 → 写文件 → 回写 FileId/
 
 ### 崩溃恢复
 
-后台服务启动时会复位崩溃残留的「执行中」任务并重投，否则一次异常重启会让一批任务永久卡在中间态。新增类似链路时别漏这一步，见 [缓存与异步](./architecture/caching-async#崩溃恢复)。
+后台服务启动时会复位崩溃残留的「执行中」任务并重投，否则一次异常重启会让一批任务永久卡在中间态。新增类似链路时别漏这一步，见 [缓存与异步](./caching#崩溃恢复)。
 
 ## 导入
 
@@ -120,7 +120,7 @@ ExportTaskHostedService 拉取 → 执行导出 → 写文件 → 回写 FileId/
 
 ## 相关页面
 
-- [Schema 驱动页面](./frontend/schema-page)：导入导出按钮怎么声明
-- [缓存与异步](./architecture/caching-async)：队列与后台消费机制
-- [数据模型](./architecture/data-model#文件与任务)：相关表结构
-- [配置参考](./configuration#xihan-objectstorage)：本地存储路径与 URL 前缀
+- [Schema 驱动页面](../frontend/schema-page)：导入导出按钮怎么声明
+- [缓存与异步](./caching)：队列与后台消费机制
+- [数据模型](./data-model#文件与任务)：相关表结构
+- [配置参考](../configuration#xihan-objectstorage)：本地存储路径与 URL 前缀

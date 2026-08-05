@@ -157,7 +157,7 @@ XiHan.BasicApp 的消息能力横跨三块：**企业级消息中心（站内通
 
 `SysEmail` 记录承载完整投递语义：`EmailStatus`（`Pending`/`Sending`/`Success`/`Failed`/`Cancelled`）、`RetryCount`/`MaxRetryCount`、`ErrorMessage`、`ScheduledTime`（定时发送）、`BusinessType`+`BusinessId`（关联业务实体）。将状态改回 `Pending`（`MessageAppService.UpdateEmailStatusAsync`）会重新入队。
 
-> 队列/发件箱这套"提交后入队 + 原子领取 + 启动恢复"的模式是 BasicApp 后台异步的通用范式（导出、发件箱等复用），底层为 `IRedisDelayQueue<T>` + `XiHanBackgroundServiceBase`，消息路由见框架 [Messaging](../framework/packages/messaging)。
+> 队列/发件箱这套"提交后入队 + 原子领取 + 启动恢复"的模式是 BasicApp 后台异步的通用范式（导出、发件箱等复用），底层为 `IRedisDelayQueue<T>` + `XiHanBackgroundServiceBase`，消息路由见框架 [Messaging](../../framework/packages/messaging)。
 
 ### 网关配置（全部 store 化，禁 appsettings）
 
@@ -176,7 +176,7 @@ XiHan.BasicApp 的消息能力横跨三块：**企业级消息中心（站内通
 
 ## 四、SignalR 实时（通知 + 在线聊天）
 
-实时基于框架 `XiHan.Framework.Web.RealTime`：Hub 基类 `XiHanHub`、进程内连接管理 `IConnectionManager`、泛型 `IRealtimeNotificationService<THub>`（按用户/用户列表/组/全体推送）。详见 [Web.RealTime](../framework/packages/web-realtime)。BasicApp 侧有两个 Hub。
+实时基于框架 `XiHan.Framework.Web.RealTime`：Hub 基类 `XiHanHub`、进程内连接管理 `IConnectionManager`、泛型 `IRealtimeNotificationService<THub>`（按用户/用户列表/组/全体推送）。详见 [Web.RealTime](../../framework/packages/web-realtime)。BasicApp 侧有两个 Hub。
 
 ### 通知 Hub（BasicAppNotificationHub）
 
@@ -262,8 +262,8 @@ Task Typing(string conversationId);             // 向组内其他连接广播 C
 
 ## 相关文档
 
-- 权限码与门控：[权限模型](./permissions)
+- 权限码与门控：[权限模型](./permission)
 - 多租户隔离与全局 `TenantId=0`：[多租户](./multi-tenancy)
-- 框架实时通信：[Web.RealTime](../framework/packages/web-realtime)
-- 框架消息路由与发件箱：[Messaging](../framework/packages/messaging)
-- 动态 API 概念：[dynamic-api](../framework/concepts/dynamic-api)
+- 框架实时通信：[Web.RealTime](../../framework/packages/web-realtime)
+- 框架消息路由与发件箱：[Messaging](../../framework/packages/messaging)
+- 动态 API 概念：[dynamic-api](../../framework/concepts/dynamic-api)

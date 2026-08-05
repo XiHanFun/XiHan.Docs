@@ -99,7 +99,7 @@
 3. `PageRegistry` 里父目录要排在子项之前（种子按顺序解析 `ParentId`）；
 4. 新增独立模块时，种子链必须保持「**操作 → 资源 → 权限 → 菜单 → 角色授权**」完整顺序，缺了 `SysOperationSeeder` 会让整条链静默失效（权限由「资源 × 操作」派生）。
 
-改完重建库或重跑种子。详见 [二次开发 · 接线点检查清单](./development#接线点检查清单)。
+改完重建库或重跑种子。详见 [二次开发 · 接线点检查清单](./backend/development#接线点检查清单)。
 
 ### 菜单出来了，但点进去 404 / 白屏
 
@@ -116,7 +116,7 @@
 3. **约束规则引擎**：SSD/DSD、互斥、时间窗、IP 等约束命中，被拒绝。
 4. **权限委托已到期**或被撤销。
 
-完整判定链见 [权限模型](./permissions)。
+完整判定链见 [权限模型](./backend/permission)。
 
 ### 列表少了几列 / 排序点了没反应
 
@@ -262,7 +262,7 @@ npx eslint src/views/identity/position/index.vue --fix
 
 ### 启用 AI 知识库（RAG）前要准备什么？
 
-需要先部署 **Qdrant 向量库**并配好 `XiHan:AI:Rag` 连接参数，另外要重建数据库以带上 RAG 相关的表与种子（`Order` 205–208）。见 [AI 能力](./ai) 与 [开发环境 · Qdrant](./dev-environment#向量数据库-qdrant-可选-ai-知识库用)。
+需要先部署 **Qdrant 向量库**并配好 `XiHan:AI:Rag` 连接参数，另外要重建数据库以带上 RAG 相关的表与种子（`Order` 205–208）。见 [AI 能力](./backend/ai) 与 [开发环境 · Qdrant](./dev-environment#向量数据库-qdrant-可选-ai-知识库用)。
 
 ### 怎么定位一次线上请求？
 
@@ -273,7 +273,7 @@ npx eslint src/views/identity/position/index.vue --fix
 ## 还没解决？
 
 - [接口对接指南](./api-guide)：响应信封、业务码、请求头、分页协议的完整规范
-- [二次开发](./development)：新增功能的完整接线清单（漏哪一步会怎样）
-- [权限模型](./permissions)：403 / 查不到数据的判定链
+- [二次开发](./backend/development)：新增功能的完整接线清单（漏哪一步会怎样）
+- [权限模型](./backend/permission)：403 / 查不到数据的判定链
 - [框架常见问题](../framework/faq)：模块装配、DI、事务、拦截器层面的坑
 - 仍未解决可到 [GitHub Issues](https://github.com/XiHanFun/XiHan.BasicApp/issues) 提问，附上 `traceId` 与复现步骤

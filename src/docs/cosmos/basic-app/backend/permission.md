@@ -2,7 +2,7 @@
 
 XiHan.BasicApp 的权限体系融合 **RBAC（基于角色）** 与 **ABAC（基于属性）**，再叠加**角色继承、数据范围、字段级脱敏、多租户版本门控**。这是系统最核心也最需要理解的部分——一次请求要穿过认证、租户解析、权限码、约束、数据范围、字段脱敏六道关卡，每一道都可能收窄或拒绝。
 
-权限相关的领域实体几乎全部集中在 `modules/XiHan.BasicApp.Saas/Domain/Entities/`（`Sys*`），运行时判定由框架 [授权模块](../framework/packages/authorization) 承接。本页以真实源码为准，讲清"怎么用、为什么这么设计、怎么扩展"。
+权限相关的领域实体几乎全部集中在 `modules/XiHan.BasicApp.Saas/Domain/Entities/`（`Sys*`），运行时判定由框架 [授权模块](../../framework/packages/authorization) 承接。本页以真实源码为准，讲清"怎么用、为什么这么设计、怎么扩展"。
 
 ## 权限码：单一事实源
 
@@ -227,8 +227,8 @@ FLS 由 `IFieldSecurityService` 在服务端强制落地，**不依赖前端**�
 
 ## 下一步
 
-- [系统架构](./architecture)：权限判定在请求管道中的位置
+- [系统架构](./introduction)：权限判定在请求管道中的位置
 - [多租户](./multi-tenancy)：租户隔离与版本门控全貌
-- [审计日志](./audit-log)：`SysDiffLog` / `SysPermissionChangeLog` 等留痕
-- [框架 · 授权模块](../framework/packages/authorization)：底层 RBAC / Policy / ABAC 与混合策略实现
-- [框架 · 认证模块](../framework/packages/authentication)：JWT / OAuth2 / 2FA 身份声明
+- [审计日志](./logging)：`SysDiffLog` / `SysPermissionChangeLog` 等留痕
+- [框架 · 授权模块](../../framework/packages/authorization)：底层 RBAC / Policy / ABAC 与混合策略实现
+- [框架 · 认证模块](../../framework/packages/authentication)：JWT / OAuth2 / 2FA 身份声明
