@@ -266,4 +266,4 @@ Task Typing(string conversationId);             // 向组内其他连接广播 C
 - 多租户隔离与全局 `TenantId=0`：[多租户](./multi-tenancy)
 - 框架实时通信：[Web.RealTime](../../framework/packages/web-realtime)
 - 框架消息路由与发件箱：[Messaging](../../framework/packages/messaging)
-- 动态 API 概念：[dynamic-api](../../framework/concepts/dynamic-api)
+- 动态 API 概念：[dynamic-api](../../framework/guide/dynamic-api)

@@ -2,7 +2,7 @@
 
 本页讲**怎么在 XiHan.Framework 上写自己的东西**：新建一个模块、替换框架的默认实现、加自定义 AOP 拦截器、定制动态 API 约定。所有约定都对照框架源码核实，照抄即可。
 
-> 先读 [模块系统](./concepts/modularity)（`[DependsOn]` 与拓扑排序）、[生命周期](./concepts/lifecycle)（七个钩子）、[依赖注入](./concepts/dependency-injection)（约定注册与选项模式）三页打底，本页只讲**怎么落地**。
+> 先读 [模块系统](./modularity)（`[DependsOn]` 与拓扑排序）、[生命周期](./lifecycle)（七个钩子）、[依赖注入](./dependency-injection)（约定注册与选项模式）三页打底，本页只讲**怎么落地**。
 
 ## 先决定扩展粒度
 
@@ -143,7 +143,7 @@ public class InvoiceAppService(IInvoiceDomainService invoices) : ApplicationServ
 }
 ```
 
-路由推导规则（动词前缀剥离、默认 POST、路由段只由 `[FromRoute]` 产生）见 [动态 API](./concepts/dynamic-api)。
+路由推导规则（动词前缀剥离、默认 POST、路由段只由 `[FromRoute]` 产生）见 [动态 API](./dynamic-api)。
 
 ---
 
@@ -272,7 +272,7 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 | `DefaultApiVersion` | `null` | 默认版本号（不带 `v` 前缀） |
 | `ThrowOnGenerationFailure` | `true` | **控制器生成失败时抛异常中断装配**；设为 `false` 会只记日志并跳过该服务的全部端点（接口静默消失，不建议） |
 | `EnableBatchOperations` / `MaxBatchSize` | `true` / `100` | 批量操作开关与上限 |
-| `Conventions.HttpMethodConventions` | 见 [动态 API](./concepts/dynamic-api) | 动词前缀 → HTTP 谓词映射表，可增删 |
+| `Conventions.HttpMethodConventions` | 见 [动态 API](./dynamic-api) | 动词前缀 → HTTP 谓词映射表，可增删 |
 | `Conventions.PreserveRoutePredicate` | `false` | 设为 `true` 则路由保留动词前缀（`GetUsers` → `/GetUsers`） |
 | `Conventions.UseLowercaseRoutes` | `false` | 路由全小写 |
 | `Routes.UseNamespaceAsRoute` | `false` | 把命名空间片段作为路由段 |
@@ -300,7 +300,7 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 | **默认实现用 `TryAdd`** | 这样使用方能用 `Replace` 覆盖你的默认实现 |
 | **配置节** | 常量 `SectionName` 钉在 Options 类上 |
 
-分层图与命名细节见 [框架概述 · 分层架构](./overview#分层架构)。
+分层图与命名细节见 [框架概述 · 分层架构](../overview#分层架构)。
 
 ---
 
@@ -323,7 +323,7 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 ## 下一步
 
 - [常见问题](./faq)：模块不生效、拦截器失效、事务没提交等排查
-- [模块系统](./concepts/modularity)：`[DependsOn]` 与拓扑排序机制
-- [生命周期](./concepts/lifecycle)：七个钩子分别在什么时候跑
-- [动态 API](./concepts/dynamic-api)：路由推导的完整规则
-- [BasicApp 二次开发](../basic-app/backend/development)：在完整业务系统上扩展的实战清单
+- [模块系统](./modularity)：`[DependsOn]` 与拓扑排序机制
+- [生命周期](./lifecycle)：七个钩子分别在什么时候跑
+- [动态 API](./dynamic-api)：路由推导的完整规则
+- [BasicApp 二次开发](../../basic-app/backend/development)：在完整业务系统上扩展的实战清单

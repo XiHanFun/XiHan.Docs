@@ -33,7 +33,7 @@ export const userApi = defineResource<
 
 ## 动作名 = 后端方法名剥离动词前缀
 
-后端是[动态 API](../../framework/concepts/dynamic-api)，路由由方法名推导，**前端用的已经是剥离后的动作名**：
+后端是[动态 API](../../framework/guide/dynamic-api)，路由由方法名推导，**前端用的已经是剥离后的动作名**：
 
 | 后端方法 | 动作名 | 实际请求 |
 | --- | --- | --- |

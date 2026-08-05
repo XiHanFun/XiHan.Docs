@@ -226,6 +226,6 @@ Options            扩展键（树/主从结构字段、ParentMenuId 等）
 ## 下一步
 
 - [框架 · 模板模块](../../framework/packages/templating)：框架 `ITemplateService` 的定位与简单替换引擎（为何代码生成绕开它用原生 Scriban）。
-- [框架 · 动态 API](../../framework/concepts/dynamic-api)：`[DynamicApi]` 如何把 `CodeGenerationAppService` 暴露为 REST。
+- [框架 · 动态 API](../../framework/guide/dynamic-api)：`[DynamicApi]` 如何把 `CodeGenerationAppService` 暴露为 REST。
 - [权限模型](./permission)：`code_gen:*` 权限码、菜单即绑与二阶产物落地的背景。
 - [系统架构](./introduction)：模块在启动聚合中的装配位置。

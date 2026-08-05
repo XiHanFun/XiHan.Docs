@@ -275,5 +275,5 @@ npx eslint src/views/identity/position/index.vue --fix
 - [接口对接指南](./api-guide)：响应信封、业务码、请求头、分页协议的完整规范
 - [二次开发](./backend/development)：新增功能的完整接线清单（漏哪一步会怎样）
 - [权限模型](./backend/permission)：403 / 查不到数据的判定链
-- [框架常见问题](../framework/faq)：模块装配、DI、事务、拦截器层面的坑
+- [框架常见问题](../framework/guide/faq)：模块装配、DI、事务、拦截器层面的坑
 - 仍未解决可到 [GitHub Issues](https://github.com/XiHanFun/XiHan.BasicApp/issues) 提问，附上 `traceId` 与复现步骤

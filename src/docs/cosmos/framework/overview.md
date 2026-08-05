@@ -21,7 +21,7 @@ XiHan.Framework 是面向企业级应用的**模块化后端框架**，专为前
 
 你只需要在自己的应用模块上声明"我要用哪些模块"，框架会**自动把整棵依赖树按正确顺序装配好**。新增或移除一块能力，就是加/减一行 `[DependsOn]`。
 
-> 想深入这套机制，见 [核心概念 · 模块系统](./concepts/modularity) 与 [生命周期](./concepts/lifecycle)。
+> 想深入这套机制，见 [核心概念 · 模块系统](./guide/modularity) 与 [生命周期](./guide/lifecycle)。
 
 ## 分层架构
 
@@ -70,10 +70,10 @@ XiHan.Framework 是面向企业级应用的**模块化后端框架**，专为前
 
 | 机制 | 说明 | 深入 |
 | --- | --- | --- |
-| 模块系统 | `XiHanModule` + `[DependsOn]`，自动拓扑排序加载 | [模块系统](./concepts/modularity) |
-| 生命周期 | 服务注册 3 钩子 + 应用初始化 3 钩子 + 关机 1 钩子 | [生命周期](./concepts/lifecycle) |
-| 依赖注入 | 约定式注册（`ITransientDependency` 等）+ 选项模式 | [依赖注入](./concepts/dependency-injection) |
-| 动态 API | 应用服务无需写 Controller，自动暴露为 REST 接口 | [动态 API](./concepts/dynamic-api) |
+| 模块系统 | `XiHanModule` + `[DependsOn]`，自动拓扑排序加载 | [模块系统](./guide/modularity) |
+| 生命周期 | 服务注册 3 钩子 + 应用初始化 3 钩子 + 关机 1 钩子 | [生命周期](./guide/lifecycle) |
+| 依赖注入 | 约定式注册（`ITransientDependency` 等）+ 选项模式 | [依赖注入](./guide/dependency-injection) |
+| 动态 API | 应用服务无需写 Controller，自动暴露为 REST 接口 | [动态 API](./guide/dynamic-api) |
 
 ## 技术栈
 
@@ -107,5 +107,5 @@ XiHan.Framework 是面向企业级应用的**模块化后端框架**，专为前
 ## 下一步
 
 - [快速上手](./quickstart)：动手建第一个 Web API
-- [核心概念](./concepts/modularity)：理解框架的运转方式
+- [核心概念](./guide/modularity)：理解框架的运转方式
 - [模块总览](./packages/)：查阅你要用的每一个包

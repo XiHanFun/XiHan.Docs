@@ -353,7 +353,7 @@ curl -X POST http://127.0.0.1:9708/api/UserQuery/UserPage \
 
 ## 动态 API 路由推导规则
 
-BasicApp 没有 Controller——应用服务打上 `[DynamicApi]` 就是 REST 接口（机制见[动态 API](../framework/concepts/dynamic-api)）。对接时只需记住这套推导：
+BasicApp 没有 Controller——应用服务打上 `[DynamicApi]` 就是 REST 接口（机制见[动态 API](../framework/guide/dynamic-api)）。对接时只需记住这套推导：
 
 **路由 = `/api` + 控制器名 + 动作名**，控制器名取服务类名去掉 `AppService` / `QueryService` 等后缀，或由类级 `RouteTemplate` 直接钉死（如 `AuthAppService` 钉在 `api/Auth`）。
 
@@ -464,4 +464,4 @@ Hub 侧**没有** `long → string` 与枚举的自动转换器（那是 MVC JSO
 - [身份与认证](./backend/authentication)：会话、2FA、OAuth、密码安全的完整设计
 - [权限模型](./backend/permission)：权限码、数据范围、字段级脱敏（决定你能查到什么字段）
 - [二次开发](./backend/development)：怎么新增一个接口
-- [动态 API 概念](../framework/concepts/dynamic-api)：框架层的路由推导实现
+- [动态 API 概念](../framework/guide/dynamic-api)：框架层的路由推导实现

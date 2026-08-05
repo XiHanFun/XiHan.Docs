@@ -268,4 +268,4 @@ UoW 收尾：本地事件(提交前) → 提交 → 分布式事件(提交后) �
 - [2. 开发流程](./development)：新增功能的完整接线清单
 - [3. 请求生命周期](./request-lifecycle)：中间件管道逐段与收尾时序
 - [4. 实体基类](./entity) → [5. 数据库配置](./database) → [6. 数据模型](./data-model)
-- [框架 · 模块系统](../../framework/concepts/modularity)：`[DependsOn]` 与拓扑排序机制
+- [框架 · 模块系统](../../framework/guide/modularity)：`[DependsOn]` 与拓扑排序机制

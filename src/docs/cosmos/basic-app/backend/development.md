@@ -373,4 +373,4 @@ export const positionApi = {
 - [前端结构](../frontend/introduction)：Schema 驱动页、三级权限过滤、i18n / 时区
 - [代码生成](./code-generation)：用生成器批量产出 CRUD 纵切片
 - [部署](../deployment)：重建库、Qdrant 前置、环境配置
-- [动态 API 概念](../../framework/concepts/dynamic-api)：框架层动词/路由映射机制
+- [动态 API 概念](../../framework/guide/dynamic-api)：框架层动词/路由映射机制
