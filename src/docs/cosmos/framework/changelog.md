@@ -6,6 +6,15 @@
 本页同步自仓库根目录的 [CHANGELOG.md](https://github.com/XiHanFun/XiHan.Framework/blob/main/CHANGELOG.md)，以其为准。
 :::
 
+## v3.10.1 (2026-08-06)
+
+::: warning 升级须知
+本版把目录类配置的默认值统一改为帕斯卡命名：升级脚本目录 `migrations` → `UpdateScripts`，签名密钥 `keys/` → `Keys/`，日志 `logs/` → `Logs/`，本地存储 `wwwroot/uploads` → `wwwroot/Uploads`。只改默认值、不动读取逻辑，已在配置中显式写死路径的部署不受影响；**依赖默认值且部署在区分大小写的文件系统上的，需要一并迁移这些目录**。`wwwroot` 保持小写不变，它由 ASP.NET 固定解析。
+:::
+
+- **调整** 目录类配置默认值统一帕斯卡命名，升级脚本目录由 `migrations` 改为 `UpdateScripts`
+- **升级** 升级依赖，发布 v3.10.1
+
 ## v3.10.0 (2026-08-05)
 
 ::: warning 破坏性变更
