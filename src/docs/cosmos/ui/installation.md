@@ -1,288 +1,164 @@
-# XiHan.UI 安装指南
+# 安装与接入
 
-本文将引导您如何在项目中安装和配置 XiHan.UI 组件库。
+## 现状：还不能从 npm 装
+
+XiHan.UI 的库包**尚未发布到 npm**，版本号仍是 `0.0.0`。`npm install @xihan-ui/vue` 现在装不到东西。
+
+在发布之前有两条可用路径：
+
+1. **克隆仓库直接开发**——推荐，playground 里 69 个组件都能跑；
+2. **本地构建后链接进你的项目**——想先试用的话走这条。
+
+::: warning
+`@xihan-ui/icons` 是一个冻结的遗留包：不进构建图、不发布，源码里还引着已经删掉的依赖。在它重建之前，图标请自行准备。
+:::
 
 ## 环境要求
 
-使用 XiHan.UI 需要满足以下环境要求：
+| 项 | 要求 |
+| --- | --- |
+| Node | ≥ 24.0.0 |
+| pnpm | ≥ 11.0.0 |
+| 模块格式 | ESM only，**不提供 CJS** |
+| 浏览器 | 支持 `oklch()`、`@layer`、`:where()` 的现代浏览器 |
 
-- **Node.js**: 版本 16.0.0 或更高
-- **Vue**: 版本 3.3 或更高
-- **包管理工具**: npm, yarn 或 pnpm (推荐使用 pnpm)
-
-## 安装方式
-
-XiHan.UI 采用 monorepo 结构，提供了多个子包，您可以根据需要安装完整包或特定子包。
-
-### 完整包安装
+## 路径一：克隆仓库开发
 
 ```bash
-# 使用 npm
-npm install xihan-ui
-
-# 使用 yarn
-yarn add xihan-ui
-
-# 使用 pnpm (推荐)
-pnpm add xihan-ui
+git clone https://github.com/XiHanFun/XiHan.UI.git
+cd XiHan.UI/ui
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-### 按需安装子包
+`pnpm dev` 会同时起两个 playground：`apps/playground-vue`（Vue 适配器）与 `apps/playground-wc`（自定义元素）。两者覆盖同一批组件，可以并排对照。
 
-如果您只需要使用特定功能，可以仅安装所需的子包：
+常用命令：
 
 ```bash
-# 仅安装组件库核心
-pnpm add @xihan-ui/components
-
-# 仅安装工具函数
-pnpm add @xihan-ui/utils
-
-# 仅安装主题系统
-pnpm add @xihan-ui/themes
-
-# 仅安装图标库
-pnpm add @xihan-ui/icons
+pnpm build        # 全部库包出 dist
+pnpm typecheck    # 类型检查
+pnpm lint         # oxlint + eslint + stylelint
+pnpm test         # 单元测试与跨适配器一致性测试（jsdom）
+pnpm test:browser # 真实 Chromium 里的无障碍扫描与浮层定位契约
+pnpm boundaries   # 分层依赖门禁
+pnpm gate         # 八项结构门禁
+pnpm size         # 产物体积棘轮
 ```
 
-## 完整引入
-
-在 Vue 项目的入口文件中 (通常是 main.js 或 main.ts)，添加以下代码：
-
-```js
-import { createApp } from "vue";
-import App from "./App.vue";
-
-// 引入 XiHan.UI
-import XiHanUI from "xihan-ui";
-// 引入组件库样式
-import "xihan-ui/dist/style.css";
-
-const app = createApp(App);
-
-// 全局注册 XiHan.UI
-app.use(XiHanUI);
-
-app.mount("#app");
-```
-
-## 按需引入
-
-### 方法一：手动引入
-
-针对每个需要使用的组件，单独引入：
-
-```vue
-<template>
-  <xh-button type="primary">按钮</xh-button>
-  <xh-input v-model="inputValue" placeholder="请输入内容" />
-</template>
-
-<script setup>
-import { ref } from "vue";
-import { XhButton, XhInput } from "@xihan-ui/components";
-// 引入组件样式
-import "@xihan-ui/components/dist/button/style.css";
-import "@xihan-ui/components/dist/input/style.css";
-
-const inputValue = ref("");
-</script>
-```
-
-### 方法二：使用自动导入插件（推荐）
-
-1. 安装自动导入插件
+首次跑 `pnpm test:browser` 前需要装浏览器：
 
 ```bash
-# 安装 unplugin-vue-components 和 unplugin-auto-import
-pnpm add -D unplugin-vue-components unplugin-auto-import
+pnpm exec playwright install chromium
 ```
 
-2. 配置插件
+## 路径二：链接进现有项目
 
-如果使用的是 Vite，在 vite.config.js 中添加以下配置：
+先在 XiHan.UI 仓库里构建：
 
-```js
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-import Components from "unplugin-vue-components/vite";
-import AutoImport from "unplugin-auto-import/vite";
-import { XiHanUIResolver } from "xihan-ui/resolvers";
-
-export default defineConfig({
-  plugins: [
-    vue(),
-    AutoImport({
-      resolvers: [XiHanUIResolver()],
-    }),
-    Components({
-      resolvers: [XiHanUIResolver()],
-    }),
-  ],
-});
+```bash
+cd XiHan.UI/ui && pnpm build
 ```
 
-如果使用的是 webpack，在 webpack.config.js 中添加以下配置：
-
-```js
-const { VueLoaderPlugin } = require("vue-loader");
-const Components = require("unplugin-vue-components/webpack");
-const AutoImport = require("unplugin-auto-import/webpack");
-const { XiHanUIResolver } = require("xihan-ui/resolvers");
-
-module.exports = {
-  plugins: [
-    new VueLoaderPlugin(),
-    AutoImport({
-      resolvers: [XiHanUIResolver()],
-    }),
-    Components({
-      resolvers: [XiHanUIResolver()],
-    }),
-  ],
-};
-```
-
-3. 在组件中直接使用 XiHan.UI 组件
-
-配置完插件后，可以在组件中直接使用 XiHan.UI 的组件，无需 import 导入：
-
-```vue
-<template>
-  <xh-button type="primary">按钮</xh-button>
-  <xh-input v-model="inputValue" placeholder="请输入内容" />
-</template>
-
-<script setup>
-const inputValue = ref("");
-</script>
-```
-
-## CDN 引入
-
-通过 CDN 可以快速在页面中引入 XiHan.UI：
-
-```html
-<!-- 引入 Vue -->
-<script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
-<!-- 引入 XiHan.UI 组件库 -->
-<script src="https://cdn.jsdelivr.net/npm/xihan-ui@1.0.0/dist/index.full.js"></script>
-<!-- 引入 XiHan.UI 样式 -->
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/xihan-ui@1.0.0/dist/style.css"
-/>
-
-<script>
-  // 全局注册
-  const app = Vue.createApp(...)
-  app.use(XiHanUI)
-</script>
-```
-
-## 配置主题
-
-XiHan.UI 提供了强大的主题系统，支持通过 CSS 变量自定义主题：
-
-```css
-/* 创建自定义主题文件 theme.css */
-:root {
-  --xihan-primary-color: #1890ff;
-  --xihan-success-color: #52c41a;
-  --xihan-warning-color: #faad14;
-  --xihan-error-color: #f5222d;
-  --xihan-font-size-base: 14px;
-  --xihan-radius-base: 4px;
-  /* 更多自定义变量... */
-}
-```
-
-然后在入口文件中引入该样式文件：
-
-```js
-import "xihan-ui/dist/style.css";
-import "./theme.css"; // 确保在组件库样式之后引入
-```
-
-更多关于主题定制的详细信息，请参阅 [主题定制](./theming) 章节。
-
-## 使用 TypeScript
-
-XiHan.UI 完全基于 TypeScript 开发，提供了完整的类型定义文件，可以与 TypeScript 项目无缝协作。
-
-在 tsconfig.json 中，确保包含了 TypeScript 类型定义：
+再在你的项目里用 `link:` 协议指过去（pnpm 的写法，路径按实际填）：
 
 ```json
 {
-  "compilerOptions": {
-    "types": ["xihan-ui/types"]
+  "dependencies": {
+    "@xihan-ui/vue": "link:../XiHan.UI/ui/packages/vue",
+    "@xihan-ui/styled": "link:../XiHan.UI/ui/packages/styled",
+    "@xihan-ui/system": "link:../XiHan.UI/ui/packages/system"
   }
 }
 ```
 
-## 使用图标
+`@xihan-ui/vue` 会顺着 `dependencies` 把 `core` / `machine` / `behavior` / `headless` / `position` / `highlight` 一并带进来，这几个不用单独链接。`vue` 本身是它的 peer 依赖，由你的项目提供。
 
-XiHan.UI 提供了专门的图标系统，可以单独使用：
+## 接入 Vue 项目
+
+```ts
+// main.ts
+import { createThemeController } from '@xihan-ui/system/runtime'
+import { createApp } from 'vue'
+import App from './App.vue'
+
+// 令牌必须在皮肤之前：皮肤里不写兜底值，令牌缺席就是缺陷，不是降级
+import '@xihan-ui/system/tokens.css'
+import '@xihan-ui/styled'
+
+// 把主题的五个属性写到 <html> 上，并持久化用户偏好
+createThemeController({ storageKey: 'app-theme' })
+
+createApp(App).mount('#app')
+```
+
+组件按需从主入口取，不需要注册插件：
 
 ```vue
-<template>
-  <xh-icon name="home" />
-  <xh-icon name="user" />
-</template>
-
-<script setup>
-import { XhIcon } from "@xihan-ui/icons";
+<script setup lang="ts">
+import { XhDialogContent, XhDialogRoot, XhDialogTitle, XhDialogTrigger } from '@xihan-ui/vue'
 </script>
 ```
 
-## 使用钩子函数
+包声明了 `sideEffects: false`，打包器会摇掉没用到的组件。库包**不提供**每个组件独立的子路径导出，按需靠的是 tree-shaking，不是手写路径。
 
-XiHan.UI 提供了多个实用的 Vue 组合式函数：
+## 接入原生 / 非 Vue 项目
 
-```js
-import { useTheme } from "@xihan-ui/hooks";
+```ts
+import { createThemeController } from '@xihan-ui/system/runtime'
+import { defineXhElements } from '@xihan-ui/wc/define'
 
-const { isDark, toggleTheme } = useTheme();
+import '@xihan-ui/system/tokens.css'
+import '@xihan-ui/styled'
+
+// 注册全部 xh-* 元素。主入口 import 本身不注册，必须显式调用这一行
+defineXhElements()
+createThemeController({ storageKey: 'app-theme' })
 ```
 
-## 常见问题
+之后在 HTML 里直接写标签，结构由你手写、用 `data-xh-part` 标出角色节点：
 
-### 样式加载问题
-
-如果组件显示不正常，请确保正确引入了样式文件：
-
-```js
-import "xihan-ui/dist/style.css";
+```html
+<xh-button variant="solid">
+  <button data-xh-part="root">提交</button>
+</xh-button>
 ```
 
-### 组件未注册问题
+详见 [Web Components 适配器](./adapters/wc)。
 
-如果使用自动导入方式，请确保配置了正确的解析器：
+## 样式的三种接法
 
-```js
-// vite.config.js
-import { XiHanUIResolver } from "xihan-ui/resolvers";
+`@xihan-ui/styled` 是纯 CSS 包，与 JS 层无关，三种粒度任选：
 
-// 在 Components 和 AutoImport 插件中使用此解析器
+```ts
+// 1. 全量：令牌 + 层序 + reset + 全部组件皮肤
+import '@xihan-ui/styled'
+
+// 2. 按组件挑（层序声明必须最先引，否则级联顺序不成立）
+import '@xihan-ui/styled/layers.css'
+import '@xihan-ui/system/tokens.css'
+import '@xihan-ui/styled/button.css'
+import '@xihan-ui/styled/dialog.css'
+
+// 3. 只要令牌，皮肤自己写
+import '@xihan-ui/system/tokens.css'
 ```
 
-### 版本兼容问题
+第三种是完全可行的：组件不依赖默认皮肤，它只往 DOM 上打 `data-scope` / `data-part` / `data-state` 等属性，样式全由你决定。参见[皮肤与样式分层](./guide/styling)。
 
-确保您的 Vue 版本与 XiHan.UI 兼容：
+令牌的机读形式也可直接取用，用于生成 Figma 变量、Tailwind 主题或别的产物：
 
-```bash
-# 查看 Vue 版本
-npm list vue
+```ts
+import tokens from '@xihan-ui/system/tokens.json' with { type: 'json' }
+// { "--xh-color-brand-500": "oklch(0.623 0.214 258)", ... }
 ```
 
-如果 Vue 版本低于 3.3.0，建议升级：
+## 服务端渲染
 
-```bash
-npm update vue
-```
+- 主题运行时在 `document` / `window` 缺席时自动走 SSR 分支：不读媒体查询、不写 DOM，一律回退到浅色与基线对比度。要让首屏不闪，请在服务端把 `data-theme` / `data-brand` / `data-density` / `data-contrast` / `dir` 五个属性直接渲染到 `<html>` 上。
+- 自定义元素在 JS 到达之前不会升级。`@xihan-ui/styled` 里的 `undefined.css` 专门处理这段空窗：用 `:not(:defined)` 选中作者写的 `data-xh-part`，先把浮层族的 `content` / `positioner` / `backdrop` / `viewport` 收起来，避免内容以裸文本堆在页面流里被读屏和搜索引擎当作正文。
 
 ## 下一步
 
-- 探索 [基础组件](./basic) 的用法
-- 学习如何 [自定义主题](./theming)
-- 查看完整的 [组件列表](./overview)
+- [快速上手](./quickstart)：三种用法各写一遍
+- [包与依赖关系](./npm-package-dependency)：每个包依赖谁、被谁依赖

@@ -32,7 +32,7 @@ features:
 
   - title: 视图组件
     icon: 🎨
-    details: 提供大量开箱即用的组件，覆盖了从基础控件到复杂业务场景的各种需求，节省您的开发时间，让您专注于业务逻辑的实现。
+    details: 框架无关的组件库，69 个组件的状态机与无障碍逻辑沉在无头内核，Vue 与 Web Components 只是两层薄适配器；样式由设计令牌与纯 CSS 皮肤驱动，可整包替换。
     link: cosmos/ui/index
     linkText: "浏览视图组件文档"
 

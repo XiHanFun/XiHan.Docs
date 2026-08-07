@@ -1,175 +1,147 @@
-# XiHan.UI 组件概述
+# 架构总览
 
-XiHan.UI 是一个基于 Vue 3 开发的现代化 UI 组件库，专注于提供美观、易用且高性能的用户界面组件。组件库遵循一致的设计语言和交互模式，帮助开发者快速构建专业的应用界面。
+XiHan.UI 是一个 pnpm + turbo 的 monorepo。它的组织方式只服务于一件事：**让「组件的行为」独立于「渲染它的框架」存在**。
 
-## 设计原则
+## 一个组件的四份产物
 
-XiHan.UI 的设计遵循以下核心原则：
+以对话框为例，`dialog` 这个组件在仓库里落成四处：
 
-- **简洁统一**：保持视觉语言一致，减少不必要的装饰，让用户专注于内容
-- **直观易用**：组件的交互方式符合用户的预期，降低学习成本
-- **灵活可定制**：提供丰富的配置项和主题定制能力，满足不同场景的需求
-- **性能优先**：优化组件的渲染性能，确保在大数据量场景下仍保持流畅
-- **响应式设计**：组件自适应不同尺寸的屏幕，提供优秀的多端体验
+| 产物 | 位置 | 内容 |
+| --- | --- | --- |
+| 无头内核 | `packages/headless/src/dialog/` | 解剖、状态机、键盘规格表、`connect` |
+| Vue 组件 | `packages/vue/src/components/dialog/` | `XhDialogRoot` 等一组 `defineComponent` |
+| 自定义元素 | `packages/wc/src/elements/dialog.ts` | `<xh-dialog>`，Light-DOM 行为宿主 |
+| 皮肤 | `packages/styled/styles/dialog.css` | 纯 CSS，按 `data-*` 选中 |
 
-## 组件架构
+四份里只有第一份包含逻辑。后三份分别回答「怎么把属性挂到 Vue 的 vnode 上」「怎么把属性挂到作者手写的 DOM 上」「这些属性长什么样」。
 
-XiHan.UI 采用模块化的组件架构，每个组件由以下几个部分组成：
+## 分层与依赖矩阵
+
+层级越低越基础，只能向下依赖。这套拓扑写在 `tooling/eslint-config/src/layers.json` 里，由 dependency-cruiser 在 `pnpm boundaries` 时强制，不靠自觉。
+
+| 层 | 包 | 可依赖 |
+| --- | --- | --- |
+| 1 | `core` | —（零运行时依赖） |
+| 1 | `machine` | `core`（零运行时依赖） |
+| 1 | `system` | — |
+| 1 | `icons` | — |
+| 2 | `behavior` | `core` `machine` |
+| 2 | `position` | `core` |
+| 2 | `highlight` | `core` |
+| 2 | `ai` | `core` |
+| 2 | `markdown` | `core` |
+| 3 | `headless` | `core` `machine` `behavior` `system` |
+| 3 | `styled` | —（纯 CSS，不得依赖任何 JS 包） |
+| 3 | `visual` | `core` `behavior` |
+| 4 | `vue` / `wc` | 上述除 `styled` 外全部 |
+
+还有两个已在拓扑里占位、但仓库里尚无实现的层：`i18n`（层 1）与 `pro`（层 5，业务级组合件）。
+
+除分层外还有三条硬规则，同样由门禁执行：
+
+- **库包的运行时代码不得引第三方。** 唯一登记在案的例外是 `@internationalized/date`，只有 `headless` 的日期族在用。
+- **`styled` 是纯 CSS。** 它不依赖任何 JS 包，因此可以脱离整个 JS 层单独使用。
+- **依赖版本只从 workspace catalog 取。** 包内一律写 `catalog:` 或 `workspace:*`，不得内联版本号。
+
+## 一次交互经过哪些层
+
+以「点击对话框的触发器」为例：
 
 ```
-components/button/
-├── src/              # 组件源码
-│   ├── button.vue    # 主组件
-│   ├── button-group.vue # 子组件
-│   └── types.ts      # 类型定义
-├── styles/           # 样式文件
-│   ├── index.ts      # 样式入口
-│   └── css/          # CSS 样式
-└── __tests__/        # 测试文件
-    └── button.test.ts # 单元测试
+用户点击
+   │
+   ▼
+适配器把 DOM 事件交给 connect 产出的 onClick        （vue / wc）
+   │
+   ▼
+service.send({ type: 'TRIGGER.CLICK' })            （machine）
+   │
+   ▼
+状态机转移 closed → open，执行 entry 动作           （machine）
+   │
+   ├─► 行为原语接管：锁滚动、建焦点域、压入层栈      （behavior）
+   ├─► 浮层族还会请定位引擎算坐标                    （position）
+   │
+   ▼
+适配器重新读 connect，把新的 aria-* / data-* 铺到部件上
+   │
+   ▼
+皮肤按 [data-state='open'] 命中新规则，动画播放      （styled）
 ```
 
-### 组件生命周期
+关键在于中间那三步与框架无关。Vue 适配器和 Web Components 适配器各自只负责最外两步。
 
-XiHan.UI 组件的生命周期与 Vue 3 组件的生命周期相同，主要包括：
+## 包一览
+
+按职责分四组。详细依赖关系见[包与依赖关系](./npm-package-dependency)。
+
+**内核与原语**
+
+| 包 | 职责 |
+| --- | --- |
+| `@xihan-ui/core` | 结构原语：解剖、`mergeProps`、`normalizeProps`、Scope、层栈、诊断通道 |
+| `@xihan-ui/machine` | 薄状态机运行时：`createMachine`、解释器契约、受控值绑定 |
+| `@xihan-ui/behavior` | 交互行为原语：消隐层、焦点域、滚动锁、进出场、集合导航、typeahead |
+| `@xihan-ui/position` | 浮层定位引擎，自研，零第三方依赖 |
+
+**组件与适配器**
+
+| 包 | 职责 |
+| --- | --- |
+| `@xihan-ui/headless` | 69 个组件的解剖 + 状态机 + `connect`，无样式、无框架 |
+| `@xihan-ui/vue` | Vue 3 适配器 |
+| `@xihan-ui/wc` | Web Components 适配器，自研响应式基类 |
+
+**表现**
+
+| 包 | 职责 |
+| --- | --- |
+| `@xihan-ui/system` | 设计令牌（DTCG 源）与主题运行时（明暗 / 品牌 / 密度 / 对比度 / 书写方向） |
+| `@xihan-ui/styled` | 默认皮肤，按 `@layer` 分层的纯 CSS |
+| `@xihan-ui/icons` | 图标集 |
+
+**内容与效果**
+
+| 包 | 职责 |
+| --- | --- |
+| `@xihan-ui/ai` | AI 协议内核：SSE 读取 → 协议归一 → parts 归约 → 会话 store |
+| `@xihan-ui/markdown` | 流式 Markdown 渲染内核，增量切块 + 稳定 key |
+| `@xihan-ui/highlight` | 代码着色，自研粗粒度词法器 |
+| `@xihan-ui/visual` | WebGL2 背景效果与数据驱动粒子点云 |
+
+`tooling/*` 下还有构建、lint、tsconfig、测试与门禁脚本等内部包，一律不发布。
+
+## 目录结构
 
 ```
-初始化阶段 → 挂载阶段 → 更新阶段 → 卸载阶段
-
-初始化: setup() → beforeCreate → created
-挂载: beforeMount → mounted
-更新: beforeUpdate → updated
-卸载: beforeUnmount → unmounted
+ui/
+├── packages/            # 对外发布的库包
+├── tooling/             # 内部构建与质量工具
+│   ├── build/           # 打包配置与 exports 回写
+│   ├── eslint-config/   # lint 规则 + 分层拓扑事实源
+│   ├── stylelint-config/
+│   ├── testing/         # 一致性 / 无障碍 / 定位三套判据的运行时
+│   └── scripts/         # 门禁脚本
+└── apps/
+    ├── playground-vue   # Vue 适配器演示
+    └── playground-wc    # Web Components 适配器演示
 ```
 
-## 组件开发流程
+两个 playground 覆盖同一批组件，是对照两套适配器行为的主要手段。
 
-XiHan.UI 的组件开发遵循以下流程：
+## 技术选型
 
-1. **需求分析**：确定组件的功能、API 设计和交互方式
-2. **原型设计**：制作组件的设计原型，确定视觉风格
-3. **组件实现**：使用 Vue 3 + TypeScript 实现组件逻辑
-4. **单元测试**：编写单元测试，确保组件功能正确
-5. **文档编写**：编写组件使用文档和示例
-6. **性能优化**：优化组件性能，确保高效运行
-7. **发布集成**：将组件集成到组件库并发布
-
-## 组件分类
-
-XiHan.UI 提供了丰富的组件，按照功能可分为以下几类：
-
-### 基础组件
-
-基础组件是构建用户界面的基础元素，包括：
-
-- Button（按钮）
-- Typography（排版）
-- Icon（图标）
-- Grid（栅格）
-- Layout（布局）
-- Space（间距）
-- Divider（分割线）
-
-### 表单组件
-
-表单组件用于数据录入和交互，包括：
-
-- Input（输入框）
-- Select（选择器）
-- Checkbox（复选框）
-- Radio（单选框）
-- DatePicker（日期选择器）
-- TimePicker（时间选择器）
-- Upload（上传）
-- Form（表单）
-- Switch（开关）
-- Slider（滑块）
-- Rate（评分）
-
-### 数据展示
-
-数据展示组件用于呈现各种类型的数据，包括：
-
-- Table（表格）
-- List（列表）
-- Card（卡片）
-- Calendar（日历）
-- Carousel（轮播）
-- Collapse（折叠面板）
-- Tree（树形控件）
-- Timeline（时间线）
-- Tag（标签）
-- Badge（徽标）
-- Avatar（头像）
-
-### 导航组件
-
-导航组件用于页面导航和内容组织，包括：
-
-- Menu（菜单）
-- Pagination（分页）
-- Breadcrumb（面包屑）
-- Tabs（标签页）
-- Steps（步骤条）
-- Dropdown（下拉菜单）
-
-### 反馈组件
-
-反馈组件用于操作后的反馈和交互，包括：
-
-- Alert（警告提示）
-- Modal（对话框）
-- Notification（通知提示框）
-- Message（全局提示）
-- Progress（进度条）
-- Drawer（抽屉）
-- Popover（气泡卡片）
-- Tooltip（文字提示）
-- Skeleton（骨架屏）
-- Result（结果）
-- Spin（加载中）
-
-## 构建系统
-
-XiHan.UI 使用以下技术构建：
-
-- **TurboRepo**：用于任务编排和依赖管理
-- **Unbuild**：用于打包生成 ESM 和 CommonJS 模块
-- **TypeScript**：用于类型检查和编译
-- **Vite**：用于本地开发和测试
-
-## 技术栈
-
-XiHan.UI 基于以下技术栈开发：
-
-- **Vue 3**：使用 Vue 3 的 Composition API 开发，提供更好的性能和类型推导
-- **TypeScript**：全面使用 TypeScript 开发，提供完善的类型定义
-- **Vite**：使用 Vite 作为构建工具，提供快速的开发体验
-- **SCSS**：使用 SCSS 预处理器，提供更强大的样式组织能力
-- **JSX/TSX**：部分组件使用 JSX/TSX 编写，提供更灵活的模板逻辑
-
-## 浏览器兼容性
-
-XiHan.UI 支持所有现代浏览器，包括：
-
-- Chrome
-- Firefox
-- Safari
-- Edge
-- Opera
-
-不支持 Internet Explorer 11 及以下版本。
-
-## 版本策略
-
-XiHan.UI 采用 [语义化版本](https://semver.org/lang/zh-CN/) 进行版本管理：
-
-- 主版本号：包含不兼容的 API 变更
-- 次版本号：包含向下兼容的功能性新增
-- 修订号：包含向下兼容的问题修正
+| 位置 | 选型 |
+| --- | --- |
+| 语言 | TypeScript，ESM only（不提供 CJS） |
+| 运行时要求 | Node ≥ 24、pnpm ≥ 11 |
+| 构建 | tsdown（库包）+ turbo（任务编排） |
+| 样式 | 原生 CSS，`@layer` 分层，`oklch` 色彩空间，无预处理器 |
+| 测试 | vitest（jsdom）+ Playwright（真实 Chromium） |
+| 发布 | changesets，全部库包同属一个 fixed 版本组 |
 
 ## 下一步
 
-- [安装指南](./installation)：了解如何在项目中引入和使用 XiHan.UI
-- [基础组件](./basic)：探索 XiHan.UI 的基础组件
-- [主题定制](./theming)：学习如何自定义组件库的主题样式
+- [安装与接入](./installation)：先把它跑起来
+- [快速上手](./quickstart)：三种用法各写一遍
+- [解剖与部件契约](./guide/anatomy)：理解 `data-scope` / `data-part` 这套约定

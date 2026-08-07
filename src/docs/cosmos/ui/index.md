@@ -1,87 +1,57 @@
 # XiHan.UI 视图组件
 
-XiHan.UI 是一个基于 Vue 3 构建的高效、轻量级组件库，采用 monorepo 结构组织，提供丰富、美观的 UI 组件，帮助开发者快速构建现代化的用户界面。
+XiHan.UI 是一套**框架无关**的组件库：状态机与无障碍逻辑沉在无头内核里，每个前端框架只得到一层薄适配器。
 
-## 主要特性
+当前提供 **69 个组件**，每个组件同时产出四份东西——无头内核、Vue 组件、自定义元素、默认皮肤。四份同源，行为由内核唯一定义，适配器不重新实现任何逻辑。
 
-- **高效**: 基于 Vue 3 的 Composition API，提供更高的性能和更好的开发体验
-- **模块化**: 采用 monorepo 结构，提供多个专业化的子包，可按需引入
-- **类型安全**: 完全使用 TypeScript 开发，提供完善的类型定义
-- **主题定制**: 灵活的主题系统，支持深浅色模式切换
-- **国际化**: 内置多语言支持，轻松实现全球化应用
+::: warning 实验阶段
+XiHan.UI 尚未发布到 npm（库包版本仍是 `0.0.0`），也还没有可交互的组件预览站。无障碍扫描已经跑在真实 Chromium 上，但首轮扫出的存量问题尚未修完：17 个组件的违规登记在案，外加一条全局的对比度问题。**请勿在生产环境依赖。**
+:::
 
-## 包结构
+## 它和常见组件库有什么不一样
 
-XiHan.UI 包含以下主要子包：
+大多数组件库把「行为」和「某个框架的组件模型」焊在一起：换框架就得整套重写，而无障碍与键盘交互是最容易在重写中丢掉的部分。XiHan.UI 把这层拆开：
 
-- **xihan-ui**: 主包，整合所有子包
-- **@xihan-ui/components**: UI 组件核心
-- **@xihan-ui/utils**: 工具函数
-- **@xihan-ui/hooks**: Vue 组合式函数
-- **@xihan-ui/themes**: 主题系统
-- **@xihan-ui/icons**: 图标组件
-- **@xihan-ui/directives**: Vue 自定义指令
-- **@xihan-ui/locales**: 国际化资源
-- **@xihan-ui/constants**: 常量和类型定义
-- **@xihan-ui/plugins**: Vue 插件
-
-## 快速开始
-
-### 安装
-
-```bash
-# 使用npm
-npm install xihan-ui
-
-# 使用yarn
-yarn add xihan-ui
-
-# 使用pnpm (推荐)
-pnpm add xihan-ui
+```
+                    ┌──────────────┐  ┌──────────────┐
+   适配器层          │ @xihan-ui/vue │  │ @xihan-ui/wc │   ← 只做「把属性挂到宿主元素上」
+                    └───────┬──────┘  └──────┬───────┘
+                            └────────┬───────┘
+                    ┌────────────────▼────────────────┐
+   无头内核          │       @xihan-ui/headless        │   ← 解剖 + 状态机 + connect
+                    └────────────────┬────────────────┘
+              ┌──────────────┬───────┴───────┬──────────────┐
+   原语层      │ core         │ machine       │ behavior     │ position
+              └──────────────┴───────────────┴──────────────┘
+                    ┌────────────────────────────────┐
+   表现层            │ @xihan-ui/system  ·  styled     │   ← 令牌与皮肤，纯 CSS，与 JS 无关
+                    └────────────────────────────────┘
 ```
 
-### 完整引入
+由此带来四条可以直接兑现的性质：
 
-```js
-import { createApp } from "vue";
-import App from "./App.vue";
-import XiHanUI from "xihan-ui";
-import "xihan-ui/dist/style.css";
+- **同一份行为，两套宿主。** Vue 组件与自定义元素跑的是同一个状态机、同一份 `connect`。两个 playground 覆盖同一批组件，可以逐帧对照。
+- **样式与逻辑解耦。** 皮肤只认 `data-scope` / `data-part` / `data-*` 状态属性，不认框架，也不认类名。整包换皮肤不用碰一行 JS。
+- **无障碍是判据，不是口号。** 每个组件都有一份机读的**键盘规格表**（共 344 条），它同时是测试的分母：用例少覆盖一条即判套件失败。
+- **依赖面收得很紧。** 全部库包的运行时第三方依赖只有一个（`@internationalized/date`，仅日期族使用）。定位、代码着色、Web Components 响应式基类都是自研。
 
-const app = createApp(App);
-app.use(XiHanUI);
-app.mount("#app");
-```
+## 从哪儿开始
 
-### 按需引入
+| 你想做的事 | 去这里 |
+| --- | --- |
+| 先看清楚整体是怎么搭的 | [架构总览](./overview) |
+| 把它接进现有项目 | [安装与接入](./installation) |
+| 写出第一个能跑的组件 | [快速上手](./quickstart) |
+| 查某个组件有哪些部件、支持哪些按键 | [组件总览](./components/) |
+| 改主题、改皮肤 | [设计令牌与主题](./guide/theme)、[皮肤与样式分层](./guide/styling) |
+| 用 Vue / 用原生自定义元素 | [Vue 适配器](./adapters/vue)、[Web Components 适配器](./adapters/wc) |
+| 做 AI 对话界面 | [AI 协议内核](./guide/ai) |
 
-```vue
-<template>
-  <xh-button type="primary">XiHan Button</xh-button>
-</template>
+## 相关
 
-<script setup>
-import { XhButton } from "@xihan-ui/components";
-import "@xihan-ui/components/dist/button/style.css";
-</script>
-```
+- 源码仓库：[GitHub](https://github.com/XiHanFun/XiHan.UI) · [Gitee](https://gitee.com/XiHanFun/XiHan.UI) · [AtomGit](https://atomgit.com/XiHanFun/XiHan.UI)
+- 同生态的另外两个仓库：[XiHan.Framework 开发框架](/cosmos/framework/)、[XiHan.BasicApp 基础应用](/cosmos/basic-app/)
 
-## 技术栈
-
-- **Vue 3**: 采用最新的 Vue 3 Composition API
-- **TypeScript**: 全面使用 TypeScript 提供类型安全
-- **TurboRepo**: 高效的 monorepo 管理工具
-- **Unbuild**: 现代化的构建工具，生成 ESM 和 CommonJS 格式
-- **Vite**: 用于本地开发和测试的构建工具
-
-## 组件文档
-
-- [组件概述](./overview)
-- [安装指南](./installation)
-- [基础组件](./basic)
-- [表单组件](./form)
-- [数据展示](./data-display)
-- [导航组件](./navigation)
-- [反馈组件](./feedback)
-- [主题定制](./theming)
-- [包依赖关系](./npm-package-dependency)
+::: tip 与 XiHan.BasicApp 的关系
+XiHan.BasicApp 的前端目前**不使用** XiHan.UI，它基于 Naive UI 构建。两者是独立演进的两条线，BasicApp 的前端约定请看[基础应用前端手册](/cosmos/basic-app/frontend/introduction)。
+:::
