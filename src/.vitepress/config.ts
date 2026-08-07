@@ -225,26 +225,69 @@ const frameworkSidebar: DefaultTheme.SidebarItem[] = [
   },
   { text: "更新日志", link: "/cosmos/framework/changelog" },
 ];
-const uiNavConst: DefaultTheme.NavItemWithLink[] = [
+// 视图组件：核心概念按序编号；组件参考另成一册
+const uiGuideChapters: [text: string, name: string][] = [
+  ["解剖与部件契约", "anatomy"],
+  ["状态机运行时", "machine"],
+  ["connect 与属性产出", "connect"],
+  ["行为原语", "behavior"],
+  ["浮层定位", "position"],
+  ["设计令牌与主题", "theme"],
+  ["皮肤与样式分层", "styling"],
+  ["无障碍与键盘规格", "a11y"],
+  ["诊断通道", "diagnostics"],
+  ["AI 对话内核", "ai"],
+  ["视觉层", "visual"],
+  ["测试与质量门禁", "testing"],
+];
+
+const uiSidebar: DefaultTheme.SidebarItem[] = [
   {
-    text: "视图组件",
-    link: "/cosmos/ui",
-    activeMatch: "/cosmos/ui/",
+    text: "开始",
+    collapsed: false,
+    items: [
+      { text: "组件库简介", link: "/cosmos/ui/" },
+      { text: "架构总览", link: "/cosmos/ui/overview" },
+      { text: "安装与接入", link: "/cosmos/ui/installation" },
+      { text: "快速上手", link: "/cosmos/ui/quickstart" },
+    ],
   },
   {
-    text: "组件概述",
-    link: "/cosmos/ui/overview",
-    activeMatch: "/cosmos/ui/overview/",
+    text: "核心概念",
+    collapsed: false,
+    items: uiGuideChapters.map(([text, name], i) => ({
+      text: `${i + 1}. ${text}`,
+      link: `/cosmos/ui/guide/${name}`,
+    })),
   },
   {
-    text: "安装指南",
-    link: "/cosmos/ui/installation",
-    activeMatch: "/cosmos/ui/installation/",
+    text: "适配器",
+    collapsed: false,
+    items: [
+      { text: "Vue 适配器", link: "/cosmos/ui/adapters/vue" },
+      { text: "Web Components 适配器", link: "/cosmos/ui/adapters/wc" },
+    ],
   },
   {
-    text: "依赖关系",
-    link: "/cosmos/ui/npm-package-dependency",
-    activeMatch: "/cosmos/ui/npm-package-dependency/",
+    text: "组件参考",
+    link: "/cosmos/ui/components/",
+    collapsed: false,
+    items: [
+      { text: "通用组件", link: "/cosmos/ui/components/general" },
+      { text: "数据录入", link: "/cosmos/ui/components/form" },
+      { text: "数据展示", link: "/cosmos/ui/components/data-display" },
+      { text: "导航", link: "/cosmos/ui/components/navigation" },
+      { text: "反馈与浮层", link: "/cosmos/ui/components/feedback" },
+      { text: "AI 对话", link: "/cosmos/ui/components/ai" },
+    ],
+  },
+  {
+    text: "参考",
+    collapsed: false,
+    items: [
+      { text: "包与依赖关系", link: "/cosmos/ui/npm-package-dependency" },
+      { text: "常见问题", link: "/cosmos/ui/faq" },
+    ],
   },
 ];
 // 生成手册条目：自动带序号前缀
@@ -512,13 +555,7 @@ const nav: DefaultTheme.NavItem[] = [
 ];
 const sidebar: DefaultTheme.Sidebar = {
   "/cosmos/framework/": frameworkSidebar,
-  "/cosmos/ui/": [
-    {
-      text: "视图组件",
-      collapsed: false,
-      items: uiNavConst,
-    },
-  ],
+  "/cosmos/ui/": uiSidebar,
   "/cosmos/basic-app/": basicAppSidebar,
 
   // cosmos 根下的独立页：按前缀逐页登记（VitePress 取路径段最多的键，不会与上面三个目录键相冲）
