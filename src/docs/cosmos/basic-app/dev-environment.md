@@ -186,7 +186,7 @@ docker run -d --name qdrant -p 6333:6333 -p 6334:6334 -v qdrant-data:/qdrant/sto
 ```
 
 - `6333` 为 HTTP/REST 与管理面板（浏览器访问 `http://127.0.0.1:6333/dashboard`），`6334` 为 gRPC。
-- 具体接入配置见 [AI 能力](/cosmos/basic-app/ai)。
+- 具体接入配置见 [AI 能力](/cosmos/basic-app/backend/ai)。
 
 ---
 
