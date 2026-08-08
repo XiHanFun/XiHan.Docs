@@ -54,7 +54,7 @@ dotnet run --project src/main/XiHan.BasicApp.WebHost --launch-profile Developmen
 启动后：
 
 - API 文档（Scalar）：<http://127.0.0.1:9708/scalar>
-- 各环境端口：**Development `9708`**、Production `9709`
+- 仓库当前 Development 与 Production 都监听 `9708`；部署时可通过 `Hosting:Urls` 或容器端口映射覆盖
 
 **首次启动会自动建表并执行数据种子初始化**，稍等片刻即可。
 
@@ -99,8 +99,8 @@ curl -X POST http://127.0.0.1:9708/api/Auth/Login \
 
 ## 常见问题
 
-- **启动报连不上数据库/Redis**：先确认两者已启动、连接串正确、防火墙放通端口。Redis 报 `WRONGPASS` 见 [开发环境](./dev-environment#redis-8-8-必需)。
-- **表没建 / 登录不了**：首次启动会自动建表与种子，若中途失败，排查数据库权限后重启。BasicApp 的部署策略是**重建数据库、前向单一格式**，不做旧数据兼容，遇异常态 fail-closed。
+- **启动报连不上数据库/Redis**：先确认两者已启动、连接串正确、防火墙放通端口。Redis 报 `WRONGPASS` 见 [开发环境](./dev-environment#redis-6-生产多实例必需)。
+- **表没建 / 登录不了**：首次启动会自动建表与种子，若中途失败，排查数据库权限后重启；已有数据库的结构变化由 `UpdateScripts` 前向升级脚本处理。
 - **端口被占用**：后端 Development 默认 `9708`，前端 dev server 默认 `9800`；改后端端口要同步改 `frontend/.env.development` 的 `VITE_DEV_PROXY_TARGET`。
 
 > 更多故障速查见 [常见问题](./faq)。

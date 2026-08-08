@@ -103,8 +103,8 @@ public class MyModule : XiHanModule { }
 | 类型 | 说明 |
 | --- | --- |
 | `MemoryHealthCheck` | **真实实现**。构造参数 `thresholdMb`（默认 1024MB）；超阈值返回 `Degraded`，否则 `Healthy`，均附带 GC 明细数据 |
-| `DatabaseHealthCheck` | **占位骨架**。构造接收连接串（内部脱敏密码），当前仅 `await Task.Delay` 后返回 `Healthy`，未接入真实数据库连接测试 |
-| `RedisHealthCheck` | **占位骨架**。同上，当前未接入真实 Redis PING 测试 |
+
+数据库、Redis 与向量库检查不属于本包。应用应针对自己实际使用的客户端实现 `IHealthCheck`，避免通用占位检查给出错误的健康状态。
 
 ### 链路追踪源（`XiHan.Framework.Core.Tracing`）
 
@@ -179,7 +179,7 @@ activity?.SetTag("order.id", orderId);
 ## 扩展点 / 自定义
 
 - 三个核心服务均以 `AddSingleton`（非 `TryAdd`）注册；如需替换 `IMetricsCollector` / `IPerformanceMonitor` / `IDiagnosticsService` 实现，在本模块之后再次注册你的实现覆盖即可。
-- 健康检查采用 `Microsoft.Extensions.Diagnostics.HealthChecks` 标准机制，可自定义 `IHealthCheck` 后通过 `AddCheck` / `AddCheck<T>` 接入；`DatabaseHealthCheck` / `RedisHealthCheck` 为占位骨架，接入真实连接测试前请勿直接依赖其结果。
+- 健康检查采用 `Microsoft.Extensions.Diagnostics.HealthChecks` 标准机制，可自定义 `IHealthCheck` 后通过 `AddCheck` / `AddCheck<T>` 接入。
 - 应用层可通过 `XiHanObservabilityOptions.AdditionalSources` 声明自定义 `ActivitySource` 名，随框架内置源一并被 `WithTracing().AddSource(...)` 采集，无需自行装配 OTel `TracerProvider`。
 
 ## 注意事项与最佳实践
@@ -187,7 +187,7 @@ activity?.SetTag("order.id", orderId);
 - **OpenTelemetry 默认关闭**：`XiHanObservabilityOptions.Enabled` 默认 `false`，`AddXiHanObservability` 不装配 OTel SDK，`IMetricsCollector` 的 `Meter` 调用是「装配即孤儿」——数据既不落内存也不导出，唯一开销是 API 调用本身；需要链路追踪/指标导出时在 `XiHan:Observability` 节显式开启。
 - **指标不再内存留存**：`MetricsCollector` 改为直接对接 `System.Diagnostics.Metrics.Meter`，`GetMetrics()` 恒返回空列表、`Clear()` 为空操作——若需要查看指标数据，必须开启 OTel 装配并接入导出器（控制台/OTLP），不能再通过 `GetMetrics()` 在进程内读取。
 - **性能/诊断仍是内存存储、非持久**：`PerformanceMonitor` 的记录保存在进程内 `ConcurrentBag<PerformanceRecord>`，进程重启即丢失，且会持续累积，长时间运行需自行择机调用 `Clear()`；此行为与 OTel 开关无关。
-- **DB/Redis 健康检查是骨架**：`DatabaseHealthCheck` / `RedisHealthCheck` 恒返回 `Healthy`，仅作占位；接入真实探测前不要用于生产判活。
+- **依赖检查由应用实现**：本包不提供数据库或 Redis 检查；应使用应用实际注册的数据库、缓存与向量库客户端做真实探测。
 - **健康检查需手动注册**：模块只注册了基础设施，不含任何检查项——不 `AddCheck` 则 `/health` 端点不会体现内存/依赖状态。
 - **OTLP Logs 尚未接入**：`EnableLogging` 配置项存在，但扩展方法当前没有对应的 `WithLogging(...)` 装配代码，开启该项目前不会产生任何日志导出效果。
 

@@ -60,7 +60,7 @@ public class MyModule : XiHanModule { }
 | 8 | `UseRateLimiter` | **仅当 `XiHan:Web:RateLimiting:IsEnabled=true`**：按客户端 IP 固定窗口限流，置于路由后、鉴权前，尽早拒绝超额。 |
 | 9 | `XiHanCircuitBreakingMiddleware` | **仅当 `XiHan:Web:CircuitBreaking:IsEnabled=true`**：服务端过载熔断，置于限流后、鉴权前，过载时快速失败。 |
 | 10 | `UseCors` | 应用默认 CORS 策略（来自 `XiHanCorsOptions`）。 |
-| 11 | 本地对象存储静态文件 | 依 `XiHan:ObjectStorage:Local` 的 `RootPath`/`UrlPrefix` 提供静态文件（默认 `wwwroot/uploads` → `/uploads`）；置于鉴权前，使头像等公开资源可匿名直链。 |
+| 11 | 本地对象存储静态文件 | 依 `XiHan:ObjectStorage:Local` 的 `RootPath`/`UrlPrefix` 提供静态文件；Web.Api 无配置时回退 `wwwroot/uploads` → `/uploads`，应用应显式配置路径；置于鉴权前，使头像等公开资源可匿名直链。 |
 | 12 | `XiHanApiLoggingMiddleware` | 接口访问日志：仅当请求携带 OpenApi 安全头时记录（AccessKey/Signature）。 |
 | 13 | `XiHanOpenApiSecurityMiddleware` | 对受保护路径做签名/内容签名/加密/防重放校验（默认关闭）。 |
 | 14 | `UseAuthentication` | JWT Bearer 认证，填充 `HttpContext.User`。 |

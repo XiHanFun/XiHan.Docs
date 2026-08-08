@@ -246,7 +246,7 @@ MCP Server 的启用与暴露由框架包 [XiHan.Framework.Web.Mcp](../../framew
 
 1. **Qdrant 向量库**：可连接的 Qdrant 实例，`XiHan:AI:Rag` 节配好 `QdrantHost`/`QdrantPort`（云端另加 `QdrantHttps` + `QdrantApiKey`）。未注册向量库而调用 RAG 会因缺依赖失败。
 2. **嵌入模型对齐 `1536` 维**：默认 `text-embedding-3-small`（1536 维）。换维度须改框架常量并**重建 Qdrant 集合**。
-3. **重建数据库**：BasicApp 采用重建库策略（不做向后兼容），首次启动自动建表并跑种子；AI 相关表 `Sys_Ai_Provider` / `Sys_Knowledge_Document` / `Sys_Ai_Prompt` 随之建立。
+3. **准备数据库结构**：全新数据库首次启动会自动建立 AI 相关表并执行种子；存量数据库应通过对应版本的 `UpdateScripts` 前向迁移。
 4. **provider 配置入库**：库化管理下 provider 不写 appsettings——建库后在前端「AI 提供商」页新增配置、填好 `Model`/`EmbeddingModel`/`ApiKey`、设默认并测连接。
 5. **（可选）MCP**：需要对外暴露 MCP tools 时，`XiHan:AI:Mcp` 显式 `Enabled=true` 并配 `ApiKey`。
 6. **多实例**：共享 Data Protection 密钥环，否则各实例无法互相解密 provider 密钥。

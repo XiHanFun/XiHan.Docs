@@ -14,7 +14,7 @@
 - 用泛型接口 `IHybridCache<TCacheItem>` / `IDistributedCache<TCacheItem>` 让你以类型安全的方式缓存业务对象，屏蔽序列化与键拼接细节。
 - 键经 `IDistributedCacheKeyNormalizer` 规范化，默认按当前租户加前缀，天然实现多租户隔离。
 - 未配置 Redis 时全部回落到进程内内存实现（内存缓存 + 内存分布式缓存 + 进程内锁），零外部依赖即可跑；配置 Redis 后自动 `Replace` 为 Redis 实现，并解锁分布式锁、延迟队列、Stream 队列等能力。
-- 通过 AOP 拦截器支持 `[Cacheable]` 声明式缓存方法结果。
+- 通过 AOP 拦截器支持 `[Cacheable]` 声明式缓存方法结果，并用 `[CacheEvict]` 在方法成功后清除缓存。
 
 设计思路是"接口稳定、实现可切换"：业务只依赖泛型接口，本地/Redis 的差异由 DI 装配期决定。
 
@@ -151,7 +151,7 @@ Task<IDistributedLockHandle?> TryAcquireAsync(string resourceKey, TimeSpan expir
 
 键模板由 `CacheKeyBuilder.Build(template, invocation)` 渲染：把 `{参数名}` 替换为对应实参 `ToString()`（`null` → `"null"`）。占位符正则为 `\{[a-zA-Z_]\w*\}`。
 
-> 准确性提示：`CacheInterceptor` 已完整实现 `[Cacheable]`（走 `HybridCache.GetOrCreateAsync`）。但 `[CacheEvict]` 当前的处理逻辑是**桩实现**——拦截器会在目标方法执行后构建出待清除的键，却尚未真正调用 `HybridCache.RemoveAsync`（源码注释标注"由 EventHandler 处理"，实际未接线）。因此当前版本 `[CacheEvict]` 不会真正失效缓存；需要显式失效时请直接调用 `IHybridCache<>.RemoveAsync` / `IDistributedCache<>.Remove`。
+`CacheInterceptor` 在目标方法成功执行后渲染每个 `[CacheEvict]` 的键模板，并调用底层 `HybridCache.RemoveAsync`，同时清除 L1 与 L2。目标方法抛异常时不会执行清理；同一方法可声明多个 `[CacheEvict]`。
 
 ## 配置
 
@@ -216,6 +216,9 @@ public interface IConfigAppService
 {
     [Cacheable(Key = "config:{tenantId}:{key}", ExpireSeconds = 300)]
     Task<string?> GetAsync(string tenantId, string key);
+
+    [CacheEvict(Key = "config:{tenantId}:{key}")]
+    Task UpdateAsync(string tenantId, string key, string value);
 }
 ```
 
@@ -261,7 +264,7 @@ var due = await delayQueue.DequeueDueAsync(count: 50, ct);
 ## 注意事项与最佳实践
 
 - **纯内存模式的能力边界**：未启用 Redis 时，`GetKeys` / `RemoveByPattern` / `ScriptEvaluate` 等依赖能力接口的方法不可用；分布式锁仅进程内有效（多实例部署无跨实例互斥）。这些能力务必在启用 Redis 后使用。
-- **`[CacheEvict]` 当前不生效**（见上文 AOP 小节）——需要主动失效时请直接调用缓存接口的 `Remove*` 方法。
+- **`[CacheEvict]` 只在方法成功后清理**：键模板必须与读取侧一致；事务写入若要求“提交后再失效”，应继续使用带 `considerUow` 的缓存接口或应用侧提交后失效机制，避免数据库回滚后缓存已被提前清除。
 - **租户隔离是默认行为**：键自动带租户前缀；要跨租户共享缓存需显式走 `IgnoreMultiTenancy`，否则不同租户天然隔离。
 - **`hideErrors`**：多数方法支持隐藏分布式缓存异常（缓存故障不影响主流程）；对一致性敏感的场景应显式传 `false` 让异常冒泡。
 - **后台队列消费**：延迟/Stream 队列建议配合框架后台服务基类拉取消费（提交后入队、原子领取、启动恢复），避免自行轮询。

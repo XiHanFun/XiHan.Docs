@@ -119,8 +119,8 @@
 
 升级行为由配置节 `XiHan:Upgrade` 控制（分布式锁、主节点、维护模式等），见 [配置参考](../configuration#xihan-upgrade)。
 
-::: warning 本项目不做数据迁移
-部署策略是**重建数据库、前向单一格式、遇异常态 fail-closed**。升级引擎在这里主要用于版本记录与多节点协调，而不是承载 schema 迁移脚本。给既有实体加字段后必须重建库或手工 `ALTER`——`DbInitializer` 表存在就跳过、从不补列。
+::: warning 版本页只读，脚本才是迁移入口
+`SysVersion` 由升级引擎独占写入，管理端不提供手工改版本。结构和数据迁移放在 `WebHost/UpdateScripts/{version}.sql`；`DbInitializer` 只负责全新数据库建表，不会给已有表补列。执行结果写入 `SysMigrationHistory`，失败即阻止启动。
 :::
 
 ## 通道配置（邮件 / 短信 / 机器人）
