@@ -10,7 +10,7 @@ XiHan.BasicApp/
 │   ├── src/
 │   │   ├── framework/                #   基座层
 │   │   │   ├── XiHan.BasicApp.Core/          实体/DTO 基类、查询服务标记、聚合框架模块
-│   │   │   └── XiHan.BasicApp.Web.Core/      纯聚合模块（挂 Web 相关框架能力）
+│   │   │   └── XiHan.BasicApp.Web.Core/      聚合 Web 能力并接入升级维护模式
 │   │   ├── modules/                  #   业务模块层（四个一等模块）
 │   │   │   ├── XiHan.BasicApp.Saas/
 │   │   │   ├── XiHan.BasicApp.CodeGeneration/

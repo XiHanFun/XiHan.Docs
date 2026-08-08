@@ -130,7 +130,7 @@ backend/src/main/XiHan.BasicApp.WebHost/
 | `EnableDataSeeding` | 启动时写入种子数据 |
 
 ::: danger 建表只建不改
-`DbInitializer` **表存在就跳过、从不为已有表补列**。给既有实体加字段后部署必报「列不存在」，要么重建库要么手工 `ALTER TABLE`。
+`DbInitializer` **表存在就跳过、从不为已有表补列**。给既有实体加字段后，存量库必须通过前向 `UpdateScripts`（或部署流程中的等价迁移步骤）执行 `ALTER TABLE`。当前 BasicApp 不会自动触发升级引擎，见[升级与迁移](./backend/upgrade)。
 :::
 
 ### `EnableDiffLog`
@@ -243,14 +243,14 @@ backend/src/main/XiHan.BasicApp.WebHost/
 | `MinSupportVersion` / `AppVersion` | 最低来源版本 / 当前版本（留空则运行时探测程序集版本） |
 | `MigrationsRootPath` | 迁移脚本根目录 |
 | `LockResourceKey` / `LockExpirySeconds` | 分布式锁（防多节点并发升级） |
-| `EnableAutoCheckOnStartup` | 启动时自动检查 |
+| `EnableAutoCheckOnStartup` | 启动后初始化/检查版本状态；当前 BasicApp 未调用升级执行入口，不会因此自动跑 SQL |
 | `NodeName` / `PrimaryNodeName` | 当前节点 / **仅主节点执行迁移，其余等待** |
 | `EnableMultiTenantIsolation` | 是否按租户逐库执行 |
 | `ConnectionConfigId` | 升级使用的连接 |
 | `EnableMaintenanceMode` | 升级期间进入维护模式 |
 | `EnableFileUpdate` / `EnableRollingRestart` | 文件更新 / 滚动重启 |
 
-版本状态与执行历史分别保存在 `SysVersion`、`SysMigrationHistory`，不使用 `version.txt`。启动时按 `UpdateScripts/{version}.sql` 顺序执行平台库及配置为独立库的租户；锁租约避免多节点并发，脚本失败会记录历史并阻止应用启动。当前仓库脚本使用 PostgreSQL SQL，切换数据库提供程序时需要维护对应方言的脚本。
+版本状态与执行历史分别保存在 `SysVersion`、`SysMigrationHistory`，不使用 `version.txt`。引擎被显式调用后会按 `UpdateScripts/{version}.sql` 顺序处理平台库及配置为独立库的租户，锁租约避免多节点并发。当前 BasicApp 没有 `IUpgradeCoordinator` / `IUpgradeEngine` 调用入口，因此启动只初始化版本状态、不执行脚本；完整边界见[升级与迁移](./backend/upgrade)。当前仓库脚本使用 PostgreSQL SQL，切换数据库提供程序时需要维护对应方言的脚本。
 
 ## `XiHan:Localization`
 

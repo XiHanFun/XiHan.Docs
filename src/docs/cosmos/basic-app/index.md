@@ -43,6 +43,7 @@ XiHan.BasicApp 采用**前后端分离**架构：
 - [请求生命周期](./backend/request-lifecycle) —— 中间件管道逐段、401/403/423、UoW 收尾
 - [数据模型](./backend/data-model) —— 实体基类、审计与软删、多租户列、全表清单
 - [缓存与异步](./backend/caching) —— 缓存条目、精准失效、队列消费
+- [健康与可观测性](./backend/health-observability) —— `/health`、数据库/Redis/Qdrant 探测、OpenTelemetry
 
 **身份与访问**
 
@@ -55,7 +56,8 @@ XiHan.BasicApp 采用**前后端分离**架构：
 
 - [消息中心](./backend/messaging) · [工作流](./backend/workflow) · [审批与约束规则](./backend/approval)
 - [文件与存储](./backend/file) · [任务调度](./backend/scheduling) · [系统设置](./backend/settings)
-- [开放能力](./backend/open-api) · [审计日志](./backend/logging) · [代码生成](./backend/code-generation) · [AI 能力](./backend/ai)
+- [开放能力](./backend/open-api) · [审计日志](./backend/logging) · [升级与迁移](./backend/upgrade)
+- [代码生成](./backend/code-generation) · [AI 能力](./backend/ai)
 
 **前端开发**
 

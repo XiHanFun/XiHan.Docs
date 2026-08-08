@@ -106,7 +106,7 @@ CodeFirst 负责首次建表；已有库的结构和数据变化由 Framework Up
 :::
 
 ::: tip 升级状态不是本地文件
-升级引擎以 `SysVersion` 和 `SysMigrationHistory` 记录每个数据库的版本与脚本结果，不使用 `version.txt`。脚本失败会记录错误并阻止应用启动；独立数据库租户也会逐库补齐。
+升级引擎可用 `SysVersion` 和 `SysMigrationHistory` 记录每个数据库的版本与脚本结果，不使用 `version.txt`；独立数据库租户也可逐库升级。但当前 BasicApp 尚未调用执行入口，启动不会自动跑脚本，详见[升级与迁移](./upgrade)。
 :::
 
 ## 种子数据

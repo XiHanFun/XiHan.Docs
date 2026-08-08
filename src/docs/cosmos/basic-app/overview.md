@@ -31,6 +31,8 @@ XiHan.BasicApp 是一个**企业级中后台内核**：后端基于 .NET 10 与 
 | [文件与存储](./backend/file) | 元数据与存储位置分离、多后端（本地/S3/OSS/COS/MinIO）、异步导出中心 |
 | [任务调度](./backend/scheduling) | Cron/间隔/一次性触发、并发控制、多租户上下文、按月分表日志 |
 | [系统设置](./backend/settings) | 菜单、字典、参数、业务编号、缓存、服务监控、版本、通道配置 |
+| [健康与可观测性](./backend/health-observability) | 数据库/Redis/Qdrant 健康检查，TraceId，OpenTelemetry 链路与指标导出 |
+| [升级与迁移](./backend/upgrade) | 前向 SQL、版本/迁移台账、租约锁、多租户升级与维护模式；执行入口状态说明 |
 | [开放能力](./backend/open-api) | OAuth2/OIDC 服务端、开放接口签名调用、个人 API 凭证 |
 | [审计日志](./backend/logging) | 访问/API/操作/异常/登录/实体变更等多类日志，落库前自动脱敏 |
 | [代码生成](./backend/code-generation) | 单表/树形/主从三模式，实体→DTO→API→前端页一键生成，Scriban 模板 |

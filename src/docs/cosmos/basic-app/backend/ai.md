@@ -224,7 +224,7 @@ BasicApp 通过框架把知识检索能力对外暴露为标准工具，两条�
 
 ### MCP Server（应用管理 key，fail-closed）
 
-MCP Server 的启用与暴露由框架包 [XiHan.Framework.Web.Mcp](../../framework/packages/web-mcp) 负责，WebHost 只 `[DependsOn(typeof(XiHanWebMcpModule))]`。配置节 `XiHan:AI:Mcp`（`XiHanMcpOptions`）：
+MCP Server 的启用与暴露由框架包 [XiHan.Framework.Web.Mcp](../../framework/packages/web-mcp) 负责；BasicApp 通过 `XiHanBasicAppWebCoreModule` 依赖 `XiHanWebMcpModule`，WebHost 无需重复声明。配置节 `XiHan:AI:Mcp`（`XiHanMcpOptions`）：
 
 | 字段 | 默认 | 说明 |
 | --- | --- | --- |
@@ -260,4 +260,4 @@ MCP Server 的启用与暴露由框架包 [XiHan.Framework.Web.Mcp](../../framew
 - [框架 · XiHan.Framework.AI](../../framework/packages/ai)：底层 provider 解析/热切换、RAG 切片检索、提示词模板、Agent/MCP 桥接的抽象与默认实现
 - [权限模型](./permission)：`module:resource:action` 权限码、数据范围、字段级脱敏
 - [多租户](./multi-tenancy)：字段级隔离与 `TenantId=0` 全局约定
-- [部署](../deployment)：环境要求与重建库策略
+- [部署](../deployment)：环境要求、升级入口与生产配置

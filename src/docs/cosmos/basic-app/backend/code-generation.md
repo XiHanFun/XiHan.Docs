@@ -21,7 +21,7 @@
 
 | 实体 | 表 | 作用 |
 | --- | --- | --- |
-| `SysCodeGenDataSource` | `Sys_CodeGen_DataSource` | 外部数据库连接凭证 + 连通性自检，`SourceName` 全局唯一（详见下文，当前未接入扫描链路） |
+| `SysCodeGenDataSource` | `Sys_CodeGen_DataSource` | 外部数据库连接凭证 + 连通性自检 + DbFirst 扫描，`SourceName` 全局唯一 |
 | `SysCodeGenTable` | `Sys_CodeGen_Table` | 一张目标表的生成主配置，`TableName` 全局唯一 |
 | `SysCodeGenTableColumn` | `Sys_CodeGen_TableColumn` | 列级配置（类型映射、表单控件、查询方式、字典三分） |
 | `SysCodeGenTemplate` | `Sys_CodeGen_Template` | 模板（Scriban 正文 + 文件名/路径表达式），`TemplateCode` 全局唯一 |
@@ -65,21 +65,24 @@
 除模板产物外，引擎每次还追加**二阶产物**（目录 `_GeneratedMenuPermission/`）：
 
 - <code v-pre>{{ClassName}}PermissionCodes.cs</code>——权限码常量类（资源段取表名，`{资源}:{操作}` 两段式）。
-- `README.md`——落地说明：权限码表、按钮→权限码映射、`SysMenu` 菜单规格、以及"并入源码 → 重建库经 Seeder 生效"的步骤清单。
+- `README.md`——落地说明：权限码表、按钮→权限码映射、`SysMenu` 菜单规格，以及并入源码后的 Seeder / 升级脚本接线清单。
 
-> 二阶产物是**待并入源码的代码片段，不是运行时写库**。这符合 BasicApp 的单一事实源 + 菜单即绑约定：把片段并入源码、重建数据库，菜单与权限经既有 Seeder 链生效，避免与"部署重建库"冲突。
+> 二阶产物是**待并入源码的代码片段，不是运行时写库**。这符合 BasicApp 的单一事实源 + 菜单即绑约定：把片段并入源码后，全新库由 Seeder 初始化；存量库还要把必要的数据变化纳入同版本 `UpdateScripts`。
 
 ## 数据源与表结构
 
 ### 数据源
 
-`SysCodeGenDataSource` 是一张独立的外部数据库连接配置表（主机/端口/库名/账号/加密密码或连接串），当前定位是**连接凭证的集中管理与联通性自检**：
+`SysCodeGenDataSource` 管理外部数据库连接（主机/端口/库名/账号/加密密码或连接串），同时直接参与表结构扫描：
 
 - `DatabaseType` 标注连接方言，支持 `MySql` / `SqlServer` / `PostgreSql` / `Oracle` / `Sqlite`。
 - 密码/连接串经 `AesHelper` 固定口令**对称加密**存储（`CodeGenDataSourceDomainService` 的 `EncryptSecret`/`DecryptSecret`）；`TestConnectionAsync` 用一个独立探测用的 `SqlSugarClient` 开关一次连接，回写 `LastTestTime` / `LastTestResult` / `LastTestMessage`。
-- 保存（`CreateAsync` / `UpdateAsync`）**不强制**先测试连接通过；删除（`DeleteAsync`）当前**未校验**是否仍有 `SysCodeGenTable` 引用——这是本模块当前实现的真实行为，与实体注释里描述的意图不完全一致。
+- 保存（`CreateAsync` / `UpdateAsync`）**不强制**先测试连接通过；删除（`DeleteAsync`）当前**未校验**是否仍有 `SysCodeGenTable` 引用，删除前应先检查表配置引用。
+- 导入弹窗调用 `codeGenDataSourceApi.options()` 加载数据源下拉；空值代表本系统主库，选择项的值是 `SysCodeGenDataSource.BasicId`。
+- `DatabaseSchemaImporter` 首次使用外部数据源时解密连接信息，经 `IDynamicConnectionRegistrar` 按 `DataSourceId` 动态注册 SqlSugar 连接，再调用框架 `IDatabaseMetadataProvider` 扫描。
+- 数据源不存在或停用时直接失败，**不会静默回退主库**；已注册连接会复用。
 
-> **数据源当前未接入逆向工程扫描链路**：`ListDatabaseTablesAsync` / `ImportTableAsync` 接收的 `ConnectionConfigId`，实际是框架 `ISqlSugarClientResolver.GetClient(configId)` 解析的**已注册 SqlSugar 连接 / 租户 ConfigId**（为空时走 `GetCurrentClient()`，即生成器自身所在主库），并非 `SysCodeGenDataSource.BasicId`；前端导入弹窗里的 `connectionConfigId` 是一个自由文本框，并非从数据源列表选择。也就是说，`SysCodeGenDataSource` 目前是一套独立的连接凭证 CRUD + 连通性自检面板，多库逆向工程实际靠手工填写框架已注册的 ConfigId 完成，两者尚未打通。
+导入后的 `SysCodeGenTable.DataSourceId` 会保留来源数据源，后续“同步表结构”和重新生成仍能定位同一外部库。数据源配置支持 `MySql` / `SqlServer` / `PostgreSql` / `Oracle` / `Sqlite`；这表示元数据扫描支持这些方言，不代表 BasicApp 自身的发布升级 SQL 已跨方言适配。
 
 ### 表结构导入
 
