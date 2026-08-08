@@ -15,6 +15,10 @@ XiHan.BasicApp 采用**前后端分离**架构：
 
 <div class="tip custom-block" style="padding-top: 8px">
 
+还在做技术选型？先读 [**为什么选择曦寒**](./why) —— 它适合什么项目、和其它中后台方案的区别、以及它的短板。
+
+已经决定动手？按这个顺序走：
+
 1. [**快速开始**](./getting-started) —— 在本地把前后端跑起来（约 10 分钟）
 2. [**系统架构**](./backend/introduction) —— 看懂后端模块划分与前后端协作
 3. [**权限模型**](./backend/permission) —— 理解 RBAC + ABAC、数据范围、多租户隔离
@@ -25,6 +29,7 @@ XiHan.BasicApp 采用**前后端分离**架构：
 
 **入门**
 
+- [为什么选择曦寒](./why) —— 选型指南：适合什么项目、四条方案路线的取舍、它的短板
 - [系统概述](./overview) —— 定位、技术栈、能力全景、**按角色的阅读路线**
 - [开发环境](./dev-environment) —— Docker 起数据库与 Redis
 - [快速开始](./getting-started) —— 跑起来并调通第一个接口
@@ -68,7 +73,7 @@ XiHan.BasicApp 采用**前后端分离**架构：
 
 | 端 | 关键技术 |
 | --- | --- |
-| 后端 | .NET 10 · XiHan.Framework 3.5.0 · SqlSugar（PostgreSQL/MySQL/MariaDB）· Redis · SignalR · Serilog · Scalar |
+| 后端 | .NET 10 · XiHan.Framework 3.10.1 · SqlSugar（PostgreSQL/MySQL/MariaDB）· Redis · SignalR · Serilog · Scalar |
 | 前端 | Vue 3.5+ · TypeScript 6.0+ · Vite 8 · Naive UI · Pinia · Tailwind CSS 4 · Tiptap · vue-i18n |
 
 ## 在线体验
