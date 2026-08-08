@@ -79,6 +79,7 @@ const frameworkSidebar: DefaultTheme.SidebarItem[] = [
     collapsed: false,
     items: [
       { text: "框架简介", link: "/cosmos/framework/" },
+      { text: "为什么选择曦寒", link: "/cosmos/framework/why" },
       { text: "框架概述", link: "/cosmos/framework/overview" },
       { text: "快速上手", link: "/cosmos/framework/quickstart" },
     ],
@@ -307,6 +308,7 @@ const basicAppSidebar: DefaultTheme.SidebarItem[] = [
     collapsed: false,
     items: [
       { text: "应用简介", link: "/cosmos/basic-app/" },
+      { text: "为什么选择曦寒", link: "/cosmos/basic-app/why" },
       { text: "系统概述", link: "/cosmos/basic-app/overview" },
       { text: "开发环境", link: "/cosmos/basic-app/dev-environment" },
       { text: "快速开始", link: "/cosmos/basic-app/getting-started" },
