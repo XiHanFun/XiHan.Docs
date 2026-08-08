@@ -15,10 +15,6 @@ hero:
       text: 项目简介
       link: cosmos/guide
 
-    - theme: alt
-      text: 为什么选择曦寒
-      link: cosmos/framework/why
-
     - theme: brand
       text: 快速上手
       link: cosmos/getstart
