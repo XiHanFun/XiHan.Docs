@@ -265,14 +265,14 @@ services.AddHealthChecks()
 
 它读 `GC.GetTotalMemory(false)`，超过阈值返回 `Degraded`（不是 `Unhealthy`），两种结果都附带各代 GC 次数与内存负载阈值明细。默认阈值 1024MB。
 
-其余检查项（数据库、Redis、向量库等）需要自己实现 `IHealthCheck` 并注册，再在模块初始化时映射端点：
+其余检查项（数据库、Redis、向量库等）需要由应用实现 `IHealthCheck` 并注册。下面以应用自己的检查类型为例，再在模块初始化时映射端点：
 
 ```csharp
 public override void ConfigureServices(ServiceConfigurationContext context)
 {
     context.Services.AddHealthChecks()
-        .AddCheck<DatabaseHealthCheck>("database")
-        .AddCheck<RedisHealthCheck>("redis");
+        .AddCheck<MyDatabaseHealthCheck>("database")
+        .AddCheck<MyRedisHealthCheck>("redis");
 }
 
 public override void OnApplicationInitialization(ApplicationInitializationContext context)

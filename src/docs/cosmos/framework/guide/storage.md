@@ -207,7 +207,7 @@ var result = await provider.CompleteChunkedUploadAsync(new ChunkedUploadComplete
 
 | 字段 | 默认值 | 作用 |
 | --- | --- | --- |
-| `RootPath` | `wwwroot/uploads` | 文件真正落盘的目录 |
+| `RootPath` | `wwwroot/Uploads` | 文件真正落盘的目录 |
 | `UrlPrefix` | `/uploads` | 拼 `FileUploadResult.Url` 用的路径前缀 |
 
 `LocalFileStorageProvider` 构造时把 `RootPath` 过一遍 `Path.GetFullPath`，目录不存在就创建；`UrlPrefix` 归一化成 `"/" + 去掉首尾斜杠`。
@@ -225,7 +225,11 @@ UseCors()
   → UseAuthorization()
 ```
 
-它经 `IConfiguration` 直接读 `XiHan:ObjectStorage:Local:RootPath` 和 `:UrlPrefix`（这样 Web.Api 不必编译期依赖 ObjectStorage 包），无配置时回退同样的默认值，然后以 `PhysicalFileProvider` + `RequestPath = UrlPrefix` 调 `UseStaticFiles`。
+它经 `IConfiguration` 直接读 `XiHan:ObjectStorage:Local:RootPath` 和 `:UrlPrefix`（这样 Web.Api 不必编译期依赖 ObjectStorage 包），然后以 `PhysicalFileProvider` + `RequestPath = UrlPrefix` 调 `UseStaticFiles`。
+
+::: warning 显式配置 RootPath
+`LocalStorageOptions` 3.10.1 的默认落盘目录是 `wwwroot/Uploads`，但 Web.Api 在完全没有该配置节时仍回退到 `wwwroot/uploads`。在 Linux 等区分大小写的文件系统上，这会成为两个目录。Web 应用应显式配置 `RootPath`，并确保对象存储与静态文件挂载读取同一个值。
+:::
 
 ::: warning 挂在鉴权之前，意味着匿名可读
 这个位置是有意的——头像之类的公开资源要能匿名直链。反过来说，**落进 `RootPath` 的所有文件都是公开的**。

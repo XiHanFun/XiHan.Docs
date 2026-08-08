@@ -365,7 +365,7 @@ export const positionApi = {
 
 - **分页方法必须显式补 `[HttpPost]`**。方法名以 `Get` 开头会被默认识别为 GET；新增分页方法漏标 `[HttpPost]` → 前端 body 收不到查询对象。
 
-- **部署即重建库、无向后兼容**。不写迁移旧数据/向后兼容的兜底代码；部署时重建数据库、前向单一格式，遇异常态 fail-closed。
+- **实体变更必须补前向升级脚本**。CodeFirst 只为全新数据库建表；已有库的列、索引和数据变化写入 `WebHost/UpdateScripts/{version}.sql`，并在 PostgreSQL 副本上验证失败回滚与重复启动行为。
 
 ## 下一步
 
@@ -373,5 +373,5 @@ export const positionApi = {
 - [权限模型](./permission)：权限码 / RBAC / ABAC / 数据范围 / 字段级脱敏
 - [前端结构](../frontend/introduction)：Schema 驱动页、三级权限过滤、i18n / 时区
 - [代码生成](./code-generation)：用生成器批量产出 CRUD 纵切片
-- [部署](../deployment)：重建库、Qdrant 前置、环境配置
+- [部署](../deployment)：升级脚本、Qdrant 前置、环境配置
 - [动态 API 概念](../../framework/guide/dynamic-api)：框架层动词/路由映射机制

@@ -13,7 +13,7 @@
 | 进程 | 端口 | 备注 |
 | --- | --- | --- |
 | 后端 Development | `9708` | API 文档 `http://127.0.0.1:9708/scalar` |
-| 后端 Production | `9709` | — |
+| 后端 Production | `9708`（仓库默认） | 可由 `Hosting:Urls` / 容器端口映射覆盖 |
 | 前端 dev server | `9800` | `VITE_PORT` |
 
 开发态前端**不直连后端**：`VITE_API_BASE_URL` 留空，请求打到自己的 dev server，再由 Vite 代理转发到 `VITE_DEV_PROXY_TARGET`（默认 `http://localhost:9708`）——同源转发，天然没有 CORS 问题。
@@ -32,7 +32,7 @@
 
 ### 启动报 Redis `WRONGPASS`
 
-仓库默认连接串用的是 **ACL 用户** `user=redis,password=redis`，而官方 `redis` 镜像默认既无密码也没有名为 `redis` 的用户。按 [开发环境](./dev-environment#redis-8-8-必需) 里的 `docker run` 命令建好同名 ACL 用户即可；本地图省事也可以把 `XiHan:Caching:Redis:IsEnabled` 设为 `false` 退化成进程内内存缓存（会失去分布式缓存/锁/队列）。
+仓库默认连接串用的是 **ACL 用户** `user=redis,password=redis`，而官方 `redis` 镜像默认既无密码也没有名为 `redis` 的用户。按 [开发环境](./dev-environment#redis-6-生产多实例必需) 里的 `docker run` 命令建好同名 ACL 用户即可；本地图省事也可以把 `XiHan:Caching:Redis:IsEnabled` 设为 `false` 退化成进程内内存缓存（会失去分布式缓存/锁/队列）。
 
 ### 表没建好 / 首次启动就登录不了
 
@@ -211,7 +211,7 @@ services.Replace(ServiceDescriptor.Singleton<IAiProviderConfigStore, SaasAiProvi
 
 `DbInitializer` **表存在就跳过创建**（日志里是「表已存在，跳过创建」），它**从不为已有表补列**。所以给既有实体加字段后部署必炸。
 
-本项目的策略是**部署即重建数据库、前向单一格式、不写向后兼容代码**——要么重建库，要么自己手动 `ALTER TABLE` 补列。
+不要依赖 CodeFirst 给已有表补列。正式版本应在 `WebHost/UpdateScripts/{version}.sql` 中加入前向迁移，升级引擎会按版本执行并记录到 `SysMigrationHistory`；临时环境也可重建库或手工 `ALTER TABLE`。
 
 ### 本地 `dotnet build` 报文件被占用
 
@@ -258,11 +258,11 @@ npx eslint src/views/identity/position/index.vue --fix
 
 ### 升级版本要写数据迁移吗？
 
-**不写**。本项目不做向后兼容 / 迁移旧数据的兜底代码，部署时重建数据库、保持前向单一格式，遇到异常状态一律 fail-closed。
+**要写前向 SQL 迁移。** 首次部署由 CodeFirst 建库建表；已有数据库由 `WebHost/UpdateScripts/{version}.sql` 升级。升级引擎用 `SysVersion` / `SysMigrationHistory` 记录每个库的状态，按平台库与独立租户库依次执行，脚本失败会阻止启动。当前脚本为 PostgreSQL 方言，切换数据库时需提供对应实现。
 
 ### 启用 AI 知识库（RAG）前要准备什么？
 
-需要先部署 **Qdrant 向量库**并配好 `XiHan:AI:Rag` 连接参数，另外要重建数据库以带上 RAG 相关的表与种子（`Order` 205–208）。见 [AI 能力](./backend/ai) 与 [开发环境 · Qdrant](./dev-environment#向量数据库-qdrant-可选-ai-知识库用)。
+需要先部署 **Qdrant 向量库**并配好 `XiHan:AI:Rag` 连接参数。全新数据库会自动创建 RAG 表并执行种子；存量库应随版本升级脚本迁移。见 [AI 能力](./backend/ai) 与 [开发环境 · Qdrant](./dev-environment#向量数据库-qdrant-可选-ai-知识库用)。
 
 ### 怎么定位一次线上请求？
 

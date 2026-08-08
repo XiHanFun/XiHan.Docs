@@ -116,7 +116,7 @@ DDD 分层与应用服务契约。
 | [SearchEngines.Abstractions](./search-engines-abstractions) | 搜索抽象：索引/文档/检索契约，零第三方依赖 |
 | [SearchEngines](./search-engines) | 搜索默认实现：进程内引擎（开发与测试兜底） |
 | [SearchEngines.Elasticsearch](./search-engines-elasticsearch) | 搜索实现：Elasticsearch（生产推荐） |
-| [Observability](./observability) | 可观测性：指标采集、性能监控、诊断（部分健康检查为占位） |
+| [Observability](./observability) | 可观测性：OpenTelemetry、指标采集、性能监控、运行时诊断与内存健康检查 |
 | [DevTools](./devtools) | 开发工具：自研命令行（CLI）框架，开发期辅助 |
 
 ## 9. AI 与机器人
@@ -142,6 +142,7 @@ DDD 分层与应用服务契约。
 | [Web.Docs](./web-docs) | API 文档：Scalar UI + Swagger UI、动态 API 分组发现 |
 | [Web.Gateway](./web-gateway) | API 网关：灰度路由（依赖 Traffic）、请求追踪、限流熔断 |
 | [Web.Grpc](./web-grpc) | gRPC 服务集成 |
+| [Web.Mcp](./web-mcp) | MCP Server：把 AI 技能暴露为 HTTP MCP tools，并以 API Key fail-closed 鉴权 |
 | [Web.RealTime](./web-realtime) | 实时通信：SignalR 集成、JSON 序列化 |
 
 ---
@@ -167,7 +168,7 @@ Utils（零依赖）
           │     └ Workflow.Abstractions → Workflow(+Caching/EventBus/Script/Timing)
           ├ SearchEngines.Abstractions → SearchEngines → SearchEngines.Elasticsearch
           ├ Http(+Polly) → AI(Agents.AI + MCP) → Bot(MailKit + Telegram)
-          └ Web.Core → Web.Api → Web.Docs / Web.Gateway / Web.Grpc / Web.RealTime
+          └ Web.Core → Web.Api → Web.Docs / Web.Gateway / Web.Grpc / Web.Mcp / Web.RealTime
 ```
 
 > 你只需在应用模块上 `[DependsOn]` 顶层包，整条依赖链会被框架自动装配。详见 [核心概念 · 模块系统](../guide/modularity)。

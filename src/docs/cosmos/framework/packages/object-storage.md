@@ -55,7 +55,7 @@ public class MyModule : XiHanModule { }
 - **业务路由**：`IFileStorageRouter` 按业务路由键（如 `avatar`、`attachment`）解析并选择目标提供程序，支持严格匹配开关 `StrictRouteMatch`。
 - **分片与断点续传**：`InitiateChunkedUploadAsync` / `UploadChunkAsync` / `CompleteChunkedUploadAsync` / `AbortChunkedUploadAsync` 覆盖大文件分片上传全流程。
 - **预签名 URL**：`GeneratePresignedUrlAsync(path, expiresIn)` 生成带过期时间的临时访问链接（云存储提供真实签名；本地存储直接返回静态可访问 URL）。
-- **本地存储直链**：本地提供程序默认落在 `wwwroot/uploads` 下，配合 Web.Api 静态文件服务可直接通过 URL 前缀访问（见「配置」）。
+- **本地存储直链**：本地提供程序默认落在 `wwwroot/Uploads` 下，配合 Web.Api 静态文件服务可直接通过 URL 前缀访问（见「配置」）。
 
 ## 主要 API / 类型
 
@@ -127,10 +127,10 @@ public class MyModule : XiHanModule { }
 
 | 字段 | 类型 | 默认值 | 含义 |
 | --- | --- | --- | --- |
-| `RootPath` | `string` | `"wwwroot/uploads"` | 本地存储根目录（默认置于 Web 根 `wwwroot` 下，便于静态托管与直链） |
+| `RootPath` | `string` | `"wwwroot/Uploads"` | 本地存储根目录（默认置于 Web 根 `wwwroot` 下，便于静态托管与直链） |
 | `UrlPrefix` | `string` | `"/uploads"` | 生成访问 URL 时的路径前缀 |
 
-> 本地存储配置节 `XiHan:ObjectStorage:Local`（`RootPath` / `UrlPrefix`）也被 **Web.Api** 用于挂载静态文件服务：`XiHanWebApiModule` 在鉴权中间件之前经 `IConfiguration` 读取这两个字段（无配置回退默认值 `wwwroot/uploads`、`/uploads`），以 `UseStaticFiles` + `PhysicalFileProvider` 把该目录映射到 `UrlPrefix` 请求路径，使本地存储返回的静态 URL（头像、公开文件等）可匿名直链访问。这样本地/线上仅改配置即可切换存储后端而保持 URL 语义一致。
+> 本地存储配置节 `XiHan:ObjectStorage:Local`（`RootPath` / `UrlPrefix`）也被 **Web.Api** 用于挂载静态文件服务：`XiHanWebApiModule` 在鉴权中间件之前经 `IConfiguration` 读取这两个字段，以 `UseStaticFiles` + `PhysicalFileProvider` 把该目录映射到 `UrlPrefix` 请求路径，使本地存储返回的静态 URL（头像、公开文件等）可匿名直链访问。请显式配置 `RootPath`：对象存储默认值是 `wwwroot/Uploads`，而 Web.Api 完全无配置时仍回退 `wwwroot/uploads`；大小写敏感系统会把它们视为不同目录。
 
 云存储 `XiHan:ObjectStorage:AliyunOss`（`AliyunOssStorageOptions`）：`AccessKeyId`、`AccessKeySecret`、`Endpoint`、`DefaultBucket`、`CdnDomain?`、`UseInternal`（默认 `false`）。
 
@@ -152,7 +152,7 @@ public class MyModule : XiHanModule { }
       },
       "StrictRouteMatch": false,
       "Local": {
-        "RootPath": "wwwroot/uploads",
+        "RootPath": "wwwroot/Uploads",
         "UrlPrefix": "/uploads"
       },
       "AliyunOss": {

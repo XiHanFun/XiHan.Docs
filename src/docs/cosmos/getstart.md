@@ -171,7 +171,7 @@ pnpm install
 pnpm dev
 ```
 
-后端启动后访问 `http://127.0.0.1:9708/scalar` 查看 API 文档（Development 端口 `9708`，Production 端口 `9709`）。
+后端启动后访问 `http://127.0.0.1:9708/scalar` 查看 API 文档。仓库当前 Development 与 Production 都监听 `9708`，部署时可通过 `Hosting:Urls` 或容器端口映射覆盖。
 
 数据库连接串在 `backend/src/main/XiHan.BasicApp.WebHost/appsettings.Development.json` 中配置。
 

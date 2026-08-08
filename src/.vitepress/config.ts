@@ -615,7 +615,6 @@ function searchOptions(): Partial<DefaultTheme.AlgoliaSearchOptions> {
 
 export default defineConfig({
   srcDir: "docs",
-  ignoreDeadLinks: true,
   lang: "zh-CN",
   title: title,
   description: description,
@@ -659,7 +658,7 @@ export default defineConfig({
     },
     editLink: {
       text: "在 GitHub 上编辑此页",
-      pattern: "https://github.com/XiHanFun/XiHan.Docs/tree/main/src/:path",
+      pattern: "https://github.com/XiHanFun/XiHan.Docs/tree/main/src/docs/:path",
     },
     lastUpdated: {
       text: "最后更新于",

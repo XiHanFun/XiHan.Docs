@@ -1,6 +1,6 @@
 # 开发环境
 
-承接 [系统概述](/cosmos/basic-app/overview) 对整体架构的了解，本篇用 **Docker 命令行** 一步步把本地开发所需的 **Redis** 与 **各类关系型数据库** 跑起来，并给出与仓库 `appsettings.Development.json` **精确对齐的连接串**。几分钟备齐依赖后，即可进入下一篇 [快速开始](/cosmos/basic-app/getting-started) 把系统真正跑起来。
+承接 [系统概述](/cosmos/basic-app/overview) 对整体架构的了解，本篇用 **Docker 命令行** 准备本地开发可用的 **Redis** 与关系型数据库，并给出与仓库 `appsettings.Development.json` 对齐的默认 PostgreSQL 组合。其他数据库示例只用于开发验证；当前发布升级脚本以 PostgreSQL 为准。
 
 > 数据库表结构无需手动创建——后端首次启动会自动建表并初始化种子数据。你只需准备好一个「可连接、账号密码正确」的数据库与 Redis 实例。
 
@@ -24,17 +24,17 @@
 | 关系型数据库 | `XiHan:Data:SqlSugarCore:ConnectionConfigs[0]` | `DbType` + `ConnectionString` |
 | Redis | `XiHan:Caching:Redis` | `IsEnabled` + `Configuration` |
 
-数据库按需 **选一种** 即可（把对应的 `DbType` 与连接串填进去）；Redis 为必需项。
+数据库按需 **选一种** 即可（把对应的 `DbType` 与连接串填进去）。Redis 可关闭并回退进程内实现，但多实例与分布式锁/队列场景必须启用。
 
 ---
 
-## Redis 8.8+（必需）
+## Redis 6+（生产多实例必需）
 
 用于分布式缓存、分布式锁与延迟/流式队列。仓库默认连接串用的是 **ACL 用户** `user=redis,password=redis`，所以要在容器里建好同名 ACL 用户（官方 `redis` 镜像默认既无密码、也没有名为 `redis` 的用户，直接连会报 `WRONGPASS`）。
 
 ```bash
 docker rm -f redis
-docker run -d --name redis -p 6379:6379 -v redis-data:/data redis:latest redis-server --appendonly yes --user default off --user redis on '>redis' '~*' '&*' '+@all'
+docker run -d --name redis -p 6379:6379 -v redis-data:/data redis:8-alpine redis-server --appendonly yes --user default off --user redis on '>redis' '~*' '&*' '+@all'
 ```
 
 - `--user redis on '>redis' '~*' '&*' '+@all'`：建用户 `redis`、密码 `redis`，授予全部键（`~*`）、全部频道（`&*`，本项目用到发布订阅/Streams，必须给）、全部命令（`+@all`）。
@@ -70,11 +70,11 @@ docker exec -it redis redis-cli -u redis://redis:redis@127.0.0.1:6379 ping
 
 ## 关系型数据库（按需选一种）
 
-### PostgreSQL 18+（默认，推荐）
+### PostgreSQL 14+（默认，推荐）
 
 ```bash
 docker rm -f postgres
-docker run -d --name postgres -p 5432:5432 -v pg-data:/var/lib/postgresql -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres:latest
+docker run -d --name postgres -p 5432:5432 -v pg-data:/var/lib/postgresql/data -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=XiHanBasicApp postgres:17-alpine
 ```
 
 对应连接串：
@@ -82,7 +82,7 @@ docker run -d --name postgres -p 5432:5432 -v pg-data:/var/lib/postgresql -e POS
 ```json
 {
   "DbType": "PostgreSQL",
-  "ConnectionString": "Server=127.0.0.1;Port=5432;Database=XiHanBasicApp;Username=postgres;Password=postgres;rustServerCertificate=true;"
+  "ConnectionString": "Server=127.0.0.1;Port=5432;Database=XiHanBasicApp;Username=postgres;Password=postgres;TrustServerCertificate=true;"
 }
 ```
 
@@ -92,11 +92,11 @@ docker run -d --name postgres -p 5432:5432 -v pg-data:/var/lib/postgresql -e POS
 docker exec -it postgres psql -U postgres -d XiHanBasicApp -c "select version();"
 ```
 
-### MySQL 9.7+
+### MySQL 8+
 
 ```bash
 docker rm -f mysql
-docker run -d --name mysql -p 3306:3306 -v mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=mysql -e MYSQL_USER=mysql -e MYSQL_ROOT_PASSWORD=mysql mysql:latest
+docker run -d --name mysql -p 3306:3306 -v mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=mysql -e MYSQL_DATABASE=XiHanBasicApp mysql:8.4
 ```
 
 对应连接串（SqlSugar 的 MySql 类型）：
@@ -120,7 +120,7 @@ MariaDB 与 MySQL 协议兼容，SqlSugar 仍用 `MySql` 类型。
 
 ```bash
 docker rm -f mariadb
-docker run -d --name mariadb -p 3306:3306 -v mariadb-data:/var/lib/mysql -e MARIADB_ROOT_PASSWORD=mariadb -e MARIADB_USER=mariadb mariadb:latest
+docker run -d --name mariadb -p 3306:3306 -v mariadb-data:/var/lib/mysql -e MARIADB_ROOT_PASSWORD=mariadb -e MARIADB_DATABASE=XiHanBasicApp mariadb:11.8
 ```
 
 ```json
@@ -182,7 +182,7 @@ SqlSugar 同样支持这些国产库（`DbType` 取 `Dm` / `Kdbndp` / `PostgreSQ
 
 ```bash
 docker rm -f qdrant
-docker run -d --name qdrant -p 6333:6333 -p 6334:6334 -v qdrant-data:/qdrant/storage qdrant/qdrant:latest
+docker run -d --name qdrant -p 6333:6333 -p 6334:6334 -v qdrant-data:/qdrant/storage qdrant/qdrant:v1.15.1
 ```
 
 - `6333` 为 HTTP/REST 与管理面板（浏览器访问 `http://127.0.0.1:6333/dashboard`），`6334` 为 gRPC。
@@ -197,7 +197,7 @@ docker run -d --name qdrant -p 6333:6333 -p 6334:6334 -v qdrant-data:/qdrant/sto
 ```yaml
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:17-alpine
     container_name: postgres
     restart: unless-stopped
     ports:
@@ -210,7 +210,7 @@ services:
       - pg-data:/var/lib/postgresql/data
 
   redis:
-    image: redis:latest
+    image: redis:8-alpine
     container_name: redis
     restart: unless-stopped
     ports:

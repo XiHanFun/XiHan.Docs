@@ -10,7 +10,7 @@ XiHan.BasicApp 后端是一套基于 [XiHan.Framework](../../framework/index) �
 ┌──────────────────────────────────────────────────────────────────────────┐
 │                        XiHan.BasicApp.WebHost                             │
 │        启动入口 Program.cs + 聚合模块 XiHanBasicAppWebHostModule           │
-│  [DependsOn] Saas / CodeGeneration / AI / Workflow / Observability / Mcp  │
+│             [DependsOn] Saas / CodeGeneration / AI / Workflow             │
 │        健康检查 / MCP Server / Telegram Webhook / /health 端点            │
 ├───────────────┬──────────────────┬───────────────┬───────────────────────┤
 │ BasicApp.Saas │ BasicApp.        │ BasicApp.AI   │ BasicApp.Workflow     │
@@ -57,12 +57,12 @@ XiHan.BasicApp 后端是一套基于 [XiHan.Framework](../../framework/index) �
 | --- | --- | --- |
 | `XiHan.Framework.*` | 框架 | 认证/授权/数据/缓存/事件总线/多租户/工作流/AI/Bot 等通用能力（独立仓库） |
 | `XiHan.BasicApp.Core` | 基座 | 聚合全部要用的框架能力模块；提供 BasicApp 实体/DTO 基类与查询服务标记接口 |
-| `XiHan.BasicApp.Web.Core` | Web 基座 | **纯聚合模块**：挂上 `Core` 与框架 Web 能力（`WebCore`/`WebApi`/`WebDocs`/`WebRealTime`/`WebGateway`），自身不注册任何服务 |
+| `XiHan.BasicApp.Web.Core` | Web 基座 | 聚合 `Core` 与框架 Web 能力（`WebCore`/`WebApi`/`WebDocs`/`WebRealTime`/`WebGateway`/`WebMcp`），并接入维护模式 |
 | `XiHan.BasicApp.Saas` | 业务模块 | 核心业务：身份/角色/权限/菜单/组织/租户/配置/字典/文件/消息/日志/任务/审批/OAuth/聊天 |
 | `XiHan.BasicApp.CodeGeneration` | 业务模块 | 代码生成 |
 | `XiHan.BasicApp.AI` | 业务模块 | AI Provider 库化管理 / 知识库 RAG / 提示词库 / AI 助手 |
 | `XiHan.BasicApp.Workflow` | 业务模块 | 工作流应用层（存储持久化 + 定义/实例/待办 + 待办通知） |
-| `XiHan.BasicApp.WebHost` | 主机 | 启动入口，聚合四个业务模块 + 可观测性 + MCP |
+| `XiHan.BasicApp.WebHost` | 主机 | 启动入口，聚合四个业务模块，注册数据库 / Redis / Qdrant 健康检查与 Telegram Webhook |
 
 **分层规则**：只能依赖比自己低的层，绝不反向。三个卫星模块（CodeGeneration / AI / Workflow）都依赖 `Saas`，彼此不直接依赖。
 
@@ -94,13 +94,11 @@ await app.RunAsync();
     typeof(XiHanBasicAppSaasModule),
     typeof(XiHanBasicAppCodeGenerationModule),
     typeof(XiHanBasicAppAIModule),
-    typeof(XiHanBasicAppWorkflowModule),
-    typeof(XiHanObservabilityModule),   // 由 XiHan:Observability 门控，Enabled 默认 false
-    typeof(XiHanWebMcpModule)           // 由 XiHan:AI:Mcp 门控，未启用/未配密钥则不暴露端点
+    typeof(XiHanBasicAppWorkflowModule)
 )]
 ```
 
-四个业务模块之外的框架能力经 `Saas → Web.Core → Core → XiHan.Framework.*` 一路传递，**无需在根模块重复声明**。根模块额外负责：
+四个业务模块之外的可观测性与 MCP 等框架能力经 `Saas → Web.Core → Core → XiHan.Framework.*` 一路传递，**无需在根模块重复声明**。根模块额外负责：
 
 - **健康检查**：`AddCheck<DatabaseHealthCheck>("database")` + `AddCheck<RedisHealthCheck>("redis")` + `AddCheck<QdrantHealthCheck>("qdrant")`；`/health` 匿名暴露，只回总状态与检查项名（不外泄连接串/异常）。
 - **Telegram Webhook**：在 `OnPreApplicationInitialization` 注册，位于鉴权中间件**之前**，自带 `secret_token` 强校验。

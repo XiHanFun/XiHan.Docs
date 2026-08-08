@@ -16,10 +16,10 @@ XiHan.BasicApp/
 │   │   │   ├── XiHan.BasicApp.CodeGeneration/
 │   │   │   ├── XiHan.BasicApp.AI/
 │   │   │   └── XiHan.BasicApp.Workflow/
+│   │   ├── business/                 #   OA/CMS/CRM/ERP 等领域脚手架（当前未接入 WebHost）
 │   │   └── main/
 │   │       └── XiHan.BasicApp.WebHost/       启动入口 + 根模块 + appsettings
 │   ├── props/                        #   共享 MSBuild 属性（framework.props 源码/NuGet 切换）
-│   ├── scripts/                      #   部署与运维脚本
 │   ├── test/                         #   测试项目
 │   └── XiHan.BasicApp.slnx           #   解决方案（始终走 NuGet 引用框架）
 ├── frontend/                         # 前端（Vue 3 + Vite）
@@ -30,6 +30,8 @@ XiHan.BasicApp/
 ├── docker-compose.yml
 └── assets/
 ```
+
+`backend/src/business` 下的 OA、CMS、CRM、HRM、ERP 等 15 个项目目前是解决方案内脚手架，模块注册基本为空，且 `XiHanBasicAppWebHostModule` 未依赖它们。它们代表预留边界，不应当作已交付业务功能。
 
 ## 后端：一个业务模块内部
 

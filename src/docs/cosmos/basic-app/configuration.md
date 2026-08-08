@@ -25,7 +25,7 @@ backend/src/main/XiHan.BasicApp.WebHost/
 | --- | --- | --- |
 | `Urls` | 监听地址与端口，多个用分号分隔 | `http://127.0.0.1:9708` |
 
-Development 默认 `9708`、Production 默认 `9709`。改了要同步改前端的 `VITE_DEV_PROXY_TARGET`。
+仓库 Development 与 Production 当前都监听 `9708`；Docker Compose 也在容器内使用 `9708`，宿主机端口可由 `BACKEND_PORT` 覆盖。开发环境改端口后要同步修改前端的 `VITE_DEV_PROXY_TARGET`。
 
 ## `XiHan:Observability`
 
@@ -250,6 +250,8 @@ Development 默认 `9708`、Production 默认 `9709`。改了要同步改前端�
 | `EnableMaintenanceMode` | 升级期间进入维护模式 |
 | `EnableFileUpdate` / `EnableRollingRestart` | 文件更新 / 滚动重启 |
 
+版本状态与执行历史分别保存在 `SysVersion`、`SysMigrationHistory`，不使用 `version.txt`。启动时按 `UpdateScripts/{version}.sql` 顺序执行平台库及配置为独立库的租户；锁租约避免多节点并发，脚本失败会记录历史并阻止应用启动。当前仓库脚本使用 PostgreSQL SQL，切换数据库提供程序时需要维护对应方言的脚本。
+
 ## `XiHan:Localization`
 
 | 键 | 说明 |
@@ -264,7 +266,7 @@ Development 默认 `9708`、Production 默认 `9709`。改了要同步改前端�
 
 | 键 | 默认 | 说明 |
 | --- | --- | --- |
-| `Local.RootPath` | `wwwroot/uploads` | 文件落盘根目录 |
+| `Local.RootPath` | `wwwroot/uploads` | 文件落盘根目录；这是 BasicApp 的显式配置，不是 Framework 3.10.1 的 `LocalStorageOptions` 默认值 |
 | `Local.UrlPrefix` | `/uploads` | 对外访问 URL 前缀（**根相对路径**，跨源时前端拼 API origin） |
 
 对象存储的其余后端（S3/OSS/COS/MinIO）**配置落库**在 `SysStorageConfig`，不写 `appsettings`。见 [文件与存储](./backend/file#存储配置-file-storage)。
