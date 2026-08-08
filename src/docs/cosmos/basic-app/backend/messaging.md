@@ -2,7 +2,7 @@
 
 XiHan.BasicApp 的消息能力横跨三块：**企业级消息中心（站内通知/公告）**、**多渠道消息投递（邮件/短信/机器人）** 与 **SignalR 实时（通知推送 + 在线聊天）**。它们共享一套模板、偏好门控与发件箱异步机制，源码集中在 `modules/XiHan.BasicApp.Saas` 的 `Application/AppServices/Messaging`、`Application/Services/Messaging`、`Domain/DomainServices/Messaging`、`Domain/Entities` 与 `Hubs` 下。
 
-> 部署提示：消息中心涉及库表重建（`Sys_Notification`、`Sys_User_Notification`、`Sys_User_Notification_Preference`、聊天四表等）。遵循 BasicApp「部署即重建库、不做向后兼容」约定，异常态一律 fail-closed。
+> 部署提示：消息中心涉及 `Sys_Notification`、`Sys_User_Notification`、`Sys_User_Notification_Preference` 与聊天四表等结构。全新库由 CodeFirst 创建；存量库新增或变更这些结构时应提供前向 `UpdateScripts`，详见[升级与迁移](./upgrade)。
 
 ## 全景
 

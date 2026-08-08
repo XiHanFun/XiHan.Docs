@@ -36,7 +36,7 @@
 
 ### 表没建好 / 首次启动就登录不了
 
-首次启动会**自动建表 + 播种子数据**，中途失败（多为数据库权限不足）会留下半截库。排查数据库账号权限后**删库重建**再启动——本项目不做旧数据兼容，见[下文](#部署后接口报-42703-column-does-not-exist)。
+全新数据库首次启动会**自动建表 + 播种子数据**。初始化中途失败时，可在确认没有业务数据后删库重试；存量数据库不要直接删除，应先核对 `UpdateScripts` 与实际迁移入口，见[下文](#部署后接口报-42703-column-does-not-exist)。
 
 ### 初始超管账号是什么？
 
@@ -258,7 +258,7 @@ npx eslint src/views/identity/position/index.vue --fix
 
 ### 升级版本要写数据迁移吗？
 
-**要写前向 SQL 迁移。** 首次部署由 CodeFirst 建库建表；已有数据库由 `WebHost/UpdateScripts/{version}.sql` 升级。升级引擎用 `SysVersion` / `SysMigrationHistory` 记录每个库的状态，按平台库与独立租户库依次执行，脚本失败会阻止启动。当前脚本为 PostgreSQL 方言，切换数据库时需提供对应实现。
+**要写前向 SQL 迁移。** 首次部署由 CodeFirst 建库建表；已有数据库的变更放入 `WebHost/UpdateScripts/{version}.sql`。升级引擎具备逐库执行、台账与失败状态能力，但当前 BasicApp 没有调用执行入口，启动不会自动跑脚本；发布流程必须显式补齐或外置唯一迁移步骤。当前脚本为 PostgreSQL 方言，切换数据库时需提供对应实现。详见[升级与迁移](./backend/upgrade)。
 
 ### 启用 AI 知识库（RAG）前要准备什么？
 

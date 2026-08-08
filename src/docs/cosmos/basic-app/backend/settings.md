@@ -105,7 +105,7 @@
 
 `ServerAppService` 提供运行时信息可视化：CPU / 内存 / 磁盘 / GPU / 网络 / 主板 / .NET 运行时。
 
-它读的是**当前进程所在机器**的信息。多实例部署时看到的是「你这次请求恰好打到的那个实例」，不是集群汇总——要做集群视图请接 OpenTelemetry 指标导出（`XiHan:Observability`）。
+它读的是**当前进程所在机器**的信息。多实例部署时看到的是「你这次请求恰好打到的那个实例」，不是集群汇总——要做集群视图请接 OpenTelemetry 指标导出。配置与真实健康探测见[健康检查与可观测性](./health-observability)。
 
 ## 版本管理（`/setting/version`）
 
@@ -117,10 +117,10 @@
 | `MinSupportVersion` | 允许升级的最低来源版本 |
 | `IsUpgrading` / `UpgradeNode` / `UpgradeStartTime` | 升级中标记、执行节点、开始时间（多节点协调用） |
 
-升级行为由配置节 `XiHan:Upgrade` 控制（分布式锁、主节点、维护模式等），见 [配置参考](../configuration#xihan-upgrade)。
+升级能力由配置节 `XiHan:Upgrade` 控制（分布式锁、主节点、维护模式等），见[升级与迁移](./upgrade)。
 
 ::: warning 版本页只读，脚本才是迁移入口
-`SysVersion` 由升级引擎独占写入，管理端不提供手工改版本。结构和数据迁移放在 `WebHost/UpdateScripts/{version}.sql`；`DbInitializer` 只负责全新数据库建表，不会给已有表补列。执行结果写入 `SysMigrationHistory`，失败即阻止启动。
+`SysVersion` 由升级引擎独占写入，管理端不提供手工改版本。结构和数据迁移放在 `WebHost/UpdateScripts/{version}.sql`；`DbInitializer` 只负责全新数据库建表，不会给已有表补列。当前 BasicApp 尚未调用升级执行入口，脚本不会仅因 `EnableAutoCheckOnStartup=true` 自动运行，详见[当前结论](./upgrade#当前结论)。
 :::
 
 ## 通道配置（邮件 / 短信 / 机器人）
@@ -141,6 +141,8 @@
 ## 相关页面
 
 - [缓存与异步](./caching)：缓存条目与失效器
+- [健康检查与可观测性](./health-observability)：服务监控、探针与 OpenTelemetry
+- [升级与迁移](./upgrade)：版本状态、脚本与当前执行边界
 - [配置参考](../configuration)：`appsettings` 全量配置节
 - [消息中心](./messaging)：模板与四通道发送
 - [数据模型](./data-model#系统设置)：相关表结构
