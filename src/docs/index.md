@@ -27,19 +27,19 @@ features:
   - title: 开发框架
     icon: 🧩
     details: 采用灵活的模块化设计，让您可以按需引入所需功能，避免不必要的开销。每个模块均经过精心打磨，可独立使用也可无缝协作。
-    link: cosmos/framework/index
+    link: https://framework.docs.xihanfun.com
     linkText: "浏览开发框架文档"
 
   - title: 视图组件
     icon: 🎨
     details: 框架无关的组件库，69 个组件的状态机与无障碍逻辑沉在无头内核，Vue 与 Web Components 只是两层薄适配器；样式由设计令牌与纯 CSS 皮肤驱动，可整包替换。
-    link: cosmos/ui/index
+    link: https://ui.docs.xihanfun.com
     linkText: "浏览视图组件文档"
 
   - title: 基础应用
     icon: 🏠
     details: 提供完整的企业级应用构建方案，包括权限管理、工作流、报表系统等常用功能，助力企业快速构建安全、稳定、高效的业务系统。
-    link: cosmos/basic-app/index
+    link: https://basicapp.docs.xihanfun.com
     linkText: "浏览基础应用文档"
 
   - title: 高效快速跨平台
@@ -84,7 +84,7 @@ footer:
 </div>
 <div class="bap-actions">
 <a class="bap-btn" href="https://basicapp.xihanfun.com" target="_blank" rel="noreferrer">立即在线体验 →</a>
-<a class="bap-link" href="cosmos/basic-app/">了解基础应用</a>
+<a class="bap-link" href="https://basicapp.docs.xihanfun.com" target="_blank" rel="noreferrer">了解基础应用</a>
 </div>
 <p class="bap-cred">演示账号 <code>superadmin</code> · 密码 <code>SuperAdmin@123</code> · 演示环境，请勿录入真实数据</p>
 </div>
