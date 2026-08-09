@@ -17,367 +17,13 @@ const head: HeadConfig[] = [
   ["link", { rel: "icon", href: "/favicon.ico" }],
 ];
 
-// 生成单个模块包文档条目
-function pkg(text: string, name: string): DefaultTheme.SidebarItem {
-  return { text, link: `/cosmos/framework/packages/${name}` };
-}
+// 三大板块的文档站：正文由各自仓库维护，本站只做导览
+const docSites = {
+  framework: "https://framework.docs.xihanfun.com",
+  ui: "https://ui.docs.xihanfun.com",
+  basicApp: "https://basicapp.docs.xihanfun.com",
+};
 
-// 开发指南：按能力域编号；内容页在 guide/ 或直接指向对应包页
-function chapter(
-  index: number,
-  text: string,
-  link: string
-): DefaultTheme.SidebarItem {
-  return { text: `${index}. ${text}`, link: `/cosmos/framework/${link}` };
-}
-
-// 每章一页，全部落在 guide/ 下；包文档是另一册（参考手册），章末链接过去
-const guideChapters: [text: string, name: string][] = [
-  ["模块系统", "modularity"],
-  ["模块生命周期", "lifecycle"],
-  ["依赖注入", "dependency-injection"],
-  ["AOP 与拦截器", "aop"],
-  ["配置与选项", "configuration"],
-  ["Web 应用开发", "web"],
-  ["动态 API", "dynamic-api"],
-  ["统一响应与异常", "response"],
-  ["数据校验", "validation"],
-  ["数据访问", "data"],
-  ["工作单元与事务", "uow"],
-  ["多租户", "multi-tenancy"],
-  ["认证", "authentication"],
-  ["授权", "authorization"],
-  ["数据加解密", "security"],
-  ["缓存与分布式锁", "caching"],
-  ["事件总线", "event-bus"],
-  ["定时任务与后台作业", "tasks"],
-  ["工作流", "workflow"],
-  ["消息通知", "messaging"],
-  ["机器人", "bot"],
-  ["实时通信", "realtime"],
-  ["对象存储与虚拟文件", "storage"],
-  ["国际化", "localization"],
-  ["模板引擎", "templating"],
-  ["日志", "logging"],
-  ["审计", "auditing"],
-  ["可观测性", "observability"],
-  ["HTTP 远程请求", "http"],
-  ["对象映射与序列化", "mapping"],
-  ["分布式 ID", "distributed-ids"],
-  ["搜索引擎", "search"],
-  ["AI 与 MCP", "ai"],
-  ["网关与流量治理", "gateway"],
-  ["脚本引擎", "script"],
-  ["升级与迁移", "upgrade"],
-  ["扩展与二次开发", "extending"],
-  ["常见问题", "faq"],
-];
-
-const frameworkSidebar: DefaultTheme.SidebarItem[] = [
-  {
-    text: "开始",
-    collapsed: false,
-    items: [
-      { text: "框架简介", link: "/cosmos/framework/" },
-      { text: "为什么选择曦寒", link: "/cosmos/framework/why" },
-      { text: "框架概述", link: "/cosmos/framework/overview" },
-      { text: "快速上手", link: "/cosmos/framework/quickstart" },
-    ],
-  },
-  {
-    text: "开发指南",
-    collapsed: false,
-    items: guideChapters.map(([text, name], i) =>
-      chapter(i + 1, text, `guide/${name}`)
-    ),
-  },
-  {
-    text: "模块总览",
-    link: "/cosmos/framework/packages/",
-    collapsed: false,
-    items: [
-      {
-        text: "公共与核心",
-        collapsed: true,
-        items: [
-          pkg("Utils 通用工具", "utils"),
-          pkg("Metadata 元数据", "metadata"),
-          pkg("Core 模块化核心", "core"),
-          pkg("Analyzers 分析器", "analyzers"),
-        ],
-      },
-      {
-        text: "领域与应用",
-        collapsed: true,
-        items: [
-          pkg("Domain.Shared", "domain-shared"),
-          pkg("Domain 领域层", "domain"),
-          pkg("Application.Contracts", "application-contracts"),
-          pkg("Application 应用层", "application"),
-        ],
-      },
-      {
-        text: "数据与持久化",
-        collapsed: true,
-        items: [
-          pkg("Data 数据访问", "data"),
-          pkg("Uow 工作单元", "uow"),
-          pkg("Caching 缓存", "caching"),
-        ],
-      },
-      {
-        text: "安全 · 认证 · 授权",
-        collapsed: true,
-        items: [
-          pkg("Security 安全加密", "security"),
-          pkg("Authentication 认证", "authentication"),
-          pkg("Authorization 授权", "authorization"),
-        ],
-      },
-      {
-        text: "多租户 · 配置 · 校验",
-        collapsed: true,
-        items: [
-          pkg("MultiTenancy.Abstractions", "multitenancy-abstractions"),
-          pkg("MultiTenancy 多租户", "multitenancy"),
-          pkg("Settings 设置", "settings"),
-          pkg("Validation.Abstractions", "validation-abstractions"),
-          pkg("Validation 校验", "validation"),
-        ],
-      },
-      {
-        text: "事件 · 消息 · 通信",
-        collapsed: true,
-        items: [
-          pkg("EventBus.Abstractions", "eventbus-abstractions"),
-          pkg("EventBus 事件总线", "eventbus"),
-          pkg("EventBus.RabbitMQ", "eventbus-rabbitmq"),
-          pkg("EventBus.Kafka", "eventbus-kafka"),
-          pkg("EventBus.Redis", "eventbus-redis"),
-          pkg("Messaging 消息", "messaging"),
-          pkg("Http 客户端", "http"),
-        ],
-      },
-      {
-        text: "通用基础设施",
-        collapsed: true,
-        items: [
-          pkg("Serialization 序列化", "serialization"),
-          pkg("ObjectMapping 对象映射", "objectmapping"),
-          pkg("Localization.Abstractions", "localization-abstractions"),
-          pkg("Localization 国际化", "localization"),
-          pkg("Logging 日志", "logging"),
-          pkg("Auditing 审计日志", "auditing"),
-          pkg("Castle AOP", "castle"),
-          pkg("Threading 并发", "threading"),
-          pkg("Timing 时间", "timing"),
-          pkg("DistributedIds 分布式 ID", "distributed-ids"),
-        ],
-      },
-      {
-        text: "存储 · 模板 · 任务 · 治理",
-        collapsed: true,
-        items: [
-          pkg("ObjectStorage 对象存储", "object-storage"),
-          pkg("VirtualFileSystem 虚拟文件", "virtual-file-system"),
-          pkg("Templating 模板", "templating"),
-          pkg("Tasks 定时任务", "tasks"),
-          pkg("Traffic 流量治理", "traffic"),
-          pkg("Upgrade 升级引擎", "upgrade"),
-          pkg("Script 脚本引擎", "script"),
-          pkg("Workflow.Abstractions", "workflow-abstractions"),
-          pkg("Workflow 工作流", "workflow"),
-          pkg("SearchEngines.Abstractions", "search-engines-abstractions"),
-          pkg("SearchEngines 搜索", "search-engines"),
-          pkg("SearchEngines.Elasticsearch", "search-engines-elasticsearch"),
-          pkg("Observability 可观测性", "observability"),
-          pkg("DevTools 开发工具", "devtools"),
-        ],
-      },
-      {
-        text: "AI 与机器人",
-        collapsed: true,
-        items: [
-          pkg("AI.Abstractions", "ai-abstractions"),
-          pkg("AI 集成", "ai"),
-          pkg("Bot 机器人核心", "bot"),
-          pkg("Bot.Email 邮件", "bot-email"),
-          pkg("Bot.Sms 短信", "bot-sms"),
-          pkg("Bot.Telegram", "bot-telegram"),
-          pkg("Bot.DingTalk 钉钉", "bot-dingtalk"),
-          pkg("Bot.Lark 飞书", "bot-lark"),
-          pkg("Bot.WeCom 企业微信", "bot-wecom"),
-        ],
-      },
-      {
-        text: "Web 层",
-        collapsed: true,
-        items: [
-          pkg("Web.Core Web 核心", "web-core"),
-          pkg("Web.Api 动态 API", "web-api"),
-          pkg("Web.Docs API 文档", "web-docs"),
-          pkg("Web.Gateway 网关", "web-gateway"),
-          pkg("Web.Grpc gRPC", "web-grpc"),
-          pkg("Web.RealTime 实时通信", "web-realtime"),
-          pkg("Web.Mcp MCP 服务端", "web-mcp"),
-        ],
-      },
-    ],
-  },
-  { text: "更新日志", link: "/cosmos/framework/changelog" },
-];
-// 视图组件：核心概念按序编号；组件参考另成一册
-const uiGuideChapters: [text: string, name: string][] = [
-  ["解剖与部件契约", "anatomy"],
-  ["状态机运行时", "machine"],
-  ["connect 与属性产出", "connect"],
-  ["行为原语", "behavior"],
-  ["浮层定位", "position"],
-  ["设计令牌与主题", "theme"],
-  ["皮肤与样式分层", "styling"],
-  ["无障碍与键盘规格", "a11y"],
-  ["诊断通道", "diagnostics"],
-  ["AI 对话内核", "ai"],
-  ["视觉层", "visual"],
-  ["测试与质量门禁", "testing"],
-];
-
-const uiSidebar: DefaultTheme.SidebarItem[] = [
-  {
-    text: "开始",
-    collapsed: false,
-    items: [
-      { text: "组件库简介", link: "/cosmos/ui/" },
-      { text: "架构总览", link: "/cosmos/ui/overview" },
-      { text: "安装与接入", link: "/cosmos/ui/installation" },
-      { text: "快速上手", link: "/cosmos/ui/quickstart" },
-    ],
-  },
-  {
-    text: "核心概念",
-    collapsed: false,
-    items: uiGuideChapters.map(([text, name], i) => ({
-      text: `${i + 1}. ${text}`,
-      link: `/cosmos/ui/guide/${name}`,
-    })),
-  },
-  {
-    text: "适配器",
-    collapsed: false,
-    items: [
-      { text: "Vue 适配器", link: "/cosmos/ui/adapters/vue" },
-      { text: "Web Components 适配器", link: "/cosmos/ui/adapters/wc" },
-    ],
-  },
-  {
-    text: "组件参考",
-    link: "/cosmos/ui/components/",
-    collapsed: false,
-    items: [
-      { text: "通用组件", link: "/cosmos/ui/components/general" },
-      { text: "数据录入", link: "/cosmos/ui/components/form" },
-      { text: "数据展示", link: "/cosmos/ui/components/data-display" },
-      { text: "导航", link: "/cosmos/ui/components/navigation" },
-      { text: "反馈与浮层", link: "/cosmos/ui/components/feedback" },
-      { text: "AI 对话", link: "/cosmos/ui/components/ai" },
-    ],
-  },
-  {
-    text: "参考",
-    collapsed: false,
-    items: [
-      { text: "包与依赖关系", link: "/cosmos/ui/npm-package-dependency" },
-      { text: "常见问题", link: "/cosmos/ui/faq" },
-    ],
-  },
-];
-// 生成手册条目：自动带序号前缀
-function manual(
-  dir: "backend" | "frontend",
-  entries: [text: string, name: string][]
-): DefaultTheme.SidebarItem[] {
-  return entries.map(([text, name], index) => ({
-    text: `${index + 1}. ${text}`,
-    link: `/cosmos/basic-app/${dir}/${name}`,
-  }));
-}
-
-const basicAppSidebar: DefaultTheme.SidebarItem[] = [
-  {
-    text: "开始",
-    collapsed: false,
-    items: [
-      { text: "应用简介", link: "/cosmos/basic-app/" },
-      { text: "为什么选择曦寒", link: "/cosmos/basic-app/why" },
-      { text: "系统概述", link: "/cosmos/basic-app/overview" },
-      { text: "开发环境", link: "/cosmos/basic-app/dev-environment" },
-      { text: "快速开始", link: "/cosmos/basic-app/getting-started" },
-      { text: "目录结构", link: "/cosmos/basic-app/project-structure" },
-      { text: "常见问题", link: "/cosmos/basic-app/faq" },
-    ],
-  },
-  {
-    text: "后端手册",
-    collapsed: false,
-    items: manual("backend", [
-      ["框架简介", "introduction"],
-      ["开发流程", "development"],
-      ["请求生命周期", "request-lifecycle"],
-      ["实体基类", "entity"],
-      ["数据库配置", "database"],
-      ["数据模型", "data-model"],
-      ["统一认证", "authentication"],
-      ["权限管理", "permission"],
-      ["数据权限", "data-permission"],
-      ["组织架构", "organization"],
-      ["多租户 SaaS", "multi-tenancy"],
-      ["缓存与异步", "caching"],
-      ["定时任务", "scheduling"],
-      ["工作流", "workflow"],
-      ["审批与约束", "approval"],
-      ["消息通知", "messaging"],
-      ["即时通讯", "realtime"],
-      ["文件与存储", "file"],
-      ["日志审计", "logging"],
-      ["健康与可观测性", "health-observability"],
-      ["系统设置", "settings"],
-      ["升级与迁移", "upgrade"],
-      ["开放接口", "open-api"],
-      ["代码生成", "code-generation"],
-      ["AI 能力", "ai"],
-    ]),
-  },
-  {
-    text: "前端手册",
-    collapsed: false,
-    items: manual("frontend", [
-      ["框架简介", "introduction"],
-      ["开发流程", "development"],
-      ["菜单与路由", "routing"],
-      ["服务端交互", "request"],
-      ["Schema 驱动页面", "schema-page"],
-      ["权限与脱敏", "permission"],
-      ["布局与主题", "theme"],
-      ["国际化", "i18n"],
-      ["字体图标", "icon"],
-      ["实时通信", "realtime"],
-      ["常用组件", "components"],
-    ]),
-  },
-  {
-    text: "参考",
-    collapsed: false,
-    items: [
-      { text: "接口对接指南", link: "/cosmos/basic-app/api-guide" },
-      { text: "配置参考", link: "/cosmos/basic-app/configuration" },
-      { text: "功能清单", link: "/cosmos/basic-app/features" },
-      { text: "部署", link: "/cosmos/basic-app/deployment" },
-      { text: "更新日志", link: "/cosmos/basic-app/changelog" },
-    ],
-  },
-];
-
-// cosmos 根下的独立页原本没有配 sidebar，会落到默认主题的窄列布局
 const startSidebar: DefaultTheme.SidebarItem[] = [
   {
     text: "开始",
@@ -385,6 +31,16 @@ const startSidebar: DefaultTheme.SidebarItem[] = [
     items: [
       { text: "项目简介", link: "/cosmos/guide" },
       { text: "快速上手", link: "/cosmos/getstart" },
+      { text: "生态总览", link: "/cosmos/ecosystem" },
+    ],
+  },
+  {
+    text: "三大板块文档",
+    collapsed: false,
+    items: [
+      { text: "🧩 开发框架", link: docSites.framework },
+      { text: "🎨 视图组件", link: docSites.ui },
+      { text: "🏠 基础应用", link: docSites.basicApp },
     ],
   },
 ];
@@ -405,18 +61,15 @@ const contributeSidebar: DefaultTheme.SidebarItem[] = [
 const nav: DefaultTheme.NavItem[] = [
   {
     text: withNavBadge("🧩 开发框架", releases.framework),
-    link: "/cosmos/framework",
-    activeMatch: "/cosmos/framework/",
+    link: docSites.framework,
   },
   {
     text: withNavBadge("🎨 视图组件", releases.ui),
-    link: "/cosmos/ui",
-    activeMatch: "/cosmos/ui/",
+    link: docSites.ui,
   },
   {
     text: withNavBadge("🏠 基础应用", releases.basicApp),
-    link: "/cosmos/basic-app",
-    activeMatch: "/cosmos/basic-app/",
+    link: docSites.basicApp,
   },
   {
     text: "探索未知",
@@ -548,23 +201,21 @@ const nav: DefaultTheme.NavItem[] = [
     items: [
       {
         text: "开发框架更新日志",
-        link: "/cosmos/framework/changelog",
+        link: `${docSites.framework}/changelog`,
       },
       {
         text: "基础应用更新日志",
-        link: "/cosmos/basic-app/changelog",
+        link: `${docSites.basicApp}/changelog`,
       },
     ],
   },
 ];
-const sidebar: DefaultTheme.Sidebar = {
-  "/cosmos/framework/": frameworkSidebar,
-  "/cosmos/ui/": uiSidebar,
-  "/cosmos/basic-app/": basicAppSidebar,
 
-  // cosmos 根下的独立页：按前缀逐页登记（VitePress 取路径段最多的键，不会与上面三个目录键相冲）
+// cosmos 根下的独立页原本没有配 sidebar，会落到默认主题的窄列布局
+const sidebar: DefaultTheme.Sidebar = {
   "/cosmos/guide": startSidebar,
   "/cosmos/getstart": startSidebar,
+  "/cosmos/ecosystem": startSidebar,
   "/cosmos/code-of-conduct": contributeSidebar,
   "/cosmos/contributing": contributeSidebar,
   "/cosmos/contributors": contributeSidebar,

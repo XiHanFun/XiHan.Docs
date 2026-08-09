@@ -112,7 +112,7 @@ public class HelloAppService : ApplicationServiceBase
 
 `dotnet run` 后打开 `https://localhost:<端口>/scalar` 即可在线调用。
 
-> 更详细的分步讲解、数据访问接入与可选模块清单，见[框架快速上手](./framework/quickstart.md)。
+> 更详细的分步讲解、数据访问接入与可选模块清单，见[框架快速上手](https://framework.docs.xihanfun.com/quickstart)。
 
 ### 使用 XiHan.UI (前端组件)
 
@@ -177,6 +177,10 @@ pnpm dev
 
 ## 下一步
 
-- 探索 [Framework](./framework/index.md) 了解后端开发框架
-- 探索 [UI](./ui/index.md) 了解前端视图组件
-- 探索 [BasicApp](./basic-app/index.md) 了解完整应用案例
+三个仓库各有独立文档站，从这里进去：
+
+- 探索 [开发框架文档](https://framework.docs.xihanfun.com/) 了解后端开发框架
+- 探索 [视图组件文档](https://ui.docs.xihanfun.com/) 了解前端视图组件
+- 探索 [基础应用文档](https://basicapp.docs.xihanfun.com/) 了解完整应用案例
+
+三者的关系与选型建议见[生态总览](./ecosystem)。
