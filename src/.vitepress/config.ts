@@ -157,19 +157,19 @@ const nav: DefaultTheme.NavItem[] = [
         ],
       },
       {
-        text: "Atomgit同步备库(国内)",
+        text: "GitCode同步备库(国内)",
         items: [
           {
             text: "后端 | 开发框架",
-            link: "https://atomgit.com/XiHanFun/XiHan.Framework",
+            link: "https://gitcode.com/XiHanFun/XiHan.Framework",
           },
           {
             text: "前端 | 视图组件",
-            link: "https://atomgit.com/XiHanFun/XiHan.UI",
+            link: "https://gitcode.com/XiHanFun/XiHan.UI",
           },
           {
             text: "用例 | 基础应用",
-            link: "https://atomgit.com/XiHanFun/XiHan.BasicApp",
+            link: "https://gitcode.com/XiHanFun/XiHan.BasicApp",
           },
         ],
       },
@@ -279,7 +279,7 @@ export default defineConfig({
     socialLinks: [
       { icon: "github", link: "https://github.com/XiHanFun" },
       { icon: "gitee", link: "https://gitee.com/XiHanFun" },
-      { icon: "git", link: "https://atomgit.com/XiHanFun" },
+      { icon: "gitcode", link: "https://gitcode.com/XiHanFun" },
     ],
     search: {
       provider: "local",

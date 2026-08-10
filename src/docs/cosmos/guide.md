@@ -67,7 +67,7 @@ index: false
 
 - GitHub：https://github.com/XiHanFun
 - Gitee：https://gitee.com/XiHanFun
-- AtomGit：https://atomgit.com/XiHanFun
+- GitCode：https://gitcode.com/XiHanFun
 
 以上平台均为官方代码托管仓库，欢迎 Star、Fork、Issue 与 Pull Request。
 
@@ -339,7 +339,7 @@ BasicApp 验证实践。
 - **.NET** 与 **C#** —— 提供稳定、现代、高性能的开发平台。
 - **Vue** —— 构建现代 Web 应用的重要基石。
 - **Visual Studio**、**JetBrains Rider**、**Visual Studio Code** —— 提供优秀的开发体验。
-- **Git**、**GitHub**、**Gitee**、**AtomGit** —— 承载开源社区的协作与分享。
+- **Git**、**GitHub**、**Gitee**、**GitCode** —— 承载开源社区的协作与分享。
 - **Vite**、**VitePress**、**TypeScript** 等优秀的开源项目，为前端生态提供了强大的支持。
 
 最后，感谢所有曾给予我帮助的人。

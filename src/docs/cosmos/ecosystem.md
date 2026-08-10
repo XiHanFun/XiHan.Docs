@@ -78,4 +78,4 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 
 ## 参与进来
 
-三个仓库在 GitHub（主库）、Gitee 与 AtomGit（同步备库）上都可访问，Issue 与 PR 三个平台都收。共同的约定见[参与贡献指南](./contributing)与[行为公约](./code-of-conduct)。
+三个仓库在 GitHub（主库）、Gitee 与 GitCode（同步备库）上都可访问，Issue 与 PR 三个平台都收。共同的约定见[参与贡献指南](./contributing)与[行为公约](./code-of-conduct)。
