@@ -116,42 +116,50 @@ public class HelloAppService : ApplicationServiceBase
 
 ### 使用 XiHan.UI (前端组件)
 
-> XiHan.UI 仍在积极重构中，当前全局注册的组件为 `XhButton`、`XhButtonGroup`、`XhIcon`，其余组件尚未稳定。
+> 当前是 `1.0.0-alpha.1` 预发布：不承诺语义化版本，接口仍会调整，请勿在生产环境依赖。
+>
+> npm 上的 `xihan-ui`（单包，最后一版 `0.9.8`）是重构前的旧实现，已全部标记弃用，与下面这套不是同一个东西。
 
-1. 安装组件库：
+1. 安装适配器与默认皮肤（包按 `@xihan-ui/*` 分发，装哪几个取决于用哪个适配器）：
 
 ```bash
-# 使用 npm
-npm install xihan-ui
+# Vue 3 项目
+pnpm add @xihan-ui/vue @xihan-ui/styles
 
-# 使用 pnpm
-pnpm add xihan-ui
+# 原生 / 非 Vue 项目：自定义元素
+pnpm add @xihan-ui/web-components @xihan-ui/styles
 ```
 
-2. 在 Vue 项目中全局引入（`install` 会自动初始化主题系统）：
+2. 在入口引入令牌与皮肤，并初始化主题：
 
-```js
-// main.js
+```ts
+// main.ts
+import { createThemeController } from "@xihan-ui/tokens/runtime";
 import { createApp } from "vue";
-import XiHanUI from "xihan-ui";
 import App from "./App.vue";
 
-const app = createApp(App);
-app.use(XiHanUI);
-app.mount("#app");
+// 令牌必须在皮肤之前：皮肤里不写兜底值
+import "@xihan-ui/tokens/tokens.css";
+import "@xihan-ui/styles";
+
+createThemeController({ storageKey: "app-theme" });
+
+createApp(App).mount("#app");
 ```
 
-3. 按需引入组件：
+3. 组件从主入口按需取，不需要注册插件（包声明了 `sideEffects: false`，打包器会摇掉没用到的）：
 
 ```vue
 <template>
-  <Button type="primary">XiHan Button</Button>
+  <XhButton variant="solid" tone="brand">曦寒按钮</XhButton>
 </template>
 
-<script setup>
-import { Button } from "xihan-ui";
+<script setup lang="ts">
+import { XhButton } from "@xihan-ui/vue";
 </script>
 ```
+
+> 完整的安装选项、样式的三种接法、服务端渲染注意事项，见[组件库安装与接入](https://ui.docs.xihanfun.com/installation)。
 
 ### 使用 XiHan.BasicApp (完整应用)
 

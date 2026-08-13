@@ -36,7 +36,7 @@ export interface ProductRelease {
 }
 
 export interface NavBadge {
-  /** 徽章文案，如 "v3.5.0"、"v0.9.8-alpha" */
+  /** 徽章文案，如 "v3.11.1"、"v1.0.0-alpha.1" */
   text: string;
   /** 徽章配色 */
   type: NavBadgeType;
@@ -45,18 +45,18 @@ export interface NavBadge {
 /**
  * 各产品的发布状态。
  *
- * 三者是独立发版的仓库，framework 与 basicApp 当前恰好同为 3.11.0，
+ * 三者是独立发版的仓库，framework 与 basicApp 当前恰好同为 3.11.1，
  * 不要合并成一个常量，也不要复用文档站自身 package.json 的版本号。真源分别是：
  *   framework → XiHan.Framework/framework/props/version.props
  *   ui        → XiHan.UI/ui/packages/ 下各库包的 package.json（changesets fixed 版本组，全部同号）
  *   basicApp  → XiHan.BasicApp/backend/props/version.props
  *
- * ui 当前尚未发版：库包版本仍是 0.0.0，未发布到 npm，下方 0.9.8 是重构前遗留的号。
+ * ui 走 changesets 的 prerelease 模式，版本号自带 -alpha.N 后缀，不再另加阶段后缀。
  */
 export const releases = {
-  framework: { version: "3.11.0", stage: ReleaseStage.Release },
-  ui: { version: "0.9.8", stage: ReleaseStage.Alpha },
-  basicApp: { version: "3.11.0", stage: ReleaseStage.Release },
+  framework: { version: "3.11.1", stage: ReleaseStage.Release },
+  ui: { version: "1.0.0-alpha.1", stage: ReleaseStage.Alpha },
+  basicApp: { version: "3.11.1", stage: ReleaseStage.Release },
 } satisfies Record<string, ProductRelease>;
 
 /** 阶段 → 版本后缀与徽章配色 */
@@ -68,10 +68,11 @@ const stageStyles: Record<ReleaseStage, { suffix: string; badge: NavBadgeType }>
   [ReleaseStage.Release]: { suffix: "", badge: "tip" },
 };
 
-/** 由发布状态推导徽章 */
+/** 由发布状态推导徽章。版本号自带预发布标记时不再追加阶段后缀，否则会出现 v1.0.0-alpha.1-alpha */
 export function toNavBadge(release: ProductRelease): NavBadge {
   const { suffix, badge } = stageStyles[release.stage];
-  return { text: `v${release.version}${suffix}`, type: badge };
+  const text = release.version.includes("-") ? `v${release.version}` : `v${release.version}${suffix}`;
+  return { text, type: badge };
 }
 
 /** 把徽章拼到导航标题末尾 */

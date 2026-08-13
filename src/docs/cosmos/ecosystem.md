@@ -28,7 +28,7 @@ index: false
 快速、轻量、高效、用心的框架无关跨端组件库。是面向企业级前端的设计系统运行时，无头内核，Vue 3 与 Web Components 适配器。提供基础组件与 AI 组件，覆盖从中后台到 AI 对话的界面构建场景。属于曦寒懿（XiHanFun）开源生态的组件层，拥有底座、组件、应用的完整生态。
 
 ::: warning 实验阶段
-库包尚未发布到 npm，版本仍是 `0.0.0`，请勿在生产环境依赖。当前状态见[组件库简介](https://ui.docs.xihanfun.com/)。
+15 个公开包已发布到 npm，当前版本 `1.0.0-alpha.1`。这是预发布：不承诺语义化版本，接口仍会调整，请勿在生产环境依赖。当前状态见[组件库简介](https://ui.docs.xihanfun.com/)。
 :::
 
 ### XiHan.BasicApp · 基础应用
@@ -72,7 +72,7 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 
 - Framework 发布到 [NuGet](https://www.nuget.org/profiles/XiHanFun)，版本真源是 `framework/props/version.props`
 - BasicApp 随仓库发布，版本真源是 `backend/props/version.props`
-- UI 尚未发布到 [npm](https://www.npmjs.com/org/xihan-ui)
+- UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，15 个公开包由 changesets 的 `fixed` 组锁步同版，版本真源是 `ui/packages/*/*/package.json`
 
 各站导航栏右上角的徽章显示的就是该项目当前的版本与发布阶段。
 
