@@ -116,8 +116,6 @@ public class HelloAppService : ApplicationServiceBase
 
 ### 使用 XiHan.UI (前端组件)
 
-> 当前是 `1.0.0-alpha.1` 预发布：不承诺语义化版本，接口仍会调整，请勿在生产环境依赖。
->
 > npm 上的 `xihan-ui`（单包，最后一版 `0.9.8`）是重构前的旧实现，已全部标记弃用，与下面这套不是同一个东西。
 
 1. 安装适配器与默认皮肤（包按 `@xihan-ui/*` 分发，装哪几个取决于用哪个适配器）：

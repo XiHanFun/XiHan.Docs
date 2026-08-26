@@ -204,6 +204,10 @@ const nav: DefaultTheme.NavItem[] = [
         link: `${docSites.framework}/changelog`,
       },
       {
+        text: "视图组件更新日志",
+        link: `${docSites.ui}/changelog`,
+      },
+      {
         text: "基础应用更新日志",
         link: `${docSites.basicApp}/changelog`,
       },

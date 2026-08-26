@@ -27,10 +27,6 @@ index: false
 
 快速、轻量、高效、用心的框架无关跨端组件库。是面向企业级前端的设计系统运行时，无头内核，Vue 3 与 Web Components 适配器。提供基础组件与 AI 组件，覆盖从中后台到 AI 对话的界面构建场景。属于曦寒懿（XiHanFun）开源生态的组件层，拥有底座、组件、应用的完整生态。
 
-::: warning 实验阶段
-15 个公开包已发布到 npm，当前版本 `1.0.0-alpha.1`。这是预发布：不承诺语义化版本，接口仍会调整，请勿在生产环境依赖。当前状态见[组件库简介](https://ui.docs.xihanfun.com/)。
-:::
-
 ### XiHan.BasicApp · 基础应用
 
 基于 .Net + Vue 的超高颜值中后台内核。开箱即用，提供 RBAC + ABAC 混合权限管理、多租户隔离、代码生成、实时通信、灰度发布、AI 等核心能力，满足新型企业级中后台管理场景。属于曦寒懿（XiHanFun）开源生态的基础应用，拥有底座、组件、应用的完整生态。
@@ -42,17 +38,17 @@ index: false
       │        XiHan.BasicApp         │  企业级中后台，可直接投产
       │  后端 modules/  ·  前端 src/  │
       └───────┬───────────────┬───────┘
-              │ 引用 NuGet    │ 前端自成一套（Naive UI）
+              │ 引用 NuGet    │ 引用 npm 包
       ┌───────▼───────┐  ┌────▼─────────────┐
-      │ XiHan.Framework│  │   XiHan.UI      │  独立演进，未被 BasicApp 使用
+      │ XiHan.Framework│  │   XiHan.UI      │
       │  .NET 模块包   │  │  设计系统运行时  │
       └───────────────┘  └─────────────────┘
 ```
 
-两条事实值得先说清楚，免得按图索骥时走错路：
+两条依赖关系值得先说清楚：
 
 - **BasicApp 的后端确实建立在 Framework 之上**：它引用框架的 NuGet 包，认证、授权、数据访问、多租户、动态 API 等底层能力都来自框架，BasicApp 只写业务。想看框架能力在真实业务里怎么落地，读 BasicApp 的源码是最快的路径。
-- **BasicApp 的前端目前不使用 XiHan.UI**：它基于 Naive UI 构建。BasicApp 前端与 XiHan.UI 是两条独立演进的线，不要指望在 BasicApp 里找到 XiHan.UI 的用法示例。
+- **BasicApp 的前端同样建立在 UI 之上**：自 BasicApp v4.0.0 起，前端整体用 XiHan.UI 重建，naive-ui 全量下线。想看组件库在真实业务里怎么用，读 BasicApp 前端的源码是最快的路径。
 
 Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是前端库，各自可以单独使用。
 
@@ -72,7 +68,7 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 
 - Framework 发布到 [NuGet](https://www.nuget.org/profiles/XiHanFun)，版本真源是 `framework/props/version.props`
 - BasicApp 随仓库发布，版本真源是 `backend/props/version.props`
-- UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，15 个公开包由 changesets 的 `fixed` 组锁步同版，版本真源是 `ui/packages/*/*/package.json`
+- UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，17 个公开包由 changesets 的 `fixed` 组锁步同版，版本真源是 `ui/packages/*/*/package.json`
 
 各站导航栏右上角的徽章显示的就是该项目当前的版本与发布阶段。
 
