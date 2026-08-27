@@ -1,8 +1,8 @@
 import { DefaultTheme, HeadConfig, defineConfig } from "vitepress";
 import { releases, withNavBadge } from "./versions";
 
-const title: string = "曦寒官方文档";
-const description: string = "开发框架和组件库";
+const title: string = "曦寒懿官方文档";
+const description: string = "拥有底座、组件、应用完整生态";
 const keywords: string = "曦寒,曦寒懿,开发框架,组件库,官方文档,开源,XiHanFun";
 const logo: string = "/images/logo.png";
 const head: HeadConfig[] = [

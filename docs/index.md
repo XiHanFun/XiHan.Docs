@@ -1,12 +1,11 @@
 ---
 layout: home
-title: 曦寒官方文档
-titleTemplate: 快速 轻量 高效 用心的开发框架和组件库
+title: 曦寒懿官方文档
+titleTemplate: 拥有底座、组件、应用完整生态
 
 hero:
-  name: 曦寒
-  text: 快速 轻量 高效 用心的开发框架和组件库
-  tagline: 基于 DotNet 和 Vue 构建
+  name: 曦寒懿
+  text: 拥有底座、组件、应用完整生态
   image:
     src: /images/logo.png
     alt: 曦寒
