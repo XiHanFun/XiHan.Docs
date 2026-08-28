@@ -52,7 +52,7 @@ export interface NavBadge {
  *   basicApp  → XiHan.BasicApp/backend/props/version.props
  */
 export const releases = {
-  framework: { version: "3.14.0", stage: ReleaseStage.Release },
+  framework: { version: "4.0.0", stage: ReleaseStage.Release },
   ui: { version: "1.0.0", stage: ReleaseStage.Release },
   basicApp: { version: "4.0.0", stage: ReleaseStage.Release },
 } satisfies Record<string, ProductRelease>;
