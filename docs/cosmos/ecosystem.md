@@ -68,7 +68,7 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 
 - Framework 发布到 [NuGet](https://www.nuget.org/profiles/XiHanFun)，版本真源是 `framework/props/version.props`
 - BasicApp 随仓库发布，版本真源是 `backend/props/version.props`
-- UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，17 个公开包由 changesets 的 `fixed` 组锁步同版，版本真源是 `ui/packages/*/*/package.json`
+- UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，18 个公开包由 changesets 的 `fixed` 组锁步同版，版本真源是 `ui/packages/*/*/package.json`
 
 各站导航栏右上角的徽章显示的就是该项目当前的版本与发布阶段。
 

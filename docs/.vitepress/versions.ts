@@ -53,7 +53,7 @@ export interface NavBadge {
  */
 export const releases = {
   framework: { version: "4.0.0", stage: ReleaseStage.Release },
-  ui: { version: "1.0.0", stage: ReleaseStage.Release },
+  ui: { version: "1.1.0", stage: ReleaseStage.Release },
   basicApp: { version: "4.0.0", stage: ReleaseStage.Release },
 } satisfies Record<string, ProductRelease>;
 
