@@ -31,7 +31,7 @@ features:
 
   - title: 视图组件
     icon: 🎨
-    details: 框架无关的组件库，69 个组件的状态机与无障碍逻辑沉在无头内核，Vue 与 Web Components 只是两层薄适配器；样式由设计令牌与纯 CSS 皮肤驱动，可整包替换。
+    details: 框架无关的组件库，121 个组件的状态机与无障碍逻辑沉在无头内核，Vue 与 Web Components 只是两层薄适配器；样式由设计令牌与纯 CSS 皮肤驱动，可整包替换。
     link: https://ui.docs.xihanfun.com
     linkText: "浏览视图组件文档"
 
