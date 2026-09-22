@@ -124,23 +124,31 @@ public class HelloAppService : ApplicationServiceBase
 # Vue 3 项目
 pnpm add @xihan-ui/vue @xihan-ui/styles
 
-# 原生 / 非 Vue 项目：自定义元素
+# React 19 项目
+pnpm add @xihan-ui/react @xihan-ui/styles
+
+# 原生 / 其它框架：自定义元素
 pnpm add @xihan-ui/web-components @xihan-ui/styles
 ```
 
-2. 在入口引入令牌与皮肤，并初始化主题：
+2. 在入口引入皮肤，并初始化视觉环境：
 
 ```ts
 // main.ts
-import { createThemeController } from "@xihan-ui/tokens/runtime";
+import { createVisualEnvironmentController } from "@xihan-ui/tokens/runtime";
 import { createApp } from "vue";
 import App from "./App.vue";
 
-// 令牌必须在皮肤之前：皮肤里不写兜底值
-import "@xihan-ui/tokens/tokens.css";
+// 皮肤入口自带层序声明与令牌，只引这一行；单独引 tokens.css 是只要令牌不要皮肤的路径
 import "@xihan-ui/styles";
 
-createThemeController({ storageKey: "app-theme" });
+// 把七轴视觉环境写到 <html> 上，并显式处理持久化失败
+createVisualEnvironmentController({
+  root: document.documentElement,
+  storageKey: "app-visual-environment",
+  onStorageError: detail => console.error("视觉偏好持久化失败", detail),
+  initial: { mode: "system", motion: "system", transparency: "system" },
+});
 
 createApp(App).mount("#app");
 ```
