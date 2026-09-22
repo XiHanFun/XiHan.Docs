@@ -14,7 +14,7 @@ index: false
 | 定位 | 项目 | 技术栈 | 文档站 |
 | --- | --- | --- | --- |
 | 后端基座 | [XiHan.Framework](https://github.com/XiHanFun/XiHan.Framework) | .NET 10 | [framework.docs.xihanfun.com](https://framework.docs.xihanfun.com/) |
-| 组件层 | [XiHan.UI](https://github.com/XiHanFun/XiHan.UI) | TypeScript · Vue 3 · Web Components | [ui.docs.xihanfun.com](https://ui.docs.xihanfun.com/) |
+| 组件层 | [XiHan.UI](https://github.com/XiHanFun/XiHan.UI) | TypeScript · Vue 3 · React · Web Components | [ui.docs.xihanfun.com](https://ui.docs.xihanfun.com/) |
 | 基础应用 | [XiHan.BasicApp](https://github.com/XiHanFun/XiHan.BasicApp) | .NET 10 + Vue 3 | [basicapp.docs.xihanfun.com](https://basicapp.docs.xihanfun.com/) |
 
 ### XiHan.Framework · 后端基座
@@ -25,7 +25,7 @@ index: false
 
 ### XiHan.UI · 组件层
 
-快速、轻量、高效、用心的框架无关跨端组件库。是面向企业级前端的设计系统运行时，无头内核，Vue 3 与 Web Components 适配器。提供基础组件与 AI 组件，覆盖从中后台到 AI 对话的界面构建场景。属于曦寒懿（XiHanFun）开源生态的组件层，拥有底座、组件、应用的完整生态。
+快速、轻量、高效、用心的框架无关跨端组件库。是面向企业级前端的设计系统运行时，无头内核，Vue 3、React 与 Web Components 三端适配器。提供基础组件与 AI 组件，覆盖从中后台到 AI 对话的界面构建场景。属于曦寒懿（XiHanFun）开源生态的组件层，拥有底座、组件、应用的完整生态。
 
 ### XiHan.BasicApp · 基础应用
 
@@ -68,7 +68,7 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 
 - Framework 发布到 [NuGet](https://www.nuget.org/profiles/XiHanFun)，版本真源是 `framework/props/version.props`
 - BasicApp 随仓库发布，版本真源是 `backend/props/version.props`
-- UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，18 个公开包始终同一个版本号，版本真源是 `ui/packages/*/*/package.json`
+- UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，17 个公开包始终同一个版本号，版本真源是 `ui/packages/*/*/package.json`
 
 各站导航栏右上角的徽章显示的就是该项目当前的版本与发布阶段。
 
