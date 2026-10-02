@@ -142,8 +142,8 @@ table {
   margin-top: 4px;
 }
 
-/* 主导航三大板块：标题右上方的版本徽章
-   文案（版本号 + 阶段后缀）与配色来自 .vitepress/versions.ts，随 nav 的 item.text 一同渲染，
+/* 主导航三大板块：标题右上方的发布阶段徽章
+   文案（发布阶段）与配色来自 .vitepress/versions.ts，随 nav 的 item.text 一同渲染，
    宽屏导航栏与窄屏汉堡菜单共用同一份标题，这里只负责外观。
    修饰类与 ReleaseStage 的映射：稳定版 tip、预览/候选版 warning、开发/测试版 danger。 */
 .xh-nav-badge {
