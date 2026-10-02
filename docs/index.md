@@ -31,7 +31,7 @@ features:
 
   - title: 视图组件
     icon: 🎨
-    details: 框架无关的组件库，134 个组件的状态机与无障碍逻辑沉在无头内核，Vue、React 与 Web Components 只是三层薄适配器；样式由设计令牌与纯 CSS 皮肤驱动，可整包替换。
+    details: 框架无关的 Headless UI 组件库，组件的状态机与无障碍逻辑沉在无头内核，Vue、React 与 Web Components 只是薄适配器；样式由设计令牌与纯 CSS 皮肤驱动，可整包替换。
     link: https://ui.docs.xihanfun.com
     linkText: "浏览视图组件文档"
 
@@ -49,7 +49,7 @@ features:
 
   - title: 性能出色灵活多变
     icon: 🚀
-    details: 前端由 Vue3.5 驱动，经过编译器优化、完全响应式的渲染系统，几乎不需要手动优化。丰富的、可渐进式集成的生态系统，可以根据应用规模在库和框架间切换自如。
+    details: 前端由 Vue 驱动，经过编译器优化、完全响应式的渲染系统，几乎不需要手动优化。丰富的、可渐进式集成的生态系统，可以根据应用规模在库和框架间切换自如。
     link: https://cn.vuejs.org/
     linkText: "了解 Vue"
 

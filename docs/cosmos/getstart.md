@@ -121,10 +121,10 @@ public class HelloAppService : ApplicationServiceBase
 1. 安装适配器与默认皮肤（包按 `@xihan-ui/*` 分发，装哪几个取决于用哪个适配器）：
 
 ```bash
-# Vue 3 项目
+# Vue 项目
 pnpm add @xihan-ui/vue @xihan-ui/styles
 
-# React 19 项目
+# React 项目
 pnpm add @xihan-ui/react @xihan-ui/styles
 
 # 原生 / 其它框架：自定义元素

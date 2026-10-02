@@ -14,19 +14,19 @@ XiHanFun 开源组织的贡献者。
 
 ### XiHan.Framework
 
-XiHan 框架仓库。基于 DotNet 构建的快速、轻量、高效的专用开发框架。
+XiHan.Framework 仓库。快速、轻量、高效、用心的 .NET 现代模块化开发框架。
 
 [![贡献者](https://img.shields.io/github/contributors/XiHanFun/XiHan.Framework?style=flat-square)](https://github.com/XiHanFun/XiHan.Framework/graphs/contributors)
 
 ### XiHan.UI
 
-XiHan.UI 仓库。快速、轻量、高效、用心的框架无关跨端组件库。
+XiHan.UI 仓库。快速、轻量、高效、用心的框架无关 Headless UI 组件库。
 
 [![贡献者](https://img.shields.io/github/contributors/XiHanFun/XiHan.UI?style=flat-square)](https://github.com/XiHanFun/XiHan.UI/graphs/contributors)
 
 ### XiHan.BasicApp
 
-XiHan 应用仓库。基于 XiHan.Framework 和 XiHan.UI 构建的通用综合管理系统。
+XiHan.BasicApp 仓库。基于 XiHan.Framework 和 XiHan.UI 的超高颜值通用中后台内核。
 
 [![贡献者](https://img.shields.io/github/contributors/XiHanFun/XiHan.BasicApp?style=flat-square)](https://github.com/XiHanFun/XiHan.BasicApp/graphs/contributors)
 

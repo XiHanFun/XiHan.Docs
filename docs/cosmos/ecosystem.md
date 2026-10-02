@@ -13,23 +13,23 @@ index: false
 
 | 定位 | 项目 | 技术栈 | 文档站 |
 | --- | --- | --- | --- |
-| 后端基座 | [XiHan.Framework](https://github.com/XiHanFun/XiHan.Framework) | .NET 10 | [framework.docs.xihanfun.com](https://framework.docs.xihanfun.com/) |
-| 组件层 | [XiHan.UI](https://github.com/XiHanFun/XiHan.UI) | TypeScript · Vue 3 · React · Web Components | [ui.docs.xihanfun.com](https://ui.docs.xihanfun.com/) |
-| 基础应用 | [XiHan.BasicApp](https://github.com/XiHanFun/XiHan.BasicApp) | .NET 10 + Vue 3 | [basicapp.docs.xihanfun.com](https://basicapp.docs.xihanfun.com/) |
+| 后端基座 | [XiHan.Framework](https://github.com/XiHanFun/XiHan.Framework) | .NET | [framework.docs.xihanfun.com](https://framework.docs.xihanfun.com/) |
+| 前端基座 | [XiHan.UI](https://github.com/XiHanFun/XiHan.UI) | TypeScript · Vue · React · Web Components | [ui.docs.xihanfun.com](https://ui.docs.xihanfun.com/) |
+| 基础应用 | [XiHan.BasicApp](https://github.com/XiHanFun/XiHan.BasicApp) | .NET + Vue | [basicapp.docs.xihanfun.com](https://basicapp.docs.xihanfun.com/) |
 
 ### XiHan.Framework · 后端基座
 
-快速、轻量、高效、用心的 .NET 现代模块化开发框架。是面向企业级应用的模块化后端框架，框架优先使用 .NET 原生功能，减少第三方依赖，理念现代、开箱即用、模块清晰、依赖可控、扩展可维护。属于曦寒懿（XiHanFun）开源生态的后端基座，拥有底座、组件、应用的完整生态。
+快速、轻量、高效、用心的 .NET 现代模块化开发框架。是面向企业级应用的模块化后端框架，框架优先使用 .NET 原生功能，减少第三方依赖，理念现代、开箱即用、模块清晰、依赖可控、扩展可维护。曦寒懿（XiHanFun）开源生态的后端基座。
 
 按需引用的 NuGet 包，模块之间用 `[DependsOn]` 声明依赖，启动时自动拓扑排序装配。
 
-### XiHan.UI · 组件层
+### XiHan.UI · 前端基座
 
-快速、轻量、高效、用心的框架无关跨端组件库。是面向企业级前端的设计系统运行时，无头内核，Vue 3、React 与 Web Components 三端适配器。提供基础组件与 AI 组件，覆盖从中后台到 AI 对话的界面构建场景。属于曦寒懿（XiHanFun）开源生态的组件层，拥有底座、组件、应用的完整生态。
+快速、轻量、高效、用心的框架无关 Headless UI 组件库。是面向企业级前端的设计系统运行时，无头内核，多框架适配器。提供基础组件与 AI 组件，覆盖从中后台到 AI 对话的界面构建场景。曦寒懿（XiHanFun）开源生态的前端基座。
 
 ### XiHan.BasicApp · 基础应用
 
-基于 .Net + Vue 的超高颜值通用中后台内核。开箱即用，提供 RBAC + ABAC 混合权限管理、多租户隔离、代码生成、实时通信、灰度发布、AI 等核心能力，满足新型企业级中后台管理场景。属于曦寒懿（XiHanFun）开源生态的基础应用，拥有底座、组件、应用的完整生态。
+基于 XiHan.Framework 和 XiHan.UI 的超高颜值通用中后台内核。开箱即用，提供 RBAC + ABAC 混合权限管理、多租户隔离、代码生成、实时通信、灰度发布、AI 等核心能力，满足新型企业级中后台管理场景。属于曦寒懿（XiHanFun）开源生态的基础应用。
 
 ## 彼此什么关系
 
@@ -68,7 +68,7 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 
 - Framework 发布到 [NuGet](https://www.nuget.org/profiles/XiHanFun)，版本真源是 `framework/props/version.props`
 - BasicApp 随仓库发布，版本真源是 `backend/props/version.props`
-- UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，17 个公开包始终同一个版本号，版本真源是 `ui/packages/*/*/package.json`
+- UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，全部公开包始终同一个版本号，版本真源是 `ui/packages/*/*/package.json`
 
 各站导航栏右上角的徽章显示的就是该项目当前的版本与发布阶段。
 

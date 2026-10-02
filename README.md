@@ -111,10 +111,10 @@ pnpm run preview
 
 - **自定义域名**：仓库根目录 [`CNAME`](./CNAME) 配置为 `docs.xihanfun.com`，用于 GitHub Pages 绑定自定义域名。
 - **CI/CD**：[`.github/workflows/deploy-docs.yml`](./.github/workflows/deploy-docs.yml) 在 `push` / `pull_request` 到 `main` 分支时触发，流程为：
-  1. 拉取代码（`actions/checkout@v5`，`fetch-depth: 0`）
-  2. 安装 Node.js 24（`actions/setup-node@v5`）与 `pnpm@11`
+  1. 拉取代码（`actions/checkout`，`fetch-depth: 0`）
+  2. 安装 Node.js（`actions/setup-node`）与 pnpm，版本以工作流文件为准
   3. 在 `docs/` 目录下执行 `pnpm install` 与 `pnpm run build`
-  4. 通过 `JamesIves/github-pages-deploy-action@v4` 将 `docs/.vitepress/dist` 发布到 `gh-pages` 分支
+  4. 通过 `JamesIves/github-pages-deploy-action` 将 `docs/.vitepress/dist` 发布到 `gh-pages` 分支
 - GitHub Pages 从 `gh-pages` 分支提供站点内容，结合 `CNAME` 对外暴露为 `https://docs.xihanfun.com`。
 
 ## 相关项目
