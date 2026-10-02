@@ -13,107 +13,145 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; background: #eceaf3; font-family:'Manrope',sans-serif; padding:56px; display:flex; flex-direction:column; align-items:center; gap:44px; }
+    body { margin: 0; background: #eceaf3; font-family: 'Manrope', 'Microsoft YaHei UI', 'PingFang SC', 'Noto Sans SC', sans-serif; padding: 56px; display: flex; flex-direction: column; align-items: center; gap: 44px; }
     a { color: oklch(0.55 0.18 295); }
     a:hover { color: oklch(0.48 0.19 295); }
+
+    /* 三张横幅共用一套版式，配色由各自的 data-banner 变量给出 */
+    .banner { width: 1280px; height: 320px; position: relative; overflow: hidden; background: var(--bg); flex-shrink: 0; }
+    .banner-blob { position: absolute; border-radius: 50%; filter: blur(4px); }
+    .banner-blob-a { width: 420px; height: 420px; right: -90px; top: -140px; background: radial-gradient(circle at 30% 30%, var(--blob-a), transparent 62%); }
+    .banner-blob-b { width: 380px; height: 380px; right: 120px; bottom: -180px; background: radial-gradient(circle at 40% 40%, var(--blob-b), transparent 60%); }
+    .banner-dots { position: absolute; inset: 0; background-image: radial-gradient(var(--dots) 1.4px, transparent 1.4px); background-size: 26px 26px; mask-image: linear-gradient(90deg, transparent, #000 55%); }
+    .banner-body { position: relative; height: 100%; display: flex; align-items: center; padding: 0 64px; gap: 52px; }
+    .banner-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+    .banner-eyebrow { display: flex; align-items: center; gap: 9px; font-family: 'IBM Plex Mono', 'Microsoft YaHei UI', 'PingFang SC', monospace; font-size: 14px; letter-spacing: 0.14em; color: var(--eyebrow); text-transform: uppercase; }
+    .banner-eyebrow::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--eyebrow-dot); }
+    .banner-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 66px; line-height: 0.98; color: #241f33; letter-spacing: -0.02em; }
+    .banner-title span { color: var(--accent); }
+    .banner-tagline { font-size: 19px; color: var(--tagline); line-height: 1.45; font-weight: 500; }
+    .banner-chips { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 4px; }
+    .banner-chip { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: var(--chip-a); background: #fff; border: 1px solid var(--chip-a-line); padding: 5px 12px; border-radius: 999px; white-space: nowrap; }
+    .banner-chip-alt { color: var(--chip-b); border-color: var(--chip-b-line); }
+    .banner-logo { flex-shrink: 0; width: 200px; height: 200px; }
+    .banner-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+    .banner[data-banner="framework"] {
+      --bg: linear-gradient(135deg, #faf8ff 0%, #eef0ff 55%, #e9ebff 100%);
+      --blob-a: oklch(0.72 0.15 255 / 0.55);
+      --blob-b: oklch(0.70 0.16 300 / 0.5);
+      --dots: oklch(0.58 0.16 265 / 0.10);
+      --eyebrow: oklch(0.48 0.16 265);
+      --eyebrow-dot: oklch(0.58 0.17 265);
+      --accent: oklch(0.56 0.18 265);
+      --tagline: #54536e;
+      --chip-a: oklch(0.42 0.16 265);
+      --chip-a-line: oklch(0.60 0.14 265 / 0.28);
+      --chip-b: oklch(0.42 0.16 300);
+      --chip-b-line: oklch(0.60 0.14 300 / 0.28);
+    }
+    .banner[data-banner="ui"] {
+      --bg: linear-gradient(135deg, #fdf8ff 0%, #f7ecfc 55%, #f3e8ff 100%);
+      --blob-a: oklch(0.74 0.16 345 / 0.55);
+      --blob-b: oklch(0.72 0.15 290 / 0.5);
+      --dots: oklch(0.60 0.17 320 / 0.10);
+      --eyebrow: oklch(0.50 0.17 320);
+      --eyebrow-dot: oklch(0.60 0.18 320);
+      --accent: oklch(0.58 0.19 320);
+      --tagline: #5a5470;
+      --chip-a: oklch(0.42 0.16 320);
+      --chip-a-line: oklch(0.60 0.14 320 / 0.28);
+      --chip-b: oklch(0.42 0.16 290);
+      --chip-b-line: oklch(0.60 0.14 290 / 0.28);
+    }
+    .banner[data-banner="basicapp"] {
+      --bg: linear-gradient(135deg, #fffaf6 0%, #fff0e8 55%, #ffe9e2 100%);
+      --blob-a: oklch(0.76 0.15 45 / 0.6);
+      --blob-b: oklch(0.74 0.15 15 / 0.5);
+      --dots: oklch(0.62 0.15 40 / 0.12);
+      --eyebrow: oklch(0.52 0.15 40);
+      --eyebrow-dot: oklch(0.64 0.17 40);
+      --accent: oklch(0.62 0.18 40);
+      --tagline: #5a5470;
+      --chip-a: oklch(0.45 0.15 40);
+      --chip-a-line: oklch(0.64 0.13 40 / 0.3);
+      --chip-b: oklch(0.45 0.15 20);
+      --chip-b-line: oklch(0.64 0.13 20 / 0.3);
+    }
   </style>
 </helmet>
 
 <!-- =============== BANNER 1 · XiHan.Framework =============== -->
-<div data-banner="framework" style="width:1280px; height:320px; position:relative; overflow:hidden; background:linear-gradient(135deg, #faf8ff 0%, #eef0ff 55%, #e9ebff 100%); flex-shrink:0;">
-  <div style="position:absolute; width:420px; height:420px; right:-90px; top:-140px; border-radius:50%; background:radial-gradient(circle at 30% 30%, oklch(0.72 0.15 255 / 0.55), transparent 62%); filter:blur(4px);"></div>
-  <div style="position:absolute; width:380px; height:380px; right:120px; bottom:-180px; border-radius:50%; background:radial-gradient(circle at 40% 40%, oklch(0.70 0.16 300 / 0.5), transparent 60%); filter:blur(4px);"></div>
-  <div style="position:absolute; inset:0; background-image:radial-gradient(oklch(0.58 0.16 265 / 0.10) 1.4px, transparent 1.4px); background-size:26px 26px; mask-image:linear-gradient(90deg, transparent, #000 55%);"></div>
-
-  <div style="position:relative; height:100%; display:flex; align-items:center; padding:0 64px; gap:52px;">
-    <div style="flex:1; display:flex; flex-direction:column; gap:20px;">
-      <div style="display:flex; align-items:center; gap:9px; font-family:'IBM Plex Mono',monospace; font-size:14px; letter-spacing:0.14em; color:oklch(0.48 0.16 265); text-transform:uppercase;">
-        <span style="width:7px; height:7px; border-radius:50%; background:oklch(0.58 0.17 265);"></span>
-        XiHanFun · 生态后端基座 Backend Foundation
-      </div>
-      <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:66px; line-height:0.98; color:#241f33; letter-spacing:-0.02em;">
-        XiHan<span style="color:oklch(0.56 0.18 265);">.</span>Framework
-      </div>
-      <div style="font-size:19px; color:#54536e; max-width:700px; line-height:1.45; font-weight:500; width:632px;">
-快速、轻量、高效、用心的 .NET 现代模块化开发框架
-      </div>
-      <div style="display:flex; flex-wrap:wrap; gap:9px; margin-top:4px;">
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.42 0.16 265); background:#fff; border:1px solid oklch(0.60 0.14 265 / 0.28); padding:5px 12px; border-radius:999px; white-space:nowrap;">.NET 10</span>
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.42 0.16 265); background:#fff; border:1px solid oklch(0.60 0.14 265 / 0.28); padding:5px 12px; border-radius:999px; white-space:nowrap;">Modular</span>
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.42 0.16 300); background:#fff; border:1px solid oklch(0.60 0.14 300 / 0.28); padding:5px 12px; border-radius:999px; white-space:nowrap;">Dynamic API</span>
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.42 0.16 300); background:#fff; border:1px solid oklch(0.60 0.14 300 / 0.28); padding:5px 12px; border-radius:999px; white-space:nowrap;">DDD</span>
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.42 0.16 300); background:#fff; border:1px solid oklch(0.60 0.14 300 / 0.28); padding:5px 12px; border-radius:999px; white-space:nowrap;">.NET Native First</span>
+<div class="banner" data-banner="framework">
+  <div class="banner-blob banner-blob-a"></div>
+  <div class="banner-blob banner-blob-b"></div>
+  <div class="banner-dots"></div>
+  <div class="banner-body">
+    <div class="banner-text">
+      <div class="banner-eyebrow">XiHanFun · 生态后端基座 Backend Foundation</div>
+      <div class="banner-title">XiHan<span>.</span>Framework</div>
+      <div class="banner-tagline">快速、轻量、高效、用心的 .NET 现代模块化开发框架</div>
+      <div class="banner-chips">
+        <span class="banner-chip">.NET Native First</span>
+        <span class="banner-chip">Modular</span>
+        <span class="banner-chip">Dynamic API</span>
+        <span class="banner-chip banner-chip-alt">Multi-Tenancy</span>
+        <span class="banner-chip banner-chip-alt">Workflow</span>
+        <span class="banner-chip banner-chip-alt">AI · MCP</span>
       </div>
     </div>
-
-    <div style="flex-shrink:0; width:200px; height:200px;">
-      <img src="logo/light/XiHan.Framework-256.png" alt="XiHan.Framework logo" style="width:100%; height:100%; object-fit:contain; display:block;">
+    <div class="banner-logo">
+      <img src="logo/light/XiHan.Framework-512.png" alt="XiHan.Framework logo">
     </div>
   </div>
 </div>
 
-
 <!-- =============== BANNER 2 · XiHan.UI =============== -->
-<div data-banner="ui" style="width:1280px; height:320px; position:relative; overflow:hidden; background:linear-gradient(135deg, #fdf8ff 0%, #f7ecfc 55%, #f3e8ff 100%); flex-shrink:0;">
-  <div style="position:absolute; width:420px; height:420px; right:-90px; top:-140px; border-radius:50%; background:radial-gradient(circle at 30% 30%, oklch(0.74 0.16 345 / 0.55), transparent 62%); filter:blur(4px);"></div>
-  <div style="position:absolute; width:380px; height:380px; right:120px; bottom:-180px; border-radius:50%; background:radial-gradient(circle at 40% 40%, oklch(0.72 0.15 290 / 0.5), transparent 60%); filter:blur(4px);"></div>
-  <div style="position:absolute; inset:0; background-image:radial-gradient(oklch(0.60 0.17 320 / 0.10) 1.4px, transparent 1.4px); background-size:26px 26px; mask-image:linear-gradient(90deg, transparent, #000 55%);"></div>
-
-  <div style="position:relative; height:100%; display:flex; align-items:center; padding:0 64px; gap:52px;">
-    <div style="flex:1; display:flex; flex-direction:column; gap:20px;">
-      <div style="display:flex; align-items:center; gap:9px; font-family:'IBM Plex Mono',monospace; font-size:14px; letter-spacing:0.14em; color:oklch(0.50 0.17 320); text-transform:uppercase;">
-        <span style="width:7px; height:7px; border-radius:50%; background:oklch(0.60 0.18 320);"></span>
-        XiHanFun · 生态组件层 Component Layer
-      </div>
-      <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:66px; line-height:0.98; color:#241f33; letter-spacing:-0.02em;">
-        XiHan<span style="color:oklch(0.58 0.19 320);">.</span>UI
-      </div>
-      <div style="font-size:19px; color:#5a5470; max-width:700px; line-height:1.45; font-weight:500;">
-框架无关的跨端组件库 · 无头内核，Vue 3 与 Web Components 双适配器
-      </div>
-      <div style="display:flex; flex-wrap:wrap; gap:9px; margin-top:4px;">
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.42 0.16 320); background:#fff; border:1px solid oklch(0.60 0.14 320 / 0.28); padding:5px 12px; border-radius:999px; white-space:nowrap;">Headless</span>
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.42 0.16 320); background:#fff; border:1px solid oklch(0.60 0.14 320 / 0.28); padding:5px 12px; border-radius:999px; white-space:nowrap;">Vue 3 · Web Components</span>
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.42 0.16 290); background:#fff; border:1px solid oklch(0.60 0.14 290 / 0.28); padding:5px 12px; border-radius:999px; white-space:nowrap;">State Machine</span>
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.42 0.16 290); background:#fff; border:1px solid oklch(0.60 0.14 290 / 0.28); padding:5px 12px; border-radius:999px; white-space:nowrap;">Design Tokens</span>
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.42 0.16 290); background:#fff; border:1px solid oklch(0.60 0.14 290 / 0.28); padding:5px 12px; border-radius:999px; white-space:nowrap;">AI Components</span>
+<div class="banner" data-banner="ui">
+  <div class="banner-blob banner-blob-a"></div>
+  <div class="banner-blob banner-blob-b"></div>
+  <div class="banner-dots"></div>
+  <div class="banner-body">
+    <div class="banner-text">
+      <div class="banner-eyebrow">XiHanFun · 生态组件层 Component Layer</div>
+      <div class="banner-title">XiHan<span>.</span>UI</div>
+      <div class="banner-tagline">快速、轻量、高效、用心的框架无关跨端组件库</div>
+      <div class="banner-chips">
+        <span class="banner-chip">Headless</span>
+        <span class="banner-chip">Vue · React · Web Components</span>
+        <span class="banner-chip">Zero Dependencies</span>
+        <span class="banner-chip banner-chip-alt">Theming</span>
+        <span class="banner-chip banner-chip-alt">Accessible</span>
+        <span class="banner-chip banner-chip-alt">AI Components</span>
       </div>
     </div>
-
-    <div style="flex-shrink:0; width:200px; height:200px;">
-      <img src="logo/light/XiHan.UI-256.png" alt="XiHan.UI logo" style="width:100%; height:100%; object-fit:contain; display:block;">
+    <div class="banner-logo">
+      <img src="logo/light/XiHan.UI-512.png" alt="XiHan.UI logo">
     </div>
   </div>
 </div>
 
 <!-- =============== BANNER 3 · XiHan.BasicApp =============== -->
-<div data-banner="basicapp" style="width:1280px; height:320px; position:relative; overflow:hidden; background:linear-gradient(135deg, #fffaf6 0%, #fff0e8 55%, #ffe9e2 100%); flex-shrink:0;">
-  <div style="position:absolute; width:420px; height:420px; right:-90px; top:-140px; border-radius:50%; background:radial-gradient(circle at 30% 30%, oklch(0.76 0.15 45 / 0.6), transparent 62%); filter:blur(4px);"></div>
-  <div style="position:absolute; width:380px; height:380px; right:120px; bottom:-180px; border-radius:50%; background:radial-gradient(circle at 40% 40%, oklch(0.74 0.15 15 / 0.5), transparent 60%); filter:blur(4px);"></div>
-  <div style="position:absolute; inset:0; background-image:radial-gradient(oklch(0.62 0.15 40 / 0.12) 1.4px, transparent 1.4px); background-size:26px 26px; mask-image:linear-gradient(90deg, transparent, #000 55%);"></div>
-
-  <div style="position:relative; height:100%; display:flex; align-items:center; padding:0 64px; gap:52px;">
-    <div style="flex:1; display:flex; flex-direction:column; gap:20px;">
-      <div style="display:flex; align-items:center; gap:9px; font-family:'IBM Plex Mono',monospace; font-size:14px; letter-spacing:0.14em; color:oklch(0.52 0.15 40); text-transform:uppercase;">
-        <span style="width:7px; height:7px; border-radius:50%; background:oklch(0.64 0.17 40);"></span>
-        XiHanFun · 生态基础应用 Basic Application
-      </div>
-      <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:66px; line-height:0.98; color:#241f33; letter-spacing:-0.02em;">
-        XiHan<span style="color:oklch(0.62 0.18 40);">.</span>BasicApp
-      </div>
-      <div style="font-size:19px; color:#5a5470; max-width:700px; line-height:1.45; font-weight:500;">基于 .NET + TS 的超高颜值中后台内核 · 开箱即用，面向新型企业级管理场景</div>
-      <div style="display:flex; flex-wrap:wrap; gap:9px; margin-top:4px;">
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.45 0.15 40); background:#fff; border:1px solid oklch(0.64 0.13 40 / 0.3); padding:5px 12px; border-radius:999px; white-space:nowrap;">.NET 10</span>
-        
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.45 0.15 40); background:#fff; border:1px solid oklch(0.64 0.13 40 / 0.3); padding:5px 12px; border-radius:999px; white-space:nowrap;">TypeScript</span>
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.45 0.15 20); background:#fff; border:1px solid oklch(0.64 0.13 20 / 0.3); padding:5px 12px; border-radius:999px; white-space:nowrap;">RBAC · ABAC</span>
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.45 0.15 20); background:#fff; border:1px solid oklch(0.64 0.13 20 / 0.3); padding:5px 12px; border-radius:999px; white-space:nowrap;">Multi-Tenant</span>
-        <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; color:oklch(0.45 0.15 20); background:#fff; border:1px solid oklch(0.64 0.13 20 / 0.3); padding:5px 12px; border-radius:999px; white-space:nowrap;">AI</span>
+<div class="banner" data-banner="basicapp">
+  <div class="banner-blob banner-blob-a"></div>
+  <div class="banner-blob banner-blob-b"></div>
+  <div class="banner-dots"></div>
+  <div class="banner-body">
+    <div class="banner-text">
+      <div class="banner-eyebrow">XiHanFun · 生态基础应用 Basic Application</div>
+      <div class="banner-title">XiHan<span>.</span>BasicApp</div>
+      <div class="banner-tagline">快速、轻量、高效、用心的 .NET + Vue 通用中后台内核</div>
+      <div class="banner-chips">
+        <span class="banner-chip">Multi-Tenancy</span>
+        <span class="banner-chip">RBAC · ABAC</span>
+        <span class="banner-chip">Audit Trail</span>
+        <span class="banner-chip banner-chip-alt">Code Generation</span>
+        <span class="banner-chip banner-chip-alt">Realtime</span>
+        <span class="banner-chip banner-chip-alt">AI · RAG</span>
       </div>
     </div>
-
-    <div style="flex-shrink:0; width:200px; height:200px;">
-      <img src="logo/light/XiHan.BasicApp-256.png" alt="XiHan.BasicApp logo" style="width:100%; height:100%; object-fit:contain; display:block;">
+    <div class="banner-logo">
+      <img src="logo/light/XiHan.BasicApp-512.png" alt="XiHan.BasicApp logo">
     </div>
   </div>
 </div>
