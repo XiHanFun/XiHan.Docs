@@ -17,7 +17,7 @@
     a { color: oklch(0.55 0.18 295); }
     a:hover { color: oklch(0.48 0.19 295); }
 
-    /* 三张横幅共用一套版式，配色由各自的 data-banner 变量给出 */
+    /* 三个产品各一张中文、一张英文横幅，共用一套版式，配色由 data-banner 变量给出 */
     .banner { width: 1280px; height: 320px; position: relative; overflow: hidden; background: var(--bg); flex-shrink: 0; }
     .banner-blob { position: absolute; border-radius: 50%; filter: blur(4px); }
     .banner-blob-a { width: 420px; height: 420px; right: -90px; top: -140px; background: radial-gradient(circle at 30% 30%, var(--blob-a), transparent 62%); }
@@ -30,8 +30,11 @@
     .banner-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 66px; line-height: 0.98; color: #241f33; letter-spacing: -0.02em; }
     .banner-title span { color: var(--accent); }
     .banner-tagline { font-size: 19px; color: var(--tagline); line-height: 1.45; font-weight: 500; }
+    .banner[data-lang="en"] .banner-tagline { font-size: 18px; }
     .banner-chips { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 4px; }
-    .banner-chip { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: var(--chip-a); background: #fff; border: 1px solid var(--chip-a-line); padding: 5px 12px; border-radius: 999px; white-space: nowrap; }
+    .banner-chip { font-family: 'IBM Plex Mono', 'Microsoft YaHei UI', 'PingFang SC', monospace; font-size: 13px; font-weight: 500; color: var(--chip-a); background: #fff; border: 1px solid var(--chip-a-line); padding: 5px 12px; border-radius: 999px; white-space: nowrap; }
+    .banner[data-lang="zh"] .banner-chip { font-family: 'Manrope', 'Microsoft YaHei UI', 'PingFang SC', sans-serif; }
+    .banner[data-lang="zh"] .banner-eyebrow { font-family: 'Microsoft YaHei UI', 'PingFang SC', sans-serif; }
     .banner-chip-alt { color: var(--chip-b); border-color: var(--chip-b-line); }
     .banner-logo { flex-shrink: 0; width: 200px; height: 200px; }
     .banner-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -81,16 +84,91 @@
   </style>
 </helmet>
 
-<!-- =============== BANNER 1 · XiHan.Framework =============== -->
-<div class="banner" data-banner="framework">
+<!-- =============== 中文 · XiHan.Framework =============== -->
+<div class="banner" data-banner="framework" data-lang="zh">
   <div class="banner-blob banner-blob-a"></div>
   <div class="banner-blob banner-blob-b"></div>
   <div class="banner-dots"></div>
   <div class="banner-body">
     <div class="banner-text">
-      <div class="banner-eyebrow">XiHanFun · 生态后端基座 Backend Foundation</div>
+      <div class="banner-eyebrow">曦寒懿 · 生态后端基座</div>
       <div class="banner-title">XiHan<span>.</span>Framework</div>
       <div class="banner-tagline">快速、轻量、高效、用心的 .NET 现代模块化开发框架</div>
+      <div class="banner-chips">
+        <span class="banner-chip">.NET 原生优先</span>
+        <span class="banner-chip">模块化</span>
+        <span class="banner-chip">动态 API</span>
+        <span class="banner-chip banner-chip-alt">多租户</span>
+        <span class="banner-chip banner-chip-alt">工作流</span>
+        <span class="banner-chip banner-chip-alt">AI 与 MCP</span>
+      </div>
+    </div>
+    <div class="banner-logo">
+      <img src="logo/light/XiHan.Framework-512.png" alt="XiHan.Framework logo">
+    </div>
+  </div>
+</div>
+
+<!-- =============== 中文 · XiHan.UI =============== -->
+<div class="banner" data-banner="ui" data-lang="zh">
+  <div class="banner-blob banner-blob-a"></div>
+  <div class="banner-blob banner-blob-b"></div>
+  <div class="banner-dots"></div>
+  <div class="banner-body">
+    <div class="banner-text">
+      <div class="banner-eyebrow">曦寒懿 · 生态前端基座</div>
+      <div class="banner-title">XiHan<span>.</span>UI</div>
+      <div class="banner-tagline">快速、轻量、高效、用心的框架无关 Headless UI 组件库</div>
+      <div class="banner-chips">
+        <span class="banner-chip">设计系统</span>
+        <span class="banner-chip">多框架适配</span>
+        <span class="banner-chip">零依赖</span>
+        <span class="banner-chip banner-chip-alt">主题定制</span>
+        <span class="banner-chip banner-chip-alt">无障碍</span>
+        <span class="banner-chip banner-chip-alt">AI 组件</span>
+      </div>
+    </div>
+    <div class="banner-logo">
+      <img src="logo/light/XiHan.UI-512.png" alt="XiHan.UI logo">
+    </div>
+  </div>
+</div>
+
+<!-- =============== 中文 · XiHan.BasicApp =============== -->
+<div class="banner" data-banner="basicapp" data-lang="zh">
+  <div class="banner-blob banner-blob-a"></div>
+  <div class="banner-blob banner-blob-b"></div>
+  <div class="banner-dots"></div>
+  <div class="banner-body">
+    <div class="banner-text">
+      <div class="banner-eyebrow">曦寒懿 · 生态基础应用</div>
+      <div class="banner-title">XiHan<span>.</span>BasicApp</div>
+      <div class="banner-tagline">基于 XiHan.Framework 和 XiHan.UI 的超高颜值通用中后台内核</div>
+      <div class="banner-chips">
+        <span class="banner-chip">RBAC + ABAC 权限</span>
+        <span class="banner-chip">多租户隔离</span>
+        <span class="banner-chip">代码生成</span>
+        <span class="banner-chip banner-chip-alt">实时通信</span>
+        <span class="banner-chip banner-chip-alt">灰度发布</span>
+        <span class="banner-chip banner-chip-alt">AI 能力</span>
+      </div>
+    </div>
+    <div class="banner-logo">
+      <img src="logo/light/XiHan.BasicApp-512.png" alt="XiHan.BasicApp logo">
+    </div>
+  </div>
+</div>
+
+<!-- =============== English · XiHan.Framework =============== -->
+<div class="banner" data-banner="framework" data-lang="en">
+  <div class="banner-blob banner-blob-a"></div>
+  <div class="banner-blob banner-blob-b"></div>
+  <div class="banner-dots"></div>
+  <div class="banner-body">
+    <div class="banner-text">
+      <div class="banner-eyebrow">XiHanFun · Backend Foundation</div>
+      <div class="banner-title">XiHan<span>.</span>Framework</div>
+      <div class="banner-tagline">A fast, lightweight, efficient and thoughtfully built modern modular framework for .NET</div>
       <div class="banner-chips">
         <span class="banner-chip">.NET Native First</span>
         <span class="banner-chip">Modular</span>
@@ -106,16 +184,16 @@
   </div>
 </div>
 
-<!-- =============== BANNER 2 · XiHan.UI =============== -->
-<div class="banner" data-banner="ui">
+<!-- =============== English · XiHan.UI =============== -->
+<div class="banner" data-banner="ui" data-lang="en">
   <div class="banner-blob banner-blob-a"></div>
   <div class="banner-blob banner-blob-b"></div>
   <div class="banner-dots"></div>
   <div class="banner-body">
     <div class="banner-text">
-      <div class="banner-eyebrow">XiHanFun · 生态前端基座 Frontend Foundation</div>
+      <div class="banner-eyebrow">XiHanFun · Frontend Foundation</div>
       <div class="banner-title">XiHan<span>.</span>UI</div>
-      <div class="banner-tagline">快速、轻量、高效、用心的框架无关 Headless UI 组件库</div>
+      <div class="banner-tagline">A fast, lightweight, efficient and thoughtfully built framework-agnostic headless UI component library</div>
       <div class="banner-chips">
         <span class="banner-chip">Design System</span>
         <span class="banner-chip">Vue · React · Web Components</span>
@@ -131,16 +209,16 @@
   </div>
 </div>
 
-<!-- =============== BANNER 3 · XiHan.BasicApp =============== -->
-<div class="banner" data-banner="basicapp">
+<!-- =============== English · XiHan.BasicApp =============== -->
+<div class="banner" data-banner="basicapp" data-lang="en">
   <div class="banner-blob banner-blob-a"></div>
   <div class="banner-blob banner-blob-b"></div>
   <div class="banner-dots"></div>
   <div class="banner-body">
     <div class="banner-text">
-      <div class="banner-eyebrow">XiHanFun · 生态基础应用 Basic Application</div>
+      <div class="banner-eyebrow">XiHanFun · Basic Application</div>
       <div class="banner-title">XiHan<span>.</span>BasicApp</div>
-      <div class="banner-tagline">基于 XiHan.Framework 和 XiHan.UI 的超高颜值通用中后台内核</div>
+      <div class="banner-tagline">A beautifully crafted general-purpose admin kernel built on XiHan.Framework and XiHan.UI</div>
       <div class="banner-chips">
         <span class="banner-chip">RBAC · ABAC</span>
         <span class="banner-chip">Multi-Tenancy</span>
