@@ -49,50 +49,39 @@ const contributeSidebar: DefaultTheme.SidebarItem[] = [
 
 const nav: DefaultTheme.NavItem[] = [
   {
-    text: withNavBadge("🧩 开发框架", releases.framework),
-    link: docSites.framework,
-  },
-  {
-    text: withNavBadge("🎨 视图组件", releases.ui),
-    link: docSites.ui,
-  },
-  {
-    text: withNavBadge("🏠 基础应用", releases.basicApp),
-    link: docSites.basicApp,
-  },
-  {
-    text: "探索未知",
+    text: "指南",
+    activeMatch: "^/cosmos/(guide|getstart|ecosystem)$",
     items: [
       {
-        text: "关于我们",
+        text: "快速开始",
         items: [
-          {
-            text: "官方网站",
-            link: "https://www.xihanfun.com",
-          },
+          { text: "介绍", link: "/cosmos/guide" },
+          { text: "快速上手", link: "/cosmos/getstart" },
+          { text: "生态总览", link: "/cosmos/ecosystem" },
         ],
       },
     ],
   },
   {
-    text: "参与贡献",
+    text: "生态",
     items: [
       {
-        text: "公约",
-        link: "cosmos/code-of-conduct",
+        text: "官方生态",
+        items: [
+          { text: withNavBadge("开发框架", releases.framework), link: "https://framework.docs.xihanfun.com" },
+          { text: withNavBadge("视图组件", releases.ui), link: "https://ui.docs.xihanfun.com" },
+          { text: withNavBadge("基础应用", releases.basicApp), link: "https://basicapp.docs.xihanfun.com" },
+        ],
       },
-      {
-        text: "指南",
-        link: "cosmos/contributing",
-      },
-      {
-        text: "贡献者",
-        link: "cosmos/contributors",
-      },
-      {
-        text: "支持&赞助",
-        link: "cosmos/sponsor",
-      },
+    ],
+  },
+  {
+    text: "支持",
+    activeMatch: "^/cosmos/(code-of-conduct|contributing|contributors|sponsor)$",
+    items: [
+      { text: "公约", link: "/cosmos/code-of-conduct" },
+      { text: "参与", link: "/cosmos/contributing" },
+      { text: "赞助", link: "/cosmos/sponsor" },
     ],
   },
 ];

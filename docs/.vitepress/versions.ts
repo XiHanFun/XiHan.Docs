@@ -1,11 +1,11 @@
 /**
  * 导航徽章的单一事实源
  * --------------------------------------------------------------------------
- * 主导航三大板块标题右上角的发布阶段徽章统一在这里维护：
+ * 导航「生态」菜单里三大板块标题旁的发布阶段徽章统一在这里维护：
  * 每个产品只声明「发布阶段」，徽章文案与配色都由阶段推导，不写具体版本号。
  *
  * withNavBadge 把徽章拼进 nav 的 item.text，VitePress 以 v-html 渲染该字段，
- * 宽屏导航栏（VPNavBarMenuLink）与窄屏汉堡菜单（VPNavScreenMenuLink）读的是同一份 text，
+ * 宽屏下拉菜单（VPMenuLink）与窄屏汉堡菜单（VPNavMenuLink）读的是同一份 text，
  * 因此两处自动一致，无需分别写选择器。
  *
  * 外观由 @xihanfun/vitepress-theme 的 .xh-nav-badge 提供。
