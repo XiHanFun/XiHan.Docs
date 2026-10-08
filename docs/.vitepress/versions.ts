@@ -8,7 +8,7 @@
  * 宽屏导航栏（VPNavBarMenuLink）与窄屏汉堡菜单（VPNavScreenMenuLink）读的是同一份 text，
  * 因此两处自动一致，无需分别写选择器。
  *
- * 外观见 theme/overrides.css 中的 .xh-nav-badge。
+ * 外观由 @xihanfun/vitepress-theme 的 .xh-nav-badge 提供。
  */
 
 /** 发布阶段 */
@@ -25,7 +25,7 @@ export enum ReleaseStage {
   Release = 5,
 }
 
-/** 徽章配色。新增取值需在 overrides.css 补上对应的 .xh-nav-badge--* */
+/** 徽章配色。新增取值需在 @xihanfun/vitepress-theme 补上对应的 .xh-nav-badge--* */
 export type NavBadgeType = "tip" | "warning" | "danger";
 
 export interface ProductRelease {
