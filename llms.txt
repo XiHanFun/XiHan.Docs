@@ -11,7 +11,7 @@
 
 ## 首页
 
-- [曦寒懿官方文档](https://docs.xihanfun.com/): 拥有底座、组件、应用完整生态
+- [曦寒懿](https://docs.xihanfun.com/): 拥有底座、组件、应用完整生态
 
 ## 生态
 
