@@ -1,1 +1,3 @@
-export { default } from "@xihanfun/vitepress-theme";
+import { defineXiHanTheme } from "@xihanfun/vitepress-theme";
+
+export default defineXiHanTheme({ pageMarkdown: true });
