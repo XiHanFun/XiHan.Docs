@@ -115,9 +115,9 @@ export default defineXiHanConfig({
   repo: "XiHan.Docs",
   banner: {
     id: "2026-10-docs-theme",
-    text: "曦寒懿文档焕新：四个文档站统一观感",
+    text: "曦寒懿文档全新改版上线：开发框架、视图组件与基础应用文档统一升级",
     link: "https://docs.xihanfun.com/cosmos/ecosystem",
-    linkText: "了解生态",
+    linkText: "查看生态总览",
   },
   llms: {
     title: "曦寒懿",
