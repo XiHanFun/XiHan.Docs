@@ -1,0 +1,1 @@
+var e=`/images/alipay.png`,t=`/images/weixinpay.png`,n=`/images/basicapp-preview.png`,r=`/images/basicapp-preview-dark.png`;export{e as i,n,t as r,r as t};

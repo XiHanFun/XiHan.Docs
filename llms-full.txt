@@ -1,0 +1,1178 @@
+# 曦寒懿 · 全站正文
+
+共 8 页。索引见 https://docs.xihanfun.com/llms.txt
+
+---
+
+来源：https://docs.xihanfun.com/
+
+# 曦寒懿官方文档
+
+<div class="bap-preview">
+<span class="bap-eyebrow">在线演示</span>
+<h2 class="bap-title">基础应用 · 在线预览</h2>
+<p class="bap-desc">XiHan.BasicApp 是基于本框架构建的企业级中后台：多租户、RBAC + ABAC 权限、代码生成、实时通信开箱即用。<br />无需本地搭建，点击下方窗口直接在线体验。</p>
+<div class="bap-window">
+<div class="bap-bar"><span class="bap-dots"><span class="bap-dot bap-dot--r"></span><span class="bap-dot bap-dot--y"></span><span class="bap-dot bap-dot--g"></span></span><span class="bap-url">basicapp.xihanfun.com</span></div>
+<a class="bap-screen" href="https://basicapp.xihanfun.com" target="_blank" rel="noreferrer">
+<img class="bap-img bap-img--light" src="/images/basicapp-preview.png" alt="XiHan.BasicApp 在线预览" />
+<img class="bap-img bap-img--dark" src="/images/basicapp-preview-dark.png" alt="XiHan.BasicApp 在线预览（暗色）" />
+</a>
+</div>
+<div class="bap-actions">
+<a class="bap-btn" href="https://basicapp.xihanfun.com" target="_blank" rel="noreferrer">立即在线体验 →</a>
+<a class="bap-link" href="https://basicapp.docs.xihanfun.com" target="_blank" rel="noreferrer">了解基础应用</a>
+</div>
+<p class="bap-cred">演示账号 <code>superadmin</code> · 密码 <code>SuperAdmin@123</code> · 演示环境，请勿录入真实数据</p>
+</div>
+
+<style>
+.bap-preview {
+  max-width: 1080px;
+  margin: 112px auto 0;
+  padding: 0 24px;
+  text-align: center;
+}
+/* 选择器均带 .bap-preview 前缀以覆盖 VitePress 默认的 .vp-doc h2 / a / p / img 样式 */
+.bap-preview .bap-eyebrow {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.bap-preview h2.bap-title {
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 800;
+  border-top: none;
+  margin: 18px 0 14px;
+  padding-top: 0;
+  letter-spacing: -0.02em;
+}
+.bap-preview p.bap-desc {
+  max-width: 640px;
+  margin: 0 auto 36px;
+  color: var(--vp-c-text-2);
+  line-height: 1.75;
+}
+.bap-preview .bap-window {
+  max-width: 1040px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-soft);
+  box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.3);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+.bap-preview .bap-window:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 36px 72px -18px rgba(0, 0, 0, 0.4);
+}
+.bap-preview .bap-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 16px;
+  background: var(--vp-c-bg-alt);
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+.bap-preview .bap-dots {
+  position: absolute;
+  left: 16px;
+  display: flex;
+  gap: 8px;
+}
+.bap-preview .bap-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.bap-preview .bap-dot--r { background: #ff5f57; }
+.bap-preview .bap-dot--y { background: #febc2e; }
+.bap-preview .bap-dot--g { background: #28c840; }
+.bap-preview .bap-url {
+  margin: 0 auto;
+  padding: 4px 18px;
+  min-width: 240px;
+  border-radius: 8px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-3);
+  font-size: 13px;
+}
+.bap-preview .bap-screen {
+  display: block;
+}
+.bap-preview .bap-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.bap-preview .bap-img--dark {
+  display: none;
+}
+.dark .bap-preview .bap-img--light {
+  display: none;
+}
+.dark .bap-preview .bap-img--dark {
+  display: block;
+}
+.bap-preview .bap-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 36px 0 14px;
+}
+.bap-preview a.bap-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 30px;
+  border-radius: 999px;
+  background: var(--vp-c-brand-1);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 10px 22px -8px rgba(0, 0, 0, 0.24);
+  transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.bap-preview a.bap-btn:hover {
+  background: var(--vp-c-brand-2);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px -8px rgba(0, 0, 0, 0.3);
+}
+.bap-preview a.bap-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: 1px solid var(--vp-c-divider);
+  color: var(--vp-c-text-1);
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.25s ease, color 0.25s ease;
+}
+.bap-preview a.bap-link:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+.bap-preview p.bap-cred {
+  margin-top: 8px;
+  color: var(--vp-c-text-3);
+  font-size: 13.5px;
+}
+@media (max-width: 640px) {
+  .bap-preview { margin-top: 72px; }
+  .bap-preview h2.bap-title { font-size: 26px; }
+  .bap-preview .bap-url {
+    min-width: 0;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+</style>
+
+---
+
+来源：https://docs.xihanfun.com/cosmos/code-of-conduct
+
+# 贡献者公约
+
+## 我们的承诺
+
+身为社区成员、贡献者和领袖，我们承诺使社区参与者不受骚扰，无论其年龄、体型、可见或不可见的缺陷、族裔、性征、性别认同和表达、经验水平、教育程度、社会与经济地位、国籍、相貌、种族、种姓、肤色、宗教信仰、性倾向或性取向如何。
+
+我们承诺以有助于建立开放、友善、多样化、包容、健康社区的方式行事和互动。
+
+## 我们的准则
+
+有助于为我们的社区创造积极环境的行为例子包括但不限于：
+
+- 表现出对他人的同情和善意
+- 尊重不同的主张、观点和感受
+- 提出和大方接受建设性意见
+- 承担责任并向受我们错误影响的人道歉
+- 注重社区共同诉求，而非个人得失
+
+不当行为例子包括：
+
+- 使用情色化的语言或图像，及性引诱或挑逗
+- 嘲弄、侮辱或诋毁性评论，以及人身或政治攻击
+- 公开或私下的骚扰行为
+- 未经他人明确许可，公布他人的私人信息，如物理或电子邮件地址
+- 其他有理由认定为违反职业操守的不当行为
+
+## 责任和权力
+
+社区领袖有责任解释和落实我们所认可的行为准则，并妥善公正地对他们认为不当、威胁、冒犯或有害的任何行为采取纠正措施。
+
+社区领导有权力和责任删除、编辑或拒绝或拒绝与本行为准则不相符的评论（comment）、提交（commits）、代码、维基（wiki）编辑、议题（issues）或其他贡献，并在适当时机知采取措施的理由。
+
+## 适用范围
+
+本行为准则适用于所有社区场合，也适用于在公共场所代表社区时的个人。
+
+代表社区的情形包括使用官方电子邮件地址、通过官方社交媒体帐户发帖或在线上或线下活动中担任指定代表。
+
+## 监督
+
+辱骂、骚扰或其他不可接受的行为可通过 [me@xihanfun.com] 向负责监督的社区领袖报告。 所有投诉都将得到及时和公平的审查和调查。
+
+所有社区领袖都有义务尊重任何事件报告者的隐私和安全。
+
+## 处理方针
+
+社区领袖将遵循下列社区处理方针来明确他们所认定违反本行为准则的行为的处理方式：
+
+### 1. 纠正
+
+**社区影响**：使用不恰当的语言或其他在社区中被认定为不符合职业道德或不受欢迎的行为。
+
+**处理意见**：由社区领袖发出非公开的书面警告，明确说明违规行为的性质，并解释举止如何不妥。或将要求公开道歉。
+
+### 2. 警告
+
+**社区影响**：单个或一系列违规行为。
+
+**处理意见**：警告并对连续性行为进行处理。在指定时间内，不得与相关人员互动，包括主动与行为准则执行者互动。这包括避免在社区场所和外部渠道中的互动。违反这些条款可能会导致临时或永久封禁。
+
+### 3. 临时封禁
+
+**社区影响**: 严重违反社区准则，包括持续的不当行为。
+
+**处理意见**: 在指定时间内，暂时禁止与社区进行任何形式的互动或公开交流。在此期间，不得与相关人员进行公开或私下互动，包括主动与行为准则执行者互动。违反这些条款可能会导致永久封禁。
+
+### 4. 永久封禁
+
+**社区影响**：行为模式表现出违反社区准则，包括持续的不当行为、骚扰个人或攻击或贬低某个类别的个体。
+
+**处理意见**：永久禁止在社区内进行任何形式的公开互动。
+
+## 参见
+
+本行为准则改编自 [Contributor Covenant](https://www.contributor-covenant.org/) 2.1 版, 参见 https://www.contributor-covenant.org/version/2/1/code_of_conduct.html。
+
+社区处理方针灵感来源于 [Mozilla’s code of conduct enforcement ladder](https://github.com/mozilla/diversity)。
+
+有关本行为准则的常见问题的答案，参见 https://www.contributor-covenant.org/faq。 其他语言翻译参见 https://www.contributor-covenant.org/translations。
+
+---
+
+来源：https://docs.xihanfun.com/cosmos/contributing
+
+# 如何为项目贡献代码
+
+## 一、准备工作
+
+- 安装 Git；
+
+- 安装 Sourcetree，这个工具是 git 的一种图形化界面；
+
+- 注意安装 git 的时候记得勾选将 git 所在目录添加到系统环境变量；
+
+<details>
+<summary>1.DotNet项目</summary>
+
+- 安装 Visual Studio 2022；
+
+- 安装 Visual Studio 2022 的 CodeMaid 扩展插件，这个插件可以自动格式化代码；
+
+- `若有新功能开发`，请添加文件头，这在后续修改代码文件或多人合作项目时有莫大的好处。如下为我的示例：
+
+```csharp
+// Copyright (c) 2021-Present XiHanFun and contributors.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+```
+
+下面就来说说怎么创建并修改默认模板。
+
+#### 1.新建模板文件
+
+> 注意：我所用环境为 Visual Studio 2022，以下模板适合 C#10 新语法，旧语法及旧版本以类似方法修改。
+
+在空白目录创建以下三个文件：
+
+Class.cs
+
+```csharp
+// Copyright (c) 2021-Present XiHanFun and contributors.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+namespace $rootnamespace$;
+
+/// <summary>
+/// $safeitemrootname$
+/// </summary>
+public class $safeitemrootname$
+{
+}
+```
+
+Controller.cs `这里仅为ApiController`
+
+```csharp
+// Copyright (c) 2021-Present XiHanFun and contributors.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+namespace $rootnamespace$;
+
+/// <summary>
+/// $safeitemrootname$
+/// </summary>
+[Route("api/[controller]")]
+[ApiController]
+public class $safeitemname$ : ControllerBase
+{
+}
+```
+
+Interface.cs
+
+```csharp
+// Copyright (c) 2021-Present XiHanFun and contributors.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+namespace $rootnamespace$;
+
+/// <summary>
+/// $safeitemrootname$
+/// </summary>
+public interface $safeitemrootname$
+{
+}
+```
+
+#### 2.找到模板目录并复制
+
+例如安装的 Visual Studio 2022 在 C 盘，则对应的模板目录在：
+
+Class
+
+> C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\ItemTemplates\CSharp\Code\2052\Class
+> C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\ItemTemplates\AspNetCore\Code\1033\Class
+
+Interface
+
+> C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\ItemTemplates\CSharp\Code\2052\Interface
+> C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\ItemTemplates\AspNetCore\Code\1033\Interface
+
+Controller
+
+> C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\ItemTemplates\AspNetCore\Web\ASP.NET\1033\WebApiEmptyController
+
+</details>
+
+<details>
+<summary>2.Vue项目</summary>
+
+- 安装 Visual Studio Code；
+
+- 安装 Visual Studio Code 的 Prettier - Code formatter 扩展插件，这个插件可以自动格式化代码；
+
+</details>
+
+## 二、贡献代码
+
+### 1. 新建自己的分支（Fork）
+
+将本项目仓库 fork 到自己的 git 仓库中。
+
+### 2. 克隆（Clone）
+
+将已经 fork 的仓库 clone 到自己的本地 PC。
+
+### 3. 创建本地分支
+
+如果想要在本项目上做自己的开发，最好创建属于自己的项目分支，如果是直接贡献代码，那么可以直接在 dev 分支上进行操作。
+
+### 4. 开发
+
+1. 发现了一个小 Bug 并进行修改。
+2. 在打开的 Issues 中选择功能并进行开发。
+
+### 5. 提交（Commit）
+
+向本地仓库提交 Bug。
+
+这里是 Git 提交信息前缀规则：
+
+| 前缀     | 描述                                                                            | 示例                                               |
+| -------- | ------------------------------------------------------------------------------- | -------------------------------------------------- |
+| feat     | 新功能增加（feature）                                                           | feat: add user login feature                       |
+| fix      | 修复 BUG                                                                        | fix: correct user authentication                   |
+| refactor | 代码重构（既不是新增功能，也不是修复 Bug）                                      | refactor: simplify user validation logic           |
+| perf     | 性能优化                                                                        | perf(core): optimize virtual DOM diffing algorithm |
+| docs     | 文档/注释                                                                       | docs: update API documentation                     |
+| chore    | 依赖更新/脚手架配置修改等                                                       | chore: upgrade React to the latest version         |
+| revert   | 代码撤销修改                                                                    | revert: revert commit 12345abc                     |
+| style    | 代码风格相关无影响运行结果的                                                    | style: format code with prettier                   |
+| test     | 测试相关                                                                        | test: add unit tests for login feature             |
+| build    | 影响构建系统或外部依赖的更改（例如：gulp，broccoli，npm）                       | build: update webpack config                       |
+| ci       | 持续集成的配置文件和脚本的变动（例如：Travis，Circle，BrowserStack，SauceLabs） | ci: update Travis configuration                    |
+
+这种方式便于清晰区分每种提交的目的和用途。
+
+### 6. 保持本地仓库最新
+
+在准备发起 Pull Request 之前，需要同步原仓库最新的代码，记得检查目前的项目是否是最新的版本。
+
+### 7. 推送到远程仓库（Push）
+
+push 到开发者自己的远程仓库中。
+
+### 8. 发起并完成合并请求（Pull Request）
+
+在 git 仓库中选择自己修改了的分支，点击 create pull request 按钮发起 pull request。
+
+## 三、提交代码的一些约定
+
+发起请求成功后，本项目维护人就可以看到你提交的代码。pull request 如果被同意，你的代码就会被合并到仓库中。这样一次 pull request 就成功了。
+
+至此，我们就完成了一次代码贡献的过程。
+
+---
+
+来源：https://docs.xihanfun.com/cosmos/contributors
+
+# 贡献者
+
+[![贡献者](https://img.shields.io/github/contributors/XiHanFun/XiHan.Framework?style=for-the-badge)](https://github.com/XiHanFun)
+
+XiHanFun 开源组织的贡献者。
+
+## 主要贡献者
+
+| 昵称   | GitHub                                       | 网站                       | 角色               |
+| ------ | -------------------------------------------- | -------------------------- | ------------------ |
+| 摘繁华 | [@zhaifanhua](https://github.com/zhaifanhua) | https://www.zhaifanhua.com | 创始人、主要维护者 |
+
+## 项目贡献
+
+### XiHan.Framework
+
+XiHan.Framework 仓库。快速、轻量、高效、用心的 .NET 现代模块化开发框架。
+
+[![贡献者](https://img.shields.io/github/contributors/XiHanFun/XiHan.Framework?style=flat-square)](https://github.com/XiHanFun/XiHan.Framework/graphs/contributors)
+
+### XiHan.UI
+
+XiHan.UI 仓库。快速、轻量、高效、用心的框架无关 Headless UI 组件库。
+
+[![贡献者](https://img.shields.io/github/contributors/XiHanFun/XiHan.UI?style=flat-square)](https://github.com/XiHanFun/XiHan.UI/graphs/contributors)
+
+### XiHan.BasicApp
+
+XiHan.BasicApp 仓库。基于 XiHan.Framework 和 XiHan.UI 的超高颜值通用中后台内核。
+
+[![贡献者](https://img.shields.io/github/contributors/XiHanFun/XiHan.BasicApp?style=flat-square)](https://github.com/XiHanFun/XiHan.BasicApp/graphs/contributors)
+
+### XiHan.Docs
+
+XiHan 文档仓库。
+
+[![贡献者](https://img.shields.io/github/contributors/XiHanFun/XiHan.Docs?style=flat-square)](https://github.com/XiHanFun/XiHan.Docs/graphs/contributors)
+
+## 如何成为贡献者
+
+我们欢迎任何形式的贡献，包括但不限于：
+
+- 提交代码改进
+- 修复 BUG
+- 改进文档
+- 提出新功能或改进建议
+- 报告问题
+
+请阅读我们的[贡献指南](contributing.md)了解更多信息。
+
+---
+
+来源：https://docs.xihanfun.com/cosmos/ecosystem
+
+# 生态总览
+
+曦寒不是一个仓库，而是三个可以独立使用、也可以叠起来用的开源项目。本页讲它们各自是什么、彼此什么关系、你的场景该从哪个进去。
+
+三者各有独立的文档站，本站只负责生态层面的导览与共同的贡献约定。
+
+## 三个仓库
+
+| 定位 | 项目 | 技术栈 | 文档站 |
+| --- | --- | --- | --- |
+| 后端基座 | [XiHan.Framework](https://github.com/XiHanFun/XiHan.Framework) | .NET | [framework.docs.xihanfun.com](https://framework.docs.xihanfun.com/) |
+| 前端基座 | [XiHan.UI](https://github.com/XiHanFun/XiHan.UI) | TypeScript · Vue · React · Web Components | [ui.docs.xihanfun.com](https://ui.docs.xihanfun.com/) |
+| 基础应用 | [XiHan.BasicApp](https://github.com/XiHanFun/XiHan.BasicApp) | .NET + Vue | [basicapp.docs.xihanfun.com](https://basicapp.docs.xihanfun.com/) |
+
+### XiHan.Framework · 后端基座
+
+快速、轻量、高效、用心的 .NET 现代模块化开发框架。是面向企业级应用的模块化后端框架，框架优先使用 .NET 原生功能，减少第三方依赖，理念现代、开箱即用、模块清晰、依赖可控、扩展可维护。曦寒懿（XiHanFun）开源生态的后端基座。
+
+按需引用的 NuGet 包，模块之间用 `[DependsOn]` 声明依赖，启动时自动拓扑排序装配。
+
+### XiHan.UI · 前端基座
+
+快速、轻量、高效、用心的框架无关 Headless UI 组件库。是面向企业级前端的设计系统运行时，无头内核，多框架适配器。提供基础组件与 AI 组件，覆盖从中后台到 AI 对话的界面构建场景。曦寒懿（XiHanFun）开源生态的前端基座。
+
+### XiHan.BasicApp · 基础应用
+
+基于 XiHan.Framework 和 XiHan.UI 的超高颜值通用中后台内核。开箱即用，提供 RBAC + ABAC 混合权限管理、多租户隔离、代码生成、实时通信、灰度发布、AI 等核心能力，满足新型企业级中后台管理场景。属于曦寒懿（XiHanFun）开源生态的基础应用。
+
+## 彼此什么关系
+
+```
+      ┌───────────────────────────────┐
+      │        XiHan.BasicApp         │  企业级中后台，可直接投产
+      │  后端 modules/  ·  前端 src/  │
+      └───────┬───────────────┬───────┘
+              │ 引用 NuGet    │ 引用 npm 包
+      ┌───────▼───────┐  ┌────▼─────────────┐
+      │ XiHan.Framework│  │   XiHan.UI      │
+      │  .NET 模块包   │  │  设计系统运行时  │
+      └───────────────┘  └─────────────────┘
+```
+
+两条依赖关系值得先说清楚：
+
+- **BasicApp 的后端确实建立在 Framework 之上**：它引用框架的 NuGet 包，认证、授权、数据访问、多租户、动态 API 等底层能力都来自框架，BasicApp 只写业务。想看框架能力在真实业务里怎么落地，读 BasicApp 的源码是最快的路径。
+- **BasicApp 的前端同样建立在 UI 之上**：自 BasicApp v4.0.0 起，前端整体用 XiHan.UI 重建，naive-ui 全量下线。想看组件库在真实业务里怎么用，读 BasicApp 前端的源码是最快的路径。
+
+Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是前端库，各自可以单独使用。
+
+## 我该从哪个进去
+
+| 你的场景 | 从这里开始 |
+| --- | --- |
+| 要在自己的 .NET 项目里用模块化框架、只取其中几个能力 | [开发框架 · 快速上手](https://framework.docs.xihanfun.com/quickstart) |
+| 要一套现成的中后台系统，改改就能上线 | [基础应用 · 快速开始](https://basicapp.docs.xihanfun.com/getting-started) |
+| 要在自己的前端项目里用组件库，或做跨框架的设计系统 | [视图组件 · 架构总览](https://ui.docs.xihanfun.com/overview) |
+| 还在选型，想先看清楚适合不适合 | [为什么选择曦寒框架](https://framework.docs.xihanfun.com/why) · [为什么选择曦寒基础应用](https://basicapp.docs.xihanfun.com/why) |
+| 想先跑起来看看长什么样 | [在线预览](https://basicapp.xihanfun.com) |
+
+## 版本与发布
+
+三个仓库**独立发版**，版本号互不对齐：
+
+- Framework 发布到 [NuGet](https://www.nuget.org/profiles/XiHanFun)，版本真源是 `framework/props/version.props`
+- BasicApp 随仓库发布，版本真源是 `backend/props/version.props`
+- UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，全部公开包始终同一个版本号，版本真源是 `ui/packages/*/*/package.json`
+
+各站导航栏右上角的徽章显示的就是该项目当前的版本与发布阶段。
+
+## 参与进来
+
+三个仓库在 GitHub（主库）、Gitee 与 GitCode（同步备库）上都可访问，Issue 与 PR 三个平台都收。共同的约定见[参与贡献指南](./contributing)与[行为公约](./code-of-conduct)。
+
+---
+
+来源：https://docs.xihanfun.com/cosmos/getstart
+
+# 快速上手
+
+## 项目组成
+
+本项目由 [XiHan.Framework](https://github.com/XiHanFun/XiHan.Framework)（开发框架）、[XiHan.UI](https://github.com/XiHanFun/XiHan.UI)（视图组件）、[XiHan.BasicApp](https://github.com/XiHanFun/XiHan.BasicApp)（基础应用）组成。
+
+- **开发框架子项目**：是后端模块化应用开发框架集成，基于 DotNet 构建。
+- **视图组件子项目**：是前端组件库集成，基于 Vue 构建。
+- **基础应用子项目**：为开发框架和视图组件的结合，为通用、全面的管理系统。
+
+## 环境准备
+
+在开始使用 XiHan 系列项目前，请确保您的开发环境已安装以下工具：
+
+### 后端开发环境
+
+- [.NET SDK](https://dotnet.microsoft.com/download) (版本 10 或更高)
+- 推荐 IDE：Visual Studio 2022、JetBrains Rider 或 VS Code
+
+### 前端开发环境
+
+- [Node.js](https://nodejs.org/) (版本 24 或更高)
+- [pnpm](https://pnpm.io/installation) (版本 10 或更高；XiHan.BasicApp 前端要求 11 或更高)
+- 推荐 IDE：Visual Studio Code 配合 Vue - Official 插件
+
+### 运行 XiHan.BasicApp 额外需要
+
+- PostgreSQL 14+（或 MySQL / MariaDB）
+- Redis 6.0+
+
+## 入门指南
+
+### 使用 XiHan.Framework (后端框架)
+
+框架是**按模块安装**的，用什么装什么。搭一个 Web API 最少需要下面两个包：
+
+1. 创建新项目并安装 NuGet 包：
+
+```bash
+dotnet new web -n MyApp
+cd MyApp
+
+# 动态 API + 中间件管道（依赖会自动带上 Core、Web.Core、Application 等）
+dotnet add package XiHan.Framework.Web.Api
+
+# API 文档（Scalar / Swagger UI），开发期推荐
+dotnet add package XiHan.Framework.Web.Docs
+```
+
+2. 定义启动模块。框架里**一个"模块"就是一个继承 `XiHanModule` 的类**，用 `[DependsOn]` 声明它要用哪些能力：
+
+```csharp
+// MyAppModule.cs
+using XiHan.Framework.Core.Modularity;
+using XiHan.Framework.Web.Api;
+using XiHan.Framework.Web.Docs;
+
+namespace MyApp;
+
+[DependsOn(
+    typeof(XiHanWebApiModule),   // 动态 API + 中间件管道
+    typeof(XiHanWebDocsModule)   // Scalar / Swagger 文档
+)]
+public class MyAppModule : XiHanModule
+{
+    // 可重写 ConfigureServices / OnApplicationInitialization 等生命周期钩子
+}
+```
+
+3. 在 Program.cs 中加载模块树：
+
+```csharp
+using MyApp;
+using XiHan.Framework.Web.Core.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// 加载以 MyAppModule 为根的整棵模块依赖树（自动拓扑排序）
+await builder.AddApplicationAsync<MyAppModule>();
+
+var app = builder.Build();
+
+// 触发所有模块的初始化钩子，装配中间件管道
+await app.InitializeApplicationAsync();
+
+await app.RunAsync();
+```
+
+4. 写第一个接口。框架用**动态 API** 暴露接口，只需写一个应用服务类，**不需要写 Controller**：
+
+```csharp
+// HelloAppService.cs
+using XiHan.Framework.Application.Attributes;
+using XiHan.Framework.Application.Services;
+
+namespace MyApp;
+
+[DynamicApi]
+public class HelloAppService : ApplicationServiceBase
+{
+    public string GetGreeting(string name)
+    {
+        return $"你好，{name}！欢迎使用 XiHan.Framework。";
+    }
+}
+```
+
+`dotnet run` 后打开 `https://localhost:<端口>/scalar` 即可在线调用。
+
+> 更详细的分步讲解、数据访问接入与可选模块清单，见[框架快速上手](https://framework.docs.xihanfun.com/quickstart)。
+
+### 使用 XiHan.UI (前端组件)
+
+> npm 上的 `xihan-ui`（单包，最后一版 `0.9.8`）是重构前的旧实现，已全部标记弃用，与下面这套不是同一个东西。
+
+1. 安装适配器与默认皮肤（包按 `@xihan-ui/*` 分发，装哪几个取决于用哪个适配器）：
+
+```bash
+# Vue 项目
+pnpm add @xihan-ui/vue @xihan-ui/styles
+
+# React 项目
+pnpm add @xihan-ui/react @xihan-ui/styles
+
+# 原生 / 其它框架：自定义元素
+pnpm add @xihan-ui/web-components @xihan-ui/styles
+```
+
+2. 在入口引入皮肤，并初始化视觉环境：
+
+```ts
+// main.ts
+import { createVisualEnvironmentController } from "@xihan-ui/tokens/runtime";
+import { createApp } from "vue";
+import App from "./App.vue";
+
+// 皮肤入口自带层序声明与令牌，只引这一行；单独引 tokens.css 是只要令牌不要皮肤的路径
+import "@xihan-ui/styles";
+
+// 把七轴视觉环境写到 <html> 上，并显式处理持久化失败
+createVisualEnvironmentController({
+  root: document.documentElement,
+  storageKey: "app-visual-environment",
+  onStorageError: detail => console.error("视觉偏好持久化失败", detail),
+  initial: { mode: "system", motion: "system", transparency: "system" },
+});
+
+createApp(App).mount("#app");
+```
+
+3. 组件从主入口按需取，不需要注册插件（包声明了 `sideEffects: false`，打包器会摇掉没用到的）：
+
+```vue
+<template>
+  <XhButton variant="solid" tone="brand">曦寒按钮</XhButton>
+</template>
+
+<script setup lang="ts">
+import { XhButton } from "@xihan-ui/vue";
+</script>
+```
+
+> 完整的安装选项、样式的三种接法、服务端渲染注意事项，见[组件库安装与接入](https://ui.docs.xihanfun.com/installation)。
+
+### 使用 XiHan.BasicApp (完整应用)
+
+如果您想快速启动一个完整的应用，可以直接使用 XiHan.BasicApp：
+
+```bash
+# 克隆仓库
+git clone https://github.com/XiHanFun/XiHan.BasicApp.git
+
+# 启动后端
+cd XiHan.BasicApp/backend
+dotnet run --project src/main/XiHan.BasicApp.WebHost --launch-profile Development
+
+# 在另一个终端中启动前端
+cd XiHan.BasicApp/frontend
+pnpm install
+pnpm dev
+```
+
+后端启动后访问 `http://127.0.0.1:9708/scalar` 查看 API 文档。仓库当前 Development 与 Production 都监听 `9708`，部署时可通过 `Hosting:Urls` 或容器端口映射覆盖。
+
+数据库连接串在 `backend/src/main/XiHan.BasicApp.WebHost/appsettings.Development.json` 中配置。
+
+## 下一步
+
+三个仓库各有独立文档站，从这里进去：
+
+- 探索 [开发框架文档](https://framework.docs.xihanfun.com/) 了解后端开发框架
+- 探索 [视图组件文档](https://ui.docs.xihanfun.com/) 了解前端视图组件
+- 探索 [基础应用文档](https://basicapp.docs.xihanfun.com/) 了解完整应用案例
+
+三者的关系与选型建议见[生态总览](./ecosystem)。
+
+---
+
+来源：https://docs.xihanfun.com/cosmos/guide
+
+# 项目简介
+
+## 引言
+
+在数字化时代，软件早已成为连接人与信息、业务与技术的重要桥梁。从个人工具到企业级系统，从桌面应用到云原生服务，软件不断推动着生产方式与生活方式的发展。
+
+然而，在实际开发过程中，开发者往往需要花费大量时间处理重复性的基础工作，例如认证授权、数据访问、缓存、日志、国际化、多租户、实时通信、代码生成等。这些能力虽然必不可少，却很少真正体现业务价值。
+
+**XiHan** 正是在这样的背景下诞生。
+
+它并不是一个单独的项目，而是一套持续演进的现代化开源生态，希望帮助开发者减少重复劳动，将更多时间投入到真正有价值的业务创新中。
+
+整个生态目前主要由三个部分组成：
+
+- **XiHan.Framework**：基于 .NET 的现代化模块化开发框架，提供稳定、高效、可扩展的基础能力。
+- **XiHan.UI**：框架无关的 Headless UI 组件库，无头内核加 Vue、React 与 Web Components 多框架适配器，提供统一、高质量的前端开发体验。
+- **XiHan.BasicApp**：基于 Framework 与 UI 构建的完整后台管理系统，也是整个生态的最佳实践与快速开发模板。
+
+三者既可以独立使用，也可以协同工作，共同构建完整的软件开发解决方案。
+
+一路走来，从最初的个人博客，到如今逐渐形成完整的开源生态，XiHan 始终坚持一个目标：
+
+> **快速、轻量、高效、用心。**
+
+希望它不仅能够帮助开发者提高开发效率，也能够陪伴更多热爱技术的人共同成长。
+
+## 名称
+
+> 碧落降恩承淑颜，共挚崎缘挽曦寒。
+> 迁般故事终成忆，谨此葳蕤换思短。
+
+**曦寒（XiHan）**，名字便源于此。
+
+它承载着一段珍藏于心的故事，也寄托着一份未曾改变的初心。
+
+有人说，名字只是一个代号。
+
+而我更愿意相信，每一个真正被赋予意义的名字，都记录着一段值得铭记的经历。
+
+因此，无论项目如何成长，无论未来扩展成怎样的生态，它始终都会叫做 **XiHan**。
+
+**谨以此名，致她。**
+
+## 官方
+
+**项目名称**
+
+- 中文：**曦寒**
+- 英文：**XiHan**
+
+官方网站：
+
+- 官网：[https://www.xihanfun.com](https://www.xihanfun.com)
+- 文档：[https://docs.xihanfun.com](https://docs.xihanfun.com)
+
+**社区名称**
+
+- 中文：**曦寒懿**
+- 英文：**XiHanFun**
+
+官方社区：
+
+- GitHub：https://github.com/XiHanFun
+- Gitee：https://gitee.com/XiHanFun
+- GitCode：https://gitcode.com/XiHanFun
+
+以上平台均为官方代码托管仓库，欢迎 Star、Fork、Issue 与 Pull Request。
+
+未来，XiHan 将持续围绕现代软件开发，构建更加完善的开源生态。
+
+## 自序
+
+> 白衣无尘，亦如初见。
+> 感恩相遇，有幸得识。
+
+我是 **摘繁华**。
+
+很多人都会好奇，为什么我的网名叫做 **「摘繁华」**。
+
+它来源于我初中时写下的一句词：
+
+> **繁华扑尘，有谁堪摘？**
+
+至于词牌和全文，我早已记不清了，唯独这一句一直留在记忆里。
+
+那时的我，总觉得时代越繁华，越容易让真正值得被记住的人、技艺与思想，被时间渐渐掩埋。
+
+历史不断向前，总有人被遗忘；文明不断演进，总有一些经验与智慧散落在岁月的尘埃之中。
+
+如果没有人愿意俯身拾起，那便由我去尝试。
+
+于是，便有了「摘繁华」这个名字。
+
+后来我发现，它不仅仅是一个网名，更逐渐成为了我做事的态度。
+
+------
+
+最初，我只是想写一个属于自己的博客。
+
+后来，因为学习、工作以及兴趣，我陆续开发了后台管理系统、工具库、业务组件，也踩过无数的坑。
+
+每完成一个项目，我都会思考一个问题：
+
+> 有没有一些能力，可以不用下一次再重新写一遍？
+
+于是，我开始把那些真正经过实践验证的能力一点点抽离出来，封装成独立模块。
+
+认证、授权、日志、缓存、多租户、国际化、实时通信、事件总线、代码生成……
+
+它们最开始只是服务于某一个项目，后来逐渐沉淀为能够服务所有项目的基础能力。
+
+随着项目越来越多，这些能力也逐渐形成了今天的 **XiHan** 开源生态。
+
+它主要由三个部分组成。
+
+### XiHan.Framework
+
+这是整个生态的核心，也是我投入时间最多的项目。
+
+它是一套基于 **.NET** 构建的现代化模块化开发框架。
+
+我希望它既能够提供开箱即用的开发体验，也能够保持足够的灵活性，让开发者可以按照自己的方式构建系统，而不是被框架束缚。
+
+因此，它不仅提供认证授权、数据访问、缓存、日志、国际化、多租户、实时通信、AI、代码生成等基础能力，也始终坚持模块化、低耦合、可扩展的设计理念。
+
+它的目标，从来都不是成为最大的框架，而是成为一个真正能够帮助开发者解决问题的框架。
+
+### XiHan.UI
+
+如果说 Framework 是整个生态的基础，那么 **XiHan.UI** 更像是人与软件之间的桥梁。
+
+它是一套框架无关的现代化 UI 与业务组件库：状态机与无障碍逻辑沉在无头内核里，每个前端框架只得到一层薄适配器，目前有 Vue、React 与 Web Components。
+
+除了基础组件之外，它还会持续沉淀更多业务组件、页面模板、交互能力以及设计规范，希望帮助开发者以更少的代码、更高的效率，构建具有统一设计语言的现代 Web 应用。
+
+我希望它不仅好看，更重要的是好用。
+
+真正优秀的界面，不应该炫技，而应该让用户感受不到设计本身。
+
+### XiHan.BasicApp
+
+如果说 Framework 提供基础能力，UI 提供交互能力，那么 **XiHan.BasicApp** 就是整个生态最完整的实践。
+
+它是一套基于 Framework 与 UI 构建的现代化后台管理系统。
+
+它既可以作为一套完整的后台系统直接投入项目，也可以作为学习框架设计、模块开发以及企业级架构的最佳实践。
+
+很多新的设计理念、新的功能模块，都会首先在这里得到验证，再逐步沉淀回 Framework 与 UI。
+
+它们彼此独立，又相互促进，共同组成了 XiHan 的完整生态。
+
+------
+
+我一直相信，一个优秀的开源项目，不应该只有代码，更应该拥有完整的生态。
+
+Framework 沉淀架构；
+
+UI 打磨体验；
+
+BasicApp 验证实践。
+
+它们共同成长，也共同完善。
+
+无论你是希望快速搭建一个企业级项目，还是学习现代软件架构，又或者只是寻找一个能够复用的功能模块。
+
+我都希望，你能够在这里找到属于自己的答案。
+
+------
+
+曾经，我在自己的个人主页上写过这样一句话：
+
+> **受德于儒，受思于道，受兼于墨，受理于法。**
+
+后来，我把它删掉了。
+
+不是因为否定，而是因为越来越觉得，一个人很难用一句话、一种主义，甚至一种哲学去定义自己。
+
+我从小接受的是传统文化教育。
+
+儒家的仁义礼智信、道家的道法自然、墨家的兼爱尚贤、法家的依法而治，以及后来接触到的佛学、西方哲学、现代科学，都或多或少影响了我的思考方式。
+
+它们像来自不同方向的风，不断修正着我对世界的理解。
+
+随着年龄增长，我越来越相信，没有任何一种思想能够完整解释这个复杂的世界。
+
+因此，我既不会盲目接受，也不会轻易否定。
+
+相比于寻找一个能够依附的答案，我更愿意保持怀疑，也保持开放；尊重经验，也尊重实践；敬畏规律，也尊重人的价值。
+
+真正值得相信的，不是哪一种学说，而是在不断实践中形成的认知。
+
+如果一定要给自己贴一个标签，我更愿意称自己为一名**探索者**。
+
+不断学习，不断怀疑，不断求证，也不断修正。
+
+------
+
+这种思考方式，也逐渐影响了我开发软件的方式。
+
+很多人认为，软件开发是一门工程学。
+
+而我更愿意把它看作工程与艺术的结合。
+
+工程决定它是否可靠。
+
+艺术决定它是否优雅。
+
+一个优秀的软件，不应该让用户去适应软件，而应该让软件去适应用户。
+
+一个优秀的框架，不应该增加开发者的学习成本，而应该降低开发者的开发成本。
+
+因此，在设计 XiHan 的过程中，我始终坚持几个原则。
+
+### 尊重自然
+
+复杂属于框架，简单属于开发者。
+
+能够自动完成的事情，就不要要求开发者重复配置；能够约定完成的事情，就尽量减少繁琐的规则。
+
+我一直很喜欢一句话：
+
+> **大道至简。**
+
+真正优秀的设计，往往不会让人觉得复杂。
+
+它不是功能越多越好，而是让开发者在需要的时候，总能以最自然的方式完成工作。
+
+因此，无论是 API 设计、模块划分，还是配置方式，我都尽可能保持统一、清晰、直观。
+
+希望开发者第一次接触 XiHan 时，就能够感受到它的自然与流畅。
+
+------
+
+### 尊重开发者
+
+技术最终服务的是人，而不是代码。
+
+因此，我始终把开发体验放在非常重要的位置。
+
+一份清晰的文档、一致的命名规范、合理的默认配置、完善的错误提示，往往比增加几十个功能更有价值。
+
+我希望每一位开发者，在使用 XiHan 时，不需要花费大量时间理解框架，而能够把更多精力投入到真正的业务开发中。
+
+所以，很多设计看似简单，背后却经历了无数次推倒重来。
+
+因为我始终相信：
+
+**简单，并不是少做，而是把复杂留给自己。**
+
+------
+
+### 尊重用户
+
+软件最终面对的是用户。
+
+因此，我始终重视用户体验、信息安全、隐私保护以及系统稳定性。
+
+再完善的功能，如果难以使用，也很难称得上优秀。
+
+所以，在 XiHan 中，我不仅关注代码是否优雅，也关注交互是否自然；不仅关注功能是否完整，也关注细节是否舒适。
+
+因为真正能够留住用户的，从来都不是功能，而是体验。
+
+------
+
+### 尊重长期主义
+
+软件开发从来不是一场短跑，而是一场漫长的积累。
+
+我希望十年后的 XiHan，依然能够持续成长。
+
+因此，相比追逐一时流行的新技术，我更倾向于选择经过实践验证的方案。
+
+模块化、可扩展、低耦合、向下兼容、稳定演进……
+
+这些听起来或许并不耀眼，却决定着一个项目能够走多远。
+
+我希望 XiHan 不只是一个能够发布第一个版本的项目，更是一个能够持续维护很多年的开源生态。
+
+------
+
+直到今天，我依然觉得，软件开发不仅仅是在编写代码。
+
+它更是在表达一种思考方式。
+
+每一次重构，每一个接口，每一个模块，都是开发者价值观的体现。
+
+因此，我希望 **XiHan** 不只是一个框架、一套组件，或者一个后台系统。
+
+我更希望，它能够成为一个持续成长、不断沉淀的开源生态。
+
+在这里：
+
+- **XiHan.Framework** 沉淀架构与基础能力；
+- **XiHan.UI** 打磨交互与开发体验；
+- **XiHan.BasicApp** 验证设计与工程实践。
+
+它们共同记录的不只是代码，还有一路走来踩过的坑、总结出的经验，以及那些值得留下来的设计思想。
+
+我希望，无论未来增加多少项目，它们都能够围绕同一个目标：
+
+**让软件开发更简单，让优秀的设计能够被更多人复用。**
+
+------
+
+如果未来有一天，XiHan 能够帮助更多开发者提高效率，帮助更多团队减少重复劳动，帮助更多项目快速落地；如果有人因为它而学会模块化设计，因为它理解工程化开发，因为它爱上开源。
+
+那么，当年写下的那一句：
+
+> **繁华扑尘，有谁堪摘？**
+
+便算没有白写。
+
+愿我们都能在时代的洪流中，摘取属于自己的那一份繁华。
+
+也愿我们留下的每一行代码、每一篇文档、每一次分享，都能够成为后来者继续前行的一束微光。
+
+**与君共勉。**
+
+—— **摘繁华**
+
+## 致谢
+
+感谢每一位关注、使用、反馈和贡献 **XiHan** 的朋友。
+
+开源从来不是一个人的坚持，而是一群人的同行。
+
+感谢每一位提交 Issue、发起 Pull Request、提出建议、分享经验的开发者。正因为有你们，XiHan 才能够不断成长、不断完善。
+
+同时，也感谢所有优秀的开源项目和开发工具，为 XiHan 的诞生提供了坚实的基础。
+
+特别感谢：
+
+- **.NET** 与 **C#** —— 提供稳定、现代、高性能的开发平台。
+- **Vue** —— 构建现代 Web 应用的重要基石。
+- **Visual Studio**、**JetBrains Rider**、**Visual Studio Code** —— 提供优秀的开发体验。
+- **Git**、**GitHub**、**Gitee**、**GitCode** —— 承载开源社区的协作与分享。
+- **Vite**、**VitePress**、**TypeScript** 等优秀的开源项目，为前端生态提供了强大的支持。
+
+最后，感谢所有曾给予我帮助的人。
+
+无论是一句建议、一次鼓励，还是一次善意的批评，都成为了 XiHan 成长道路上的养分。
+
+愿开源精神薪火相传。
+
+愿热爱永不止步。
+
+愿我们，终将摘得属于自己的繁华。
+
+---
+
+来源：https://docs.xihanfun.com/cosmos/sponsor
+
+# ❤️ 支持&赞助
+
+> **开源版本** 自发布以来始终坚持 **MIT License** 开源协议，所有核心功能永久免费，个人和企业均可使用。
+
+开源项目的成长离不开社区的支持。如果曦寒项目为你的工作、学习或项目带来了灵感或帮助，欢迎支持项目的发展。
+
+你的赞助将主要用于：
+
+- ☁️ 在线预览环境
+- 🖥️ 云服务器、数据库、对象存储等基础设施
+- 🌍 域名、SSL 证书及 CDN
+- 🤖 AI 服务及第三方平台费用
+- 📚 文档维护与功能持续迭代
+- ⌨️ 持续开发与版本维护
+- ☕ 请作者喝一杯咖啡
+
+当然，一个 Star、一份 PR、一次 Issue 或向更多人推荐本项目，同样是对项目最大的支持。
+
+> 赞助后，可以发送邮件到 me@xihanfun.com 或者通过github、微信群等社交平台告知要展示的捐赠者名称、留言、链接 (链接可以是您的github、博客、个人网站、公司产品等)，感谢每一位开发者的陪伴与支持。
+
+<table>
+  <tr>
+    <td align="center"><img src="/images/alipay.png" width="200" /><br/>支付宝(支持信用卡)</td>
+    <td align="center"><img src="/images/weixinpay.png" width="200" /><br/>微信(支持信用卡)</td>
+  </tr>
+</table>
+
+
+## 赞助榜单
+
+> 感谢以下赞助者，让作者开发更有动力。以下排名不分先后，按时间顺序排列。
+
+| 昵称     | 链接                               | 渠道   | 金额  | 留言                                                      | 时间       |
+| -------- | ---------------------------------- | ------ | ----- | --------------------------------------------------------- | ---------- |
+| *峰      | 匿名                               | 支付宝 | 2000  | 强！希望 XiHan.Framework 越来越好！                       | 2025-09-24 |
+| 过*烟    | 匿名                               | 支付宝 | 500   | 感谢作者。                                                | 2026-05-02 |
+| 点**痕   | https://github.com/ddxhcode        | 微信   | 66    | -                                                         | 2026-07-03 |
+| 静*      | 匿名                               | 支付宝 | 520   | -                                                         | 2026-07-03 |
+| 沐**风   | https://github.com/timeIsMoney-fun | 支付宝 | 30    | 太强了，请作者喝一杯星巴克，有时间了 也想听听xihan 的故事 | 2026-07-10 |
+| 麦兜**   | https://github.com/wangjunjx8868   | 微信   | 100   | 捐了                                                      | 2026-07-10 |
+| A 喵**   | https://github.com/reiasesessesses | 微信   | 66    | 小小红包，赶紧领了吧。买几盒好*                           | 2026-07-10 |
+| 男*      | https://github.com/zgrjhwei        | 微信   | 50    | 9块九可以喝一周呢                                         | 2026-07-10 |
+| 兮兮     | 匿名                               | 支付宝 | 10    | -                                                         | 2026-07-13 |
+| SmallHan | https://gitee.com/SmallHan         | 支付宝 | 19.99 | 感谢作者，框架太强大了                                    | 2026-08-06 |
+| 华灯     | https://github.com/hd2y            | 支付宝 | 200   | -                                                         | 2026-08-10 |
+| 猪*了    | 匿名                               | 微信   | 66    | 越来越强，越来越好。                                      | 2026-08-28 |
+|          |                                    |        |       |                                                           |            |
+|          |                                    |        |       |                                                           |            |
+|          |                                    |        |       |                                                           |            |

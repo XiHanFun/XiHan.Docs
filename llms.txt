@@ -1,0 +1,24 @@
+# 曦寒懿
+
+> 曦寒懿（XiHanFun）开源生态：XiHan.Framework 是后端基座，XiHan.UI 是前端基座，XiHan.BasicApp 是基础应用。本站承载项目简介、跨仓快速上手、生态总览与参与贡献约定，三个产品的正文在各自的文档站。
+
+本文件由文档站构建期生成，内容与仓库文档同源。
+
+## 机读资产
+
+- [llms-full.txt](https://docs.xihanfun.com/llms-full.txt): 全部 8 页正文
+- 每页 Markdown：把站点地址后缀成 `.md`，如 https://docs.xihanfun.com/cosmos/code-of-conduct.md
+
+## 首页
+
+- [曦寒懿官方文档](https://docs.xihanfun.com/): 拥有底座、组件、应用完整生态
+
+## 生态
+
+- [贡献者公约](https://docs.xihanfun.com/cosmos/code-of-conduct): 身为社区成员、贡献者和领袖，我们承诺使社区参与者不受骚扰，无论其年龄、体型、可见或不可见的缺陷、族裔、性征、性别认同和表达、经验水平、教育程度、社会与经济地位、国籍、相貌、种族、种姓、肤色、宗教信仰、性倾向或性取向如何。
+- [如何为项目贡献代码](https://docs.xihanfun.com/cosmos/contributing): - 安装 Git；
+- [贡献者](https://docs.xihanfun.com/cosmos/contributors): ![贡献者](https://github.com/XiHanFun)
+- [生态总览](https://docs.xihanfun.com/cosmos/ecosystem): 曦寒不是一个仓库，而是三个可以独立使用、也可以叠起来用的开源项目。
+- [快速上手](https://docs.xihanfun.com/cosmos/getstart): 本项目由 XiHan.Framework（开发框架）、XiHan.UI（视图组件）、XiHan.BasicApp（基础应用）组成。
+- [项目简介](https://docs.xihanfun.com/cosmos/guide): 在数字化时代，软件早已成为连接人与信息、业务与技术的重要桥梁。
+- [❤️ 支持&赞助](https://docs.xihanfun.com/cosmos/sponsor): 开源版本 自发布以来始终坚持 MIT License 开源协议，所有核心功能永久免费，个人和企业均可使用。
