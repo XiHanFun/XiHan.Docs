@@ -1,6 +1,6 @@
 ---
 layout: home
-title: 曦寒懿官方文档
+title: 曦寒懿
 titleTemplate: 拥有底座、组件、应用完整生态
 
 hero:
