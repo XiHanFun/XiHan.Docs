@@ -220,6 +220,14 @@ export default defineXiHanConfig({
   description,
   keywords,
   repo: "XiHan.Docs",
+  llms: {
+    title: "曦寒懿",
+    summary: "曦寒懿（XiHanFun）开源生态：XiHan.Framework 是后端基座，XiHan.UI 是前端基座，XiHan.BasicApp 是基础应用。本站承载项目简介、跨仓快速上手、生态总览与参与贡献约定，三个产品的正文在各自的文档站。",
+    sections: [
+      { dir: ".", label: "首页" },
+      { dir: "cosmos", label: "生态" },
+    ],
+  },
   themeConfig: {
     // 门户是组织站，社交链接指向组织主页
     socialLinks: [
