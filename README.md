@@ -122,6 +122,8 @@ pnpm run preview
 
 本站与三个产品站的观感都来自 [VitepressTheme](https://github.com/XiHanFun/VitepressTheme) 发布的 `@xihanfun/vitepress-theme`：`config.ts` 用 `defineXiHanConfig` 垫上共用的中文文案、本地搜索、页脚与仓库链接，`theme/index.ts` 直接导出主题。改配色、版式或共用文案去主题仓库改，发版后再升级这里的依赖。
 
+顶部公告横幅、右侧赞助位与广告位的内容写在 [`docs/public/data/promotions.json`](./docs/public/data/promotions.json)，四个文档站运行时都读这一份，改完部署本站即生效：`banner` 是公告（换一条公告就换一个 `id`，读者关过的 `id` 不再出现，置为 `null` 即撤下），`sponsors` 是赞助商（`tier` 取 `large` 独占一行、`small` 一行两个），`ads` 是广告（每次打开页面随机展示一条）。
+
 ## 相关项目
 
 - [XiHan.Framework](https://github.com/XiHanFun/XiHan.Framework) - .NET 模块化开发框架（文档：<https://framework.docs.xihanfun.com>）
