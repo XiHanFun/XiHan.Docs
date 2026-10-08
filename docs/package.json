@@ -28,7 +28,8 @@
     "rebuild:dev": "pnpm run clean && pnpm run build:dev"
   },
   "dependencies": {
+    "@xihanfun/vitepress-theme": "^1.0.0",
     "vue": "^3.5.39",
-    "vitepress": "^1.6.4"
+    "vitepress": "2.0.0-alpha.20"
   }
 }

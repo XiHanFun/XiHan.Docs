@@ -19,7 +19,7 @@ XiHan.Docs 是曦寒（XiHanFun）组织级文档站的源码仓库，基于 [Vi
 | 🎨 视图组件 | [XiHan.UI](https://github.com/XiHanFun/XiHan.UI) | <https://ui.docs.xihanfun.com> |
 | 🏠 基础应用 | [XiHan.BasicApp](https://github.com/XiHanFun/XiHan.BasicApp) | <https://basicapp.docs.xihanfun.com> |
 
-四个站点使用同一套 VitePress 基础设施（主题、版本徽章、本地搜索、部署工作流），各自独立构建与发布。
+四个站点共用同一份文档主题 [`@xihanfun/vitepress-theme`](https://github.com/XiHanFun/VitepressTheme)（配色、版式、中文界面文案、本地搜索、页脚），各自独立构建与发布。
 
 本站部署在 <https://docs.xihanfun.com>，构建产物通过 GitHub Actions 自动发布到 GitHub Pages。
 
@@ -27,7 +27,8 @@ XiHan.Docs 是曦寒（XiHanFun）组织级文档站的源码仓库，基于 [Vi
 
 | 类别     | 技术                        | 版本           |
 | -------- | --------------------------- | -------------- |
-| 站点框架 | VitePress                   | ^1.6.4         |
+| 站点框架 | VitePress                   | 2.0.0-alpha.20 |
+| 文档主题 | @xihanfun/vitepress-theme   | ^1.0.0         |
 | 视图库   | Vue                         | ^3.5.39        |
 | 包管理   | pnpm（workspace）           | 建议 11+       |
 | 运行时   | Node.js                     | 建议 24+（CI 使用 24） |
@@ -42,7 +43,7 @@ XiHan.Docs/
 │   ├── .vitepress/
 │   │   ├── config.ts             # 站点配置：nav 导航、sidebar 侧栏、本地搜索、社交链接、editLink 等
 │   │   ├── versions.ts           # 三大板块「导航徽章」的发布阶段（本站导航外链用）
-│   │   ├── theme/                 # 自定义主题：index.ts + overrides.css / rainbow.css / vars.css
+│   │   ├── theme/index.ts         # 主题入口：直接使用 @xihanfun/vitepress-theme
 │   │   └── dist/                   # 构建产物目录（pnpm run build 生成，不提交）
 │   ├── index.md                  # 首页（Hero + Features + 在线预览卡片）
 │   ├── public/                   # 静态资源：favicon.ico、images/、robots.txt
@@ -116,6 +117,10 @@ pnpm run preview
   3. 在 `docs/` 目录下执行 `pnpm install` 与 `pnpm run build`
   4. 通过 `JamesIves/github-pages-deploy-action` 将 `docs/.vitepress/dist` 发布到 `gh-pages` 分支
 - GitHub Pages 从 `gh-pages` 分支提供站点内容，结合 `CNAME` 对外暴露为 `https://docs.xihanfun.com`。
+
+## 文档主题
+
+本站与三个产品站的观感都来自 [VitepressTheme](https://github.com/XiHanFun/VitepressTheme) 发布的 `@xihanfun/vitepress-theme`：`config.ts` 用 `defineXiHanConfig` 垫上共用的中文文案、本地搜索、页脚与仓库链接，`theme/index.ts` 直接导出主题。改配色、版式或共用文案去主题仓库改，发版后再升级这里的依赖。
 
 ## 相关项目
 
