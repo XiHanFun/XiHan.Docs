@@ -114,7 +114,7 @@ export default defineXiHanConfig({
   keywords,
   repo: "XiHan.Docs",
   banner: {
-    id: "2026-10-docs-theme",
+    id: "2026-10-docs-relaunch",
     text: "曦寒懿文档全新改版上线：开发框架、视图组件与基础应用文档统一升级",
     link: "https://docs.xihanfun.com/cosmos/ecosystem",
     linkText: "查看生态总览",
