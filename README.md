@@ -103,7 +103,7 @@ pnpm run preview
 1. **新建内容页**：在 `docs/cosmos/` 下新增 `.md` 文件。本仓库只收生态层面的页面（导览、跨仓上手、贡献约定）。
 2. **登记导航/侧栏**：在 `docs/.vitepress/config.ts` 的 `startSidebar` / `contributeSidebar` 里补充一条 `{ text, link }`；`sidebar` 对象按路径逐页登记，新增页面时需一并登记，否则该页会落到默认主题的窄列布局。
 3. **静态资源**：图片放到 `docs/public/images/`，页面中以站点根相对路径 `/images/xxx.png` 引用。
-4. **发布阶段徽章**：导航里三大板块外链标题右上角的徽章由 `docs/.vitepress/versions.ts` 的 `releases` 常量推导，只写发布阶段（稳定版、预览版等），不写具体版本号，日常发版不用同步；只有产品进入或离开预发布阶段时才改。三个产品站不用这套机制：它们导航末项直接显示自己 `docs/package.json` 的 `version`，发版时只改那一处。
+4. **发布阶段徽章**：导航「生态」菜单里三大板块标题旁的徽章由 `docs/.vitepress/versions.ts` 的 `releases` 常量推导，只写发布阶段（稳定版、预览版等），不写具体版本号，日常发版不用同步；只有产品进入或离开预发布阶段时才改。三个产品站不用这套机制：它们导航末项直接显示自己 `docs/package.json` 的 `version`，发版时只改那一处。
 5. **跨站链接**：指向另外三个站的链接一律写完整地址（`https://framework.docs.xihanfun.com/...`），站内链接才用相对/根相对路径。
 6. **本地校验**：新增/修改页面后执行 `pnpm run dev` 预览，或 `pnpm run build` 确认无渲染异常——未配置 `ignoreDeadLinks`，站内死链会直接让构建失败。
 7. **在线编辑入口**：`config.ts` 中 `themeConfig.editLink` 已配置「在 GitHub 上编辑此页」，指向 `https://github.com/XiHanFun/XiHan.Docs/tree/main/docs/:path`。
