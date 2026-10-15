@@ -37,13 +37,13 @@ features:
 
   - title: 基础应用
     icon: 🏠
-    details: 提供完整的企业级应用构建方案，包括权限管理、工作流、报表系统等常用功能，助力企业快速构建安全、稳定、高效的业务系统。
+    details: 提供完整的企业级应用构建方案，包括权限管理、工作流审批、代码生成等常用功能，助力企业快速构建安全、稳定、高效的业务系统。
     link: https://basicapp.docs.xihanfun.com
     linkText: "浏览基础应用文档"
 
   - title: 高效快速跨平台
     icon: 🛠️
-    details: 后端由 DotNet10 驱动，执行速度快于任何其他常用框架，可以在多个平台运行。精心设计之功能、不断研磨之算法，在程序的高性能、高可用和高扩展性上夯实基础。
+    details: 后端由 .NET 驱动，执行速度快于任何其他常用框架，可以在多个平台运行。精心设计之功能、不断研磨之算法，在程序的高性能、高可用和高扩展性上夯实基础。
     link: https://dotnet.microsoft.com/zh-cn/
     linkText: "了解 DotNet"
 
@@ -73,7 +73,7 @@ footer:
 <div class="bap-preview">
 <span class="bap-eyebrow">在线演示</span>
 <h2 class="bap-title">基础应用 · 在线预览</h2>
-<p class="bap-desc">XiHan.BasicApp 是基于本框架构建的企业级中后台：多租户、RBAC + ABAC 权限、代码生成、实时通信开箱即用。<br />无需本地搭建，点击下方窗口直接在线体验。</p>
+<p class="bap-desc">XiHan.BasicApp 是基于 XiHan.Framework 与 XiHan.UI 构建的企业级中后台：多租户、RBAC + 数据范围 + 字段脱敏、代码生成、实时通信开箱即用。<br />无需本地搭建，点击下方窗口直接在线体验。</p>
 <div class="bap-window">
 <div class="bap-bar"><span class="bap-dots"><span class="bap-dot bap-dot--r"></span><span class="bap-dot bap-dot--y"></span><span class="bap-dot bap-dot--g"></span></span><span class="bap-url">basicapp.xihanfun.com</span></div>
 <a class="bap-screen" href="https://basicapp.xihanfun.com" target="_blank" rel="noreferrer">

@@ -29,7 +29,7 @@ index: false
 
 ### XiHan.BasicApp · 基础应用
 
-基于 XiHan.Framework 和 XiHan.UI 的超高颜值通用中后台内核。开箱即用，提供 RBAC + ABAC 混合权限管理、多租户隔离、代码生成、实时通信、灰度发布、AI 等核心能力，满足新型企业级中后台管理场景。属于曦寒懿（XiHanFun）开源生态的基础应用。
+基于 XiHan.Framework 和 XiHan.UI 的超高颜值通用中后台内核。开箱即用，提供 RBAC + 数据范围 + 字段脱敏的权限管理、多租户隔离、代码生成、实时通信、灰度发布、AI 等核心能力，满足新型企业级中后台管理场景。属于曦寒懿（XiHanFun）开源生态的基础应用。
 
 ## 彼此什么关系
 
@@ -83,7 +83,7 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 - BasicApp 随仓库发布，版本真源是 `backend/props/version.props`
 - UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，全部公开包始终同一个版本号，版本真源是 `ui/packages/*/*/package.json`
 
-各站导航栏右上角的徽章显示的就是该项目当前的版本与发布阶段。
+三个产品站导航栏的末项显示该项目当前的版本号；本站「生态」菜单里的徽章显示各项目的发布阶段。
 
 ## 参与进来
 
