@@ -26,7 +26,7 @@
 
 ### XiHan.BasicApp · 基础应用
 
-基于 XiHan.Framework 和 XiHan.UI 的超高颜值通用中后台内核。开箱即用，提供 RBAC + ABAC 混合权限管理、多租户隔离、代码生成、实时通信、灰度发布、AI 等核心能力，满足新型企业级中后台管理场景。属于曦寒懿（XiHanFun）开源生态的基础应用。
+基于 XiHan.Framework 和 XiHan.UI 的超高颜值通用中后台内核。开箱即用，提供 RBAC + 数据范围 + 字段脱敏的权限管理、多租户隔离、代码生成、实时通信、灰度发布、AI 等核心能力，满足新型企业级中后台管理场景。属于曦寒懿（XiHanFun）开源生态的基础应用。
 
 ## 彼此什么关系
 
@@ -58,6 +58,19 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 | 要在自己的前端项目里用组件库，或做跨框架的设计系统 | [视图组件 · 架构总览](https://ui.docs.xihanfun.com/overview) |
 | 还在选型，想先看清楚适合不适合 | [为什么选择曦寒框架](https://framework.docs.xihanfun.com/why) · [为什么选择曦寒基础应用](https://basicapp.docs.xihanfun.com/why) |
 | 想先跑起来看看长什么样 | [在线预览](https://basicapp.xihanfun.com) |
+| 要让 Claude Code、Cursor 这类 AI 编程工具按正确的 API 写代码 | [AI 辅助开发](#ai-辅助开发) |
+
+## AI 辅助开发
+
+三个文档站都有「AI 辅助开发」一册：给 AI 编程工具的提示词与使用技能、MCP 服务端接入，以及可以直接放进上下文的 LLMs.txt。框架与组件库还各自随版本发布一个离线 CLI，同时也是 MCP 服务端：
+
+| 项目 | 工具 | 在项目根接入 | 文档 |
+| --- | --- | --- | --- |
+| XiHan.Framework | .NET 工具 `XiHan.Framework.Cli`，查包、模块类、配置节与文档 | `dnx XiHan.Framework.Cli --yes -- setup --client claude` | [开发框架 · For Agents](https://framework.docs.xihanfun.com/ai/agents) |
+| XiHan.UI | npm 包 `@xihan-ui/cli`，查组件 API、示例、设计令牌与 design.md | `npx -y @xihan-ui/cli setup --client claude` | [视图组件 · For Agents](https://ui.docs.xihanfun.com/ai/agents) |
+| XiHan.BasicApp | 不单独发包，后端与前端分别接入上面两个服务端 | 在仓库根依次运行上面两条命令 | [基础应用 · MCP Server](https://basicapp.docs.xihanfun.com/ai/mcp) |
+
+两个 CLI 的数据随包离线发布，与各自产品同号。`setup` 读出项目引用的版本，把钉住版本的 MCP 配置与使用技能写进项目，AI 工具查到的就是项目在用的那一版；`--client` 还可以换成 `cursor`、`vscode` 或 `codex`。
 
 ## 版本与发布
 
@@ -67,7 +80,7 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 - BasicApp 随仓库发布，版本真源是 `backend/props/version.props`
 - UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，全部公开包始终同一个版本号，版本真源是 `ui/packages/*/*/package.json`
 
-各站导航栏右上角的徽章显示的就是该项目当前的版本与发布阶段。
+三个产品站导航栏的末项显示该项目当前的版本号；本站「生态」菜单里的徽章显示各项目的发布阶段。
 
 ## 参与进来
 

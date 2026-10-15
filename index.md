@@ -5,7 +5,7 @@
 <div class="bap-preview">
 <span class="bap-eyebrow">在线演示</span>
 <h2 class="bap-title">基础应用 · 在线预览</h2>
-<p class="bap-desc">XiHan.BasicApp 是基于本框架构建的企业级中后台：多租户、RBAC + ABAC 权限、代码生成、实时通信开箱即用。<br />无需本地搭建，点击下方窗口直接在线体验。</p>
+<p class="bap-desc">XiHan.BasicApp 是基于 XiHan.Framework 与 XiHan.UI 构建的企业级中后台：多租户、RBAC + 数据范围 + 字段脱敏、代码生成、实时通信开箱即用。<br />无需本地搭建，点击下方窗口直接在线体验。</p>
 <div class="bap-window">
 <div class="bap-bar"><span class="bap-dots"><span class="bap-dot bap-dot--r"></span><span class="bap-dot bap-dot--y"></span><span class="bap-dot bap-dot--g"></span></span><span class="bap-url">basicapp.xihanfun.com</span></div>
 <a class="bap-screen" href="https://basicapp.xihanfun.com" target="_blank" rel="noreferrer">

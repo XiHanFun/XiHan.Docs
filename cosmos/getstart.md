@@ -7,7 +7,7 @@
 本项目由 [XiHan.Framework](https://github.com/XiHanFun/XiHan.Framework)（开发框架）、[XiHan.UI](https://github.com/XiHanFun/XiHan.UI)（视图组件）、[XiHan.BasicApp](https://github.com/XiHanFun/XiHan.BasicApp)（基础应用）组成。
 
 - **开发框架子项目**：是后端模块化应用开发框架集成，基于 DotNet 构建。
-- **视图组件子项目**：是前端组件库集成，基于 Vue 构建。
+- **视图组件子项目**：是框架无关的 Headless UI 组件库，提供 Vue、React 与 Web Components 适配器。
 - **基础应用子项目**：为开发框架和视图组件的结合，为通用、全面的管理系统。
 
 ## 环境准备
@@ -17,7 +17,7 @@
 ### 后端开发环境
 
 - [.NET SDK](https://dotnet.microsoft.com/download) (版本 10 或更高)
-- 推荐 IDE：Visual Studio 2022、JetBrains Rider 或 VS Code
+- 推荐 IDE：Visual Studio 2026、JetBrains Rider 或 VS Code
 
 ### 前端开发环境
 
@@ -182,7 +182,7 @@ pnpm install
 pnpm dev
 ```
 
-后端启动后访问 `http://127.0.0.1:9708/scalar` 查看 API 文档。仓库当前 Development 与 Production 都监听 `9708`，部署时可通过 `Hosting:Urls` 或容器端口映射覆盖。
+后端启动后访问 `http://127.0.0.1:9708/scalar` 查看 API 文档，首次启动会自动建表并初始化种子数据。
 
 数据库连接串在 `backend/src/main/XiHan.BasicApp.WebHost/appsettings.Development.json` 中配置。
 
@@ -194,4 +194,4 @@ pnpm dev
 - 探索 [视图组件文档](https://ui.docs.xihanfun.com/) 了解前端视图组件
 - 探索 [基础应用文档](https://basicapp.docs.xihanfun.com/) 了解完整应用案例
 
-三者的关系与选型建议见[生态总览](./ecosystem)。
+三者的关系与选型建议见[生态总览](./ecosystem)；用 Claude Code、Cursor 等 AI 编程工具开发时，先按[AI 辅助开发](./ecosystem#ai-辅助开发)接入框架与组件库的 MCP 服务端。
