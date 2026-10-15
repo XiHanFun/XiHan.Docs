@@ -197,4 +197,4 @@ pnpm dev
 - 探索 [视图组件文档](https://ui.docs.xihanfun.com/) 了解前端视图组件
 - 探索 [基础应用文档](https://basicapp.docs.xihanfun.com/) 了解完整应用案例
 
-三者的关系与选型建议见[生态总览](./ecosystem)。
+三者的关系与选型建议见[生态总览](./ecosystem)；用 Claude Code、Cursor 等 AI 编程工具开发时，先按[AI 辅助开发](./ecosystem#ai-辅助开发)接入框架与组件库的 MCP 服务端。
