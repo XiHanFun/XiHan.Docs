@@ -191,7 +191,7 @@ pnpm dev
 
 ## 下一步
 
-三个仓库各有独立文档站，从这里进去：
+三款主推产品各有独立文档站，从这里进去：
 
 - 探索 [开发框架文档](https://framework.docs.xihanfun.com/) 了解后端开发框架
 - 探索 [视图组件文档](https://ui.docs.xihanfun.com/) 了解前端视图组件
