@@ -1,7 +1,7 @@
 /**
  * 导航徽章的单一事实源
  * --------------------------------------------------------------------------
- * 导航「生态」菜单里三大板块标题旁的发布阶段徽章统一在这里维护：
+ * 导航「生态」菜单里各产品标题旁的发布阶段徽章统一在这里维护：
  * 每个产品只声明「发布阶段」，徽章文案与配色都由阶段推导，不写具体版本号。
  *
  * withNavBadge 把徽章拼进 nav 的 item.text，VitePress 以 v-html 渲染该字段，
@@ -43,12 +43,16 @@ export interface NavBadge {
 /**
  * 各产品的发布阶段。
  *
- * 三者是独立发版的仓库，阶段各走各的，不要合并成一个常量。具体版本号以各自的 NuGet / npm 发布为准。
+ * 各产品是独立发版的仓库，阶段各走各的，不要合并成一个常量。具体版本号以各自的 NuGet / npm 发布为准。
  */
 export const releases = {
   framework: { stage: ReleaseStage.Release },
   ui: { stage: ReleaseStage.Release },
   basicApp: { stage: ReleaseStage.Release },
+  printDesigner: { stage: ReleaseStage.Rc },
+  flowDesigner: { stage: ReleaseStage.Rc },
+  formDesigner: { stage: ReleaseStage.Rc },
+  reportDesigner: { stage: ReleaseStage.Rc },
 } satisfies Record<string, ProductRelease>;
 
 /** 阶段 → 徽章文案与配色 */

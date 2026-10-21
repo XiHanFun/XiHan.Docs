@@ -5,9 +5,9 @@ index: false
 
 # 生态总览
 
-曦寒不是一个仓库，而是三个可以独立使用、也可以叠起来用的开源项目。本页讲它们各自是什么、彼此什么关系、你的场景该从哪个进去。
+曦寒不是一个仓库，而是三个可以独立使用、也可以叠起来用的开源项目，外加打印、流程、表单、报表四款设计器。本页讲它们各自是什么、彼此什么关系、你的场景该从哪个进去。
 
-三者各有独立的文档站，本站只负责生态层面的导览与共同的贡献约定。
+它们各有独立的文档站，本站只负责生态层面的导览与共同的贡献约定。
 
 ## 三个仓库
 
@@ -31,6 +31,22 @@ index: false
 
 基于 XiHan.Framework 和 XiHan.UI 的超高颜值通用中后台内核。开箱即用，提供 RBAC + 数据范围 + 字段脱敏的权限管理、多租户隔离、代码生成、实时通信、灰度发布、AI 等核心能力，满足新型企业级中后台管理场景。属于曦寒懿（XiHanFun）开源生态的基础应用。
 
+## 四款设计器
+
+| 设计器 | 项目 | 文档站 |
+| --- | --- | --- |
+| 打印设计器 | [XiHan.PrintDesigner](https://github.com/XiHanFun/XiHan.PrintDesigner) | [print.docs.xihanfun.com](https://print.docs.xihanfun.com/) |
+| 流程设计器 | [XiHan.FlowDesigner](https://github.com/XiHanFun/XiHan.FlowDesigner) | [flow.docs.xihanfun.com](https://flow.docs.xihanfun.com/) |
+| 表单设计器 | [XiHan.FormDesigner](https://github.com/XiHanFun/XiHan.FormDesigner) | [form.docs.xihanfun.com](https://form.docs.xihanfun.com/) |
+| 报表设计器 | [XiHan.ReportDesigner](https://github.com/XiHanFun/XiHan.ReportDesigner) | [report.docs.xihanfun.com](https://report.docs.xihanfun.com/) |
+
+- **打印设计器**：可视化设计打印模板，在浏览器里预览与打印；配合本地打印客户端可静默直打。
+- **流程设计器**：可视化编排流程图与审批流，产出与流程引擎无关的流程定义，由使用方对接自己的引擎。
+- **表单设计器**：可视化搭建表单，同一份 JSON 定义既驱动设计器，也驱动业务页面里的表单渲染。
+- **报表设计器**：可视化设计数据报表与看板，数据由使用方通过回调提供。
+
+四款都是框架无关的设计器，以原生 Web Components 交付，Vue、React、Angular 或不使用框架的页面都能直接使用；运行时不引入任何第三方包。模板只是 JSON，不含也不执行任何代码；组件不发网络请求，数据、存储与权限都经回调交给使用方。
+
 ## 彼此什么关系
 
 ```
@@ -52,6 +68,8 @@ index: false
 
 Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是前端库，各自可以单独使用。
 
+四款设计器建立在 UI 之上：运行时只依赖本产品与 XiHan.UI 的包，界面直接用 UI 的组件与设计器零件。
+
 ## 我该从哪个进去
 
 | 你的场景 | 从这里开始 |
@@ -59,6 +77,7 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 | 要在自己的 .NET 项目里用模块化框架、只取其中几个能力 | [开发框架 · 快速上手](https://framework.docs.xihanfun.com/quickstart) |
 | 要一套现成的中后台系统，改改就能上线 | [基础应用 · 快速开始](https://basicapp.docs.xihanfun.com/getting-started) |
 | 要在自己的前端项目里用组件库，或做跨框架的设计系统 | [视图组件 · 架构总览](https://ui.docs.xihanfun.com/overview) |
+| 要在自己的页面里嵌打印、流程、表单或报表设计器 | [打印设计器](https://print.docs.xihanfun.com/) · [流程设计器](https://flow.docs.xihanfun.com/) · [表单设计器](https://form.docs.xihanfun.com/) · [报表设计器](https://report.docs.xihanfun.com/) |
 | 还在选型，想先看清楚适合不适合 | [为什么选择曦寒框架](https://framework.docs.xihanfun.com/why) · [为什么选择曦寒基础应用](https://basicapp.docs.xihanfun.com/why) |
 | 想先跑起来看看长什么样 | [在线预览](https://basicapp.xihanfun.com) |
 | 要让 Claude Code、Cursor 这类 AI 编程工具按正确的 API 写代码 | [AI 辅助开发](#ai-辅助开发) |
@@ -77,11 +96,12 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 
 ## 版本与发布
 
-三个仓库**独立发版**，版本号互不对齐：
+各仓库**独立发版**，版本号互不对齐：
 
 - Framework 发布到 [NuGet](https://www.nuget.org/profiles/XiHanFun)，版本真源是 `framework/props/version.props`
 - BasicApp 随仓库发布，版本真源是 `backend/props/version.props`
 - UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，全部公开包始终同一个版本号，版本真源是 `ui/packages/*/*/package.json`
+- 四款设计器各自发布到 npm，作用域分别是 `@xihan-print`、`@xihan-flow`、`@xihan-form`、`@xihan-report`，版本真源是各仓 `<产品>/packages/*/package.json`（如 `print/packages/*/package.json`）
 
 三个产品站导航栏的末项显示该项目当前的版本号；本站「生态」菜单里的徽章显示各项目的发布阶段。
 
