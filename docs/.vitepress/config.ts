@@ -28,7 +28,7 @@ const startSidebar: DefaultTheme.SidebarItem[] = [
     ],
   },
   {
-    text: "三大板块文档",
+    text: "主推产品",
     collapsed: false,
     items: [
       { text: "🧩 开发框架", link: docSites.framework },
@@ -37,7 +37,7 @@ const startSidebar: DefaultTheme.SidebarItem[] = [
     ],
   },
   {
-    text: "设计器文档",
+    text: "生态产品",
     collapsed: false,
     items: [
       { text: "🖨️ 打印设计器", link: docSites.printDesigner },
@@ -80,7 +80,7 @@ const nav: DefaultTheme.NavItem[] = [
     text: "生态",
     items: [
       {
-        text: "官方生态",
+        text: "主推产品",
         items: [
           { text: withNavBadge("开发框架", releases.framework), link: "https://framework.docs.xihanfun.com" },
           { text: withNavBadge("视图组件", releases.ui), link: "https://ui.docs.xihanfun.com" },
@@ -88,7 +88,7 @@ const nav: DefaultTheme.NavItem[] = [
         ],
       },
       {
-        text: "设计器",
+        text: "生态产品",
         items: [
           { text: withNavBadge("打印设计器", releases.printDesigner), link: docSites.printDesigner },
           { text: withNavBadge("流程设计器", releases.flowDesigner), link: docSites.flowDesigner },
@@ -126,14 +126,14 @@ export default defineXiHanConfig({
   keywords,
   repo: "XiHan.Docs",
   banner: {
-    id: "2026-10-docs-relaunch",
-    text: "曦寒懿文档全新改版上线：开发框架、视图组件与基础应用文档统一升级",
+    id: "2026-10-designers-rc",
+    text: "生态产品多个设计器现已发布候选版本",
     link: "https://docs.xihanfun.com/cosmos/ecosystem",
     linkText: "查看生态总览",
   },
   llms: {
     title: "曦寒懿",
-    summary: "曦寒懿（XiHanFun）开源生态：XiHan.Framework 是后端基座，XiHan.UI 是前端基座，XiHan.BasicApp 是基础应用，另有打印、流程、表单、报表四款以 Web Components 交付的设计器。本站承载项目简介、跨仓快速上手、生态总览与参与贡献约定，各产品的正文在各自的文档站。",
+    summary: "曦寒懿（XiHanFun）开源生态：XiHan.Framework 是后端基座，XiHan.UI 是前端基座，XiHan.BasicApp 是基础应用，三者是主推产品；生态产品是打印、流程、表单、报表等以 Web Components 交付的设计器。本站承载项目简介、跨仓快速上手、生态总览与参与贡献约定，各产品的正文在各自的文档站。",
     sections: [
       { dir: ".", label: "首页" },
       { dir: "cosmos", label: "生态" },
