@@ -6,11 +6,15 @@ const title: string = "曦寒懿文档";
 const description: string = "拥有底座、组件、应用完整生态";
 const keywords: string = "曦寒,曦寒懿,开发框架,组件库,官方文档,开源,XiHanFun";
 
-// 三大板块的文档站：正文由各自仓库维护，本站只做导览
+// 各产品的文档站：正文由各自仓库维护，本站只做导览
 const docSites = {
   framework: "https://framework.docs.xihanfun.com",
   ui: "https://ui.docs.xihanfun.com",
   basicApp: "https://basicapp.docs.xihanfun.com",
+  printDesigner: "https://print.docs.xihanfun.com",
+  flowDesigner: "https://flow.docs.xihanfun.com",
+  formDesigner: "https://form.docs.xihanfun.com",
+  reportDesigner: "https://report.docs.xihanfun.com",
 };
 
 const startSidebar: DefaultTheme.SidebarItem[] = [
@@ -30,6 +34,16 @@ const startSidebar: DefaultTheme.SidebarItem[] = [
       { text: "🧩 开发框架", link: docSites.framework },
       { text: "🎨 视图组件", link: docSites.ui },
       { text: "🏠 基础应用", link: docSites.basicApp },
+    ],
+  },
+  {
+    text: "设计器文档",
+    collapsed: false,
+    items: [
+      { text: "🖨️ 打印设计器", link: docSites.printDesigner },
+      { text: "🔀 流程设计器", link: docSites.flowDesigner },
+      { text: "📝 表单设计器", link: docSites.formDesigner },
+      { text: "📊 报表设计器", link: docSites.reportDesigner },
     ],
   },
 ];
@@ -73,6 +87,15 @@ const nav: DefaultTheme.NavItem[] = [
           { text: withNavBadge("基础应用", releases.basicApp), link: "https://basicapp.docs.xihanfun.com" },
         ],
       },
+      {
+        text: "设计器",
+        items: [
+          { text: withNavBadge("打印设计器", releases.printDesigner), link: docSites.printDesigner },
+          { text: withNavBadge("流程设计器", releases.flowDesigner), link: docSites.flowDesigner },
+          { text: withNavBadge("表单设计器", releases.formDesigner), link: docSites.formDesigner },
+          { text: withNavBadge("报表设计器", releases.reportDesigner), link: docSites.reportDesigner },
+        ],
+      },
     ],
   },
   {
@@ -110,7 +133,7 @@ export default defineXiHanConfig({
   },
   llms: {
     title: "曦寒懿",
-    summary: "曦寒懿（XiHanFun）开源生态：XiHan.Framework 是后端基座，XiHan.UI 是前端基座，XiHan.BasicApp 是基础应用。本站承载项目简介、跨仓快速上手、生态总览与参与贡献约定，三个产品的正文在各自的文档站。",
+    summary: "曦寒懿（XiHanFun）开源生态：XiHan.Framework 是后端基座，XiHan.UI 是前端基座，XiHan.BasicApp 是基础应用，另有打印、流程、表单、报表四款以 Web Components 交付的设计器。本站承载项目简介、跨仓快速上手、生态总览与参与贡献约定，各产品的正文在各自的文档站。",
     sections: [
       { dir: ".", label: "首页" },
       { dir: "cosmos", label: "生态" },
