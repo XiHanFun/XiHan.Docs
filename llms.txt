@@ -21,4 +21,4 @@
 - [生态总览](https://docs.xihanfun.com/cosmos/ecosystem): 曦寒不是一个仓库，而是一组可以独立使用、也可以叠起来用的开源项目：后端基座、前端基座与基础应用是主推产品，打印、流程、表单、报表等设计器是生态产品。
 - [快速上手](https://docs.xihanfun.com/cosmos/getstart): 本项目由 XiHan.Framework（开发框架）、XiHan.UI（视图组件）、XiHan.BasicApp（基础应用）组成。
 - [项目简介](https://docs.xihanfun.com/cosmos/guide): 在数字化时代，软件早已成为连接人与信息、业务与技术的重要桥梁。
-- [❤️ 支持&赞助](https://docs.xihanfun.com/cosmos/sponsor): 开源版本 自发布以来始终坚持 MIT License 开源协议，所有核心功能永久免费，个人和企业均可使用。
+- [❤️ 支持&赞助](https://docs.xihanfun.com/cosmos/sponsor): 曦寒懿生态的开源版本自发布以来一直采用 MIT License 授权，核心能力永久免费，个人和企业都可以使用，也可以商用。
