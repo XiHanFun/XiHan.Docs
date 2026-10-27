@@ -24,9 +24,10 @@
   <tr>
     <td align="center"><img src="/images/alipay.png" width="200" /><br/>支付宝（支持信用卡）</td>
     <td align="center"><img src="/images/weixinpay.png" width="200" /><br/>微信（支持信用卡）</td>
-    <td align="center"><a src="https://afdian.com/a/zhaifanhua" /><br/>爱发电</td>
+    <td align="center"><a href="https://afdian.com/a/zhaifanhua"><img width="200" src="https://pic1.afdiancdn.com/static/img/welcome/button-sponsorme.png" alt=""></a><br/>爱发电</td>
   </tr>
 </table>
+
 
 
 赞助后，请发送邮件到 me@xihanfun.com，或者通过 GitHub、微信群等渠道告知要展示的名称、留言和链接（链接可以是你的 GitHub、博客、个人网站或公司产品）。境外赞助或需要其他付款方式的，请先来信商量。感谢每一位开发者的陪伴与支持。
