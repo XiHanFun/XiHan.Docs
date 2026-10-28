@@ -70,7 +70,6 @@
 | 静*      | 匿名                               | 支付宝 | 520   | -                                                         | 2026-07-03  |
 | 沐**风   | https://github.com/timeIsMoney-fun | 支付宝 | 30    | 太强了，请作者喝一杯星巴克，有时间了 也想听听xihan 的故事 | 2026-07-10  |
 | 麦兜**   | https://github.com/wangjunjx8868   | 微信   | 100   | 捐了                                                      | 2026-07-10  |
-| A 喵**   | https://github.com/reiasesessesses | 微信   | 66    | 小小红包，赶紧领了吧。买几盒好*                           | 2026-07-10  |
 | 男*      | https://github.com/zgrjhwei        | 微信   | 50    | 9块九可以喝一周呢                                         | 2026-07-10  |
 | 兮兮     | 匿名                               | 支付宝 | 10    | -                                                         | 2026-07-13  |
 | SmallHan | https://gitee.com/SmallHan         | 支付宝 | 19.99 | 感谢作者，框架太强大了                                    | 2026-08-06  |
