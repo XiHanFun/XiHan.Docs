@@ -1,4 +1,4 @@
-![LOGO](./assets/LOGO.png)
+![曦寒懿](./assets/banner_cn.png)
 
 [![GitHub Star](https://img.shields.io/github/stars/XiHanFun/XiHan.Docs?style=flat&logo=github)](https://github.com/XiHanFun/XiHan.Docs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
@@ -55,7 +55,7 @@ XiHan.Docs/
 │   ├── package.json              # xihan-docs：依赖与构建脚本
 │   ├── pnpm-workspace.yaml       # pnpm workspace 声明（当前统一构建审批 allowBuilds: esbuild）
 │   └── pnpm-lock.yaml
-├── assets/                     # README 用图（LOGO、favicon）
+├── assets/                     # README 用图（横幅、LOGO、favicon）
 ├── other/                      # 设计源文件（logo / favicon / ppt / adobe 工程文件）
 ├── .github/
 │   ├── workflows/deploy-docs.yml # 构建 + 部署到 GitHub Pages 的工作流
