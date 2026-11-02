@@ -17,7 +17,7 @@
     a { color: oklch(0.55 0.18 295); }
     a:hover { color: oklch(0.48 0.19 295); }
 
-    /* 三个产品各一张中文、一张英文横幅，共用一套版式，配色由 data-banner 变量给出 */
+    /* 社区与三个产品各一张中文、一张英文横幅，共用一套版式，配色由 data-banner 变量给出 */
     .banner { width: 1280px; height: 320px; position: relative; overflow: hidden; background: var(--bg); flex-shrink: 0; }
     .banner-blob { position: absolute; border-radius: 50%; filter: blur(4px); }
     .banner-blob-a { width: 420px; height: 420px; right: -90px; top: -140px; background: radial-gradient(circle at 30% 30%, var(--blob-a), transparent 62%); }
@@ -39,6 +39,24 @@
     .banner-logo { flex-shrink: 0; width: 200px; height: 200px; }
     .banner-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
+    /* 社区横幅：配色取组织 Logo 的蓝 → 紫 → 粉 → 橙，标题的 Fun 用同一条渐变，Logo 换成不带框的人像 */
+    .banner[data-banner="community"] {
+      --bg: linear-gradient(135deg, #fbf9ff 0%, #f3efff 50%, #fff1f2 100%);
+      --blob-a: oklch(0.72 0.16 285 / 0.55);
+      --blob-b: oklch(0.78 0.14 30 / 0.5);
+      --dots: oklch(0.58 0.16 295 / 0.10);
+      --eyebrow: oklch(0.48 0.18 295);
+      --eyebrow-dot: oklch(0.58 0.20 295);
+      --accent: oklch(0.55 0.20 295);
+      --tagline: #54536e;
+      --chip-a: oklch(0.42 0.17 285);
+      --chip-a-line: oklch(0.60 0.14 285 / 0.28);
+      --chip-b: oklch(0.45 0.17 350);
+      --chip-b-line: oklch(0.62 0.14 350 / 0.3);
+    }
+    .banner[data-banner="community"] .banner-title span { background: linear-gradient(100deg, #3b6bff, #7b3bff 32%, #e0339a 66%, #ffa62b); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .banner[data-banner="community"] .banner-eyebrow::before { background: linear-gradient(135deg, #3b6bff, #e0339a); }
+    .banner[data-banner="community"] .banner-logo { width: 136px; height: 240px; }
     .banner[data-banner="framework"] {
       --bg: linear-gradient(135deg, #faf8ff 0%, #eef0ff 55%, #e9ebff 100%);
       --blob-a: oklch(0.72 0.15 255 / 0.55);
@@ -83,6 +101,31 @@
     }
   </style>
 </helmet>
+
+<!-- =============== 中文 · XiHanFun 社区 =============== -->
+<div class="banner" data-banner="community" data-lang="zh">
+  <div class="banner-blob banner-blob-a"></div>
+  <div class="banner-blob banner-blob-b"></div>
+  <div class="banner-dots"></div>
+  <div class="banner-body">
+    <div class="banner-text">
+      <div class="banner-eyebrow">曦寒懿 · 开源社区</div>
+      <div class="banner-title">XiHan<span>Fun</span></div>
+      <div class="banner-tagline">快速、轻量、高效、用心，拥有底座、组件、应用完整生态的开源社区</div>
+      <div class="banner-chips">
+        <span class="banner-chip">开发框架</span>
+        <span class="banner-chip">视图组件</span>
+        <span class="banner-chip">基础应用</span>
+        <span class="banner-chip banner-chip-alt">MIT 开源</span>
+        <span class="banner-chip banner-chip-alt">共建共享</span>
+        <span class="banner-chip banner-chip-alt">GitHub · Gitee · GitCode</span>
+      </div>
+    </div>
+    <div class="banner-logo">
+      <img src="../logo/Rectangle.png" alt="XiHanFun logo">
+    </div>
+  </div>
+</div>
 
 <!-- =============== 中文 · XiHan.Framework =============== -->
 <div class="banner" data-banner="framework" data-lang="zh">
@@ -155,6 +198,31 @@
     </div>
     <div class="banner-logo">
       <img src="../logo/light/XiHan.BasicApp-512.png" alt="XiHan.BasicApp logo">
+    </div>
+  </div>
+</div>
+
+<!-- =============== English · XiHanFun Community =============== -->
+<div class="banner" data-banner="community" data-lang="en">
+  <div class="banner-blob banner-blob-a"></div>
+  <div class="banner-blob banner-blob-b"></div>
+  <div class="banner-dots"></div>
+  <div class="banner-body">
+    <div class="banner-text">
+      <div class="banner-eyebrow">XiHanFun · Open Source Community</div>
+      <div class="banner-title">XiHan<span>Fun</span></div>
+      <div class="banner-tagline">A fast, lightweight and thoughtful open-source ecosystem, from foundation to application</div>
+      <div class="banner-chips">
+        <span class="banner-chip">Framework</span>
+        <span class="banner-chip">UI Components</span>
+        <span class="banner-chip">Basic App</span>
+        <span class="banner-chip banner-chip-alt">MIT Licensed</span>
+        <span class="banner-chip banner-chip-alt">Community Driven</span>
+        <span class="banner-chip banner-chip-alt">GitHub · Gitee · GitCode</span>
+      </div>
+    </div>
+    <div class="banner-logo">
+      <img src="../logo/Rectangle.png" alt="XiHanFun logo">
     </div>
   </div>
 </div>
