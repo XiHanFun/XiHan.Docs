@@ -21,7 +21,7 @@ index: false
 
 ### XiHan.Framework · 后端基座
 
-快速、轻量、高效、用心的 .NET 现代模块化开发框架。是面向企业级应用的模块化后端框架，框架优先使用 .NET 原生功能，减少第三方依赖，理念现代、开箱即用、模块清晰、依赖可控、扩展可维护。曦寒懿（XiHanFun）开源生态的后端基座。
+快速、轻量、高效、用心的 .NET 开发框架：微内核、能力图谱、管道执行。是面向企业级应用的后端框架，框架优先使用 .NET 原生功能，减少第三方依赖，理念现代、开箱即用、模块清晰、依赖可控、扩展可维护。曦寒懿（XiHanFun）开源生态的后端基座。
 
 按需引用的 NuGet 包，模块之间用 `[DependsOn]` 声明依赖，启动时自动拓扑排序装配。
 
@@ -78,7 +78,7 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 
 | 你的场景 | 从这里开始 |
 | --- | --- |
-| 要在自己的 .NET 项目里用模块化框架、只取其中几个能力 | [开发框架 · 快速上手](https://framework.docs.xihanfun.com/quickstart) |
+| 要在自己的 .NET 项目里用这套框架、只取其中几个能力 | [开发框架 · 快速上手](https://framework.docs.xihanfun.com/quickstart) |
 | 要一套现成的中后台系统，改改就能上线 | [基础应用 · 快速开始](https://basicapp.docs.xihanfun.com/getting-started) |
 | 要在自己的前端项目里用组件库，或做跨框架的设计系统 | [视图组件 · 架构总览](https://ui.docs.xihanfun.com/overview) |
 | 要在自己的页面里嵌打印、流程、表单或报表设计器 | [打印设计器](https://print.docs.xihanfun.com/) · [流程设计器](https://flow.docs.xihanfun.com/) · [表单设计器](https://form.docs.xihanfun.com/) · [报表设计器](https://report.docs.xihanfun.com/) |

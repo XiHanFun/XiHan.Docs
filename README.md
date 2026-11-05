@@ -126,7 +126,7 @@ pnpm run preview
 
 ## 相关项目
 
-- [XiHan.Framework](https://github.com/XiHanFun/XiHan.Framework) - .NET 模块化开发框架（文档：<https://framework.docs.xihanfun.com>）
+- [XiHan.Framework](https://github.com/XiHanFun/XiHan.Framework) - .NET 微内核开发框架（文档：<https://framework.docs.xihanfun.com>）
 - [XiHan.UI](https://github.com/XiHanFun/XiHan.UI) - 框架无关的设计系统运行时与组件库（文档：<https://ui.docs.xihanfun.com>）
 - [XiHan.BasicApp](https://github.com/XiHanFun/XiHan.BasicApp) - 基于 XiHan.Framework 构建的企业级中后台内核（文档：<https://basicapp.docs.xihanfun.com>）
 

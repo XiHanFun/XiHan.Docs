@@ -14,7 +14,7 @@ XiHanFun 开源组织的贡献者。
 
 ### XiHan.Framework
 
-XiHan.Framework 仓库。快速、轻量、高效、用心的 .NET 现代模块化开发框架。
+XiHan.Framework 仓库。快速、轻量、高效、用心的 .NET 开发框架：微内核、能力图谱、管道执行。
 
 [![贡献者](https://img.shields.io/github/contributors/XiHanFun/XiHan.Framework?style=flat-square)](https://github.com/XiHanFun/XiHan.Framework/graphs/contributors)
 
