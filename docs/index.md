@@ -25,7 +25,7 @@ hero:
 features:
   - title: 开发框架
     icon: 🧩
-    details: 采用灵活的模块化设计，让您可以按需引入所需功能，避免不必要的开销。每个模块均经过精心打磨，可独立使用也可无缝协作。
+    details: 微内核、能力图谱、管道执行。业务写成操作契约，一份契约同时服务 HTTP、gRPC、MCP 与命令行；能力按需装配，默认实现零外部依赖，上线时换 Provider，业务代码不动。
     link: https://framework.docs.xihanfun.com
     linkText: "浏览开发框架文档"
 

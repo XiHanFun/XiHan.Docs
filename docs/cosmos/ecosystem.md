@@ -21,9 +21,9 @@ index: false
 
 ### XiHan.Framework · 后端基座
 
-快速、轻量、高效、用心的 .NET 开发框架：微内核、能力图谱、管道执行。是面向企业级应用的后端框架，框架优先使用 .NET 原生功能，减少第三方依赖，理念现代、开箱即用、模块清晰、依赖可控、扩展可维护。曦寒懿（XiHanFun）开源生态的后端基座。
+快速、轻量、高效、用心的 .NET 开发框架：微内核、能力图谱、管道执行。是为长期维护的 .NET 后端设计的开发框架：业务写成与协议无关的操作，一份契约同时服务 HTTP、gRPC、MCP 和命令行，每次调用都走同一条管道；持久化、缓存、消息、租户和权限都是可替换的包，开发时不需要任何外部设施，上线时换 Provider，业务代码不动。曦寒懿（XiHanFun）开源生态的后端基座。
 
-按需引用的 NuGet 包，模块之间用 `[DependsOn]` 声明依赖，启动时自动拓扑排序装配。
+按需引用的 NuGet 包，每个特性带一份清单，按能力 ID 声明提供和依赖什么；内核在启动前求解能力图谱，缺失、循环、版本冲突都直接报错，再按拓扑顺序装配。
 
 ### XiHan.UI · 前端基座
 
@@ -61,13 +61,13 @@ index: false
               │ 引用 NuGet    │ 引用 npm 包
       ┌───────▼───────┐  ┌────▼─────────────┐
       │ XiHan.Framework│  │   XiHan.UI      │
-      │  .NET 模块包   │  │  设计系统运行时  │
+      │  .NET 能力包   │  │  设计系统运行时  │
       └───────────────┘  └─────────────────┘
 ```
 
 两条依赖关系值得先说清楚：
 
-- **BasicApp 的后端确实建立在 Framework 之上**：它引用框架的 NuGet 包，认证、授权、数据访问、多租户、动态 API 等底层能力都来自框架，BasicApp 只写业务。想看框架能力在真实业务里怎么落地，读 BasicApp 的源码是最快的路径。
+- **BasicApp 的后端确实建立在 Framework 之上**：它引用框架的 NuGet 包，认证、授权、数据访问、多租户等底层能力都来自框架，BasicApp 只写业务。想看框架能力在真实业务里怎么落地，读 BasicApp 的源码是最快的路径。
 - **BasicApp 的前端同样建立在 UI 之上**：自 BasicApp v4.0.0 起，前端整体用 XiHan.UI 重建，naive-ui 全量下线。想看组件库在真实业务里怎么用，读 BasicApp 前端的源码是最快的路径。
 
 Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是前端库，各自可以单独使用。
@@ -92,7 +92,7 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 
 | 项目 | 工具 | 在项目根接入 | 文档 |
 | --- | --- | --- | --- |
-| XiHan.Framework | .NET 工具 `XiHan.Framework.Cli`，查包、模块类、配置节与文档 | `dnx XiHan.Framework.Cli --yes -- setup --client claude` | [开发框架 · For Agents](https://framework.docs.xihanfun.com/ai/agents) |
+| XiHan.Framework | .NET 工具 `XiHan.Framework.Cli`，查包、特性清单、配置键与文档 | `dnx XiHan.Framework.Cli --yes -- setup --client claude` | [开发框架 · For Agents](https://framework.docs.xihanfun.com/ai/agents) |
 | XiHan.UI | npm 包 `@xihan-ui/cli`，查组件 API、示例、设计令牌与 design.md | `npx -y @xihan-ui/cli setup --client claude` | [视图组件 · For Agents](https://ui.docs.xihanfun.com/ai/agents) |
 | XiHan.BasicApp | 不单独发包，后端与前端分别接入上面两个服务端 | 在仓库根依次运行上面两条命令 | [基础应用 · MCP Server](https://basicapp.docs.xihanfun.com/ai/mcp) |
 
@@ -102,7 +102,7 @@ Framework 与 UI 之间没有依赖关系，一个是 .NET 后端包，一个是
 
 各仓库**独立发版**，版本号互不对齐：
 
-- Framework 发布到 [NuGet](https://www.nuget.org/profiles/XiHanFun)，版本真源是 `framework/props/version.props`
+- Framework 发布到 [NuGet](https://www.nuget.org/profiles/XiHanFun)，版本真源是 `framework/Directory.Build.props`
 - BasicApp 随仓库发布，版本真源是 `backend/props/version.props`
 - UI 发布到 [npm](https://www.npmjs.com/org/xihan-ui)，全部公开包始终同一个版本号，版本真源是 `ui/packages/*/*/package.json`
 - 生态产品的设计器各自发布到 npm，作用域分别是 `@xihan-print`、`@xihan-flow`、`@xihan-form`、`@xihan-report`，版本真源是各仓 `<产品>/packages/*/package.json`（如 `print/packages/*/package.json`）
