@@ -49,10 +49,10 @@ export const releases = {
   framework: { stage: ReleaseStage.Release },
   ui: { stage: ReleaseStage.Release },
   basicApp: { stage: ReleaseStage.Release },
-  printDesigner: { stage: ReleaseStage.Rc },
-  flowDesigner: { stage: ReleaseStage.Rc },
-  formDesigner: { stage: ReleaseStage.Rc },
-  reportDesigner: { stage: ReleaseStage.Rc },
+  printDesigner: { stage: ReleaseStage.Release },
+  flowDesigner: { stage: ReleaseStage.Release },
+  formDesigner: { stage: ReleaseStage.Release },
+  reportDesigner: { stage: ReleaseStage.Release },
 } satisfies Record<string, ProductRelease>;
 
 /** 阶段 → 徽章文案与配色 */
